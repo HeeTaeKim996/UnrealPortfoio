@@ -1,0 +1,10 @@
+※ 7. 파일추가 및 삭제
+	- UTF-8, Kr949? 언어 문제 일괄 처리를 Editor_Config 로 처리할 수 있다는데, 정확히는 안봄. 7분쯤부터 시작하니 나중에 참고
+
+※ 모듈 생성 절차 문서
+ - https://dev.epicgames.com/documentation/ko-kr/unreal-engine/how-to-make-a-gameplay-module-in-unreal-engine
+ - ※ 모듈 만든후, 사용하는 모듈의 .h 에서는 처음에는 사용되는 모듈의 .h 를 include 할 수 없음 (vs 꼬임으로 인한 고질적인 문제라 함). 위를 해결하려면, 사용하려는 .h 의 .cpp에 먼저 사용되는 모듈의 .h를 inlcude하고,
+   이후에 .h 에서 다시 include 하면 됨. 특이한건, 이후에는, .cpp에서 사용되는 .h를 지워도 아무 문제 없음. 이후부터는 자유롭게 사용하는 .h에서 사용되는 모듈의 .h를 자유롭게 include 가능
+
+
+※ https://github.com/tranek/GASDocumentation : 언리얼 공부하기에 좋은 문서. (언리얼 공식 문서는 아님)
