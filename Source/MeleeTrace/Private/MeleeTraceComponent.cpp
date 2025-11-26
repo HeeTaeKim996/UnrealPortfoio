@@ -93,8 +93,8 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 							HitInfo.HitNormal = HitResult.ImpactNormal;
 							HitInfo.HitBoneName = HitResult.BoneName;
 							HitInfo.TraceHandle = ActiveMeleeTrace.TraceHandle;
-							HitInfo.Ability = FGameplayTag::EmptyTag; // @@ TEMP
-							HitInfo.Protocol = ActiveMeleeTrace.Protocol;
+							HitInfo.Ability = ActiveMeleeTrace.Ability;
+							HitInfo.Protocol = SocketShapeInfo.Protocol;
 
 							OnTraceHit.Broadcast(MoveTemp(HitInfo));
 						}
@@ -257,7 +257,7 @@ void UMeleeTraceComponent::InternalStartTrace(const FMeleeTraceInfo& MeleeTraceI
 	FActiveMeleeTraceInfo& NewMeleeTraceInfo = ActiveMeleeTraces.AddDefaulted_GetRef(); // AddDefaulted_GetRef : Add and return Ref
 	NewMeleeTraceInfo.TraceHandle = FMeleeTraceInstanceHandle(TraceHash);
 	NewMeleeTraceInfo.ContextHash = ContextHash;
-	NewMeleeTraceInfo.Protocol = MeleeTraceInfo.Protocol;
+	NewMeleeTraceInfo.Ability = MeleeTraceInfo.Ability;
 
 	for (const FMeleeTraceSmallInfo& MeleeInfo : MeleeTraceInfo.MeleeTraceInfos)
 	{
@@ -274,6 +274,8 @@ void UMeleeTraceComponent::InternalStartTrace(const FMeleeTraceInfo& MeleeTraceI
 
 
 				newSocketShapeInfo.SocketName = MeleeInfo.SocketName;
+				newSocketShapeInfo.Protocol = MeleeInfo.Protocol;
+
 				if (ensureMsgf(MeleeInfo.TraceShape->IsValidLowLevelFast(),
 					TEXT("[%s] : Invalid trace shape definition"), *GetNameSafe(GetOwner())))
 				{

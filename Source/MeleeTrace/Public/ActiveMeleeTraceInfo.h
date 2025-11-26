@@ -36,7 +36,7 @@ struct MELEETRACE_API FMeleeTraceSocketShapeInfo
 	TWeakObjectPtr<UMeshComponent> SourceMeshComponent;
 	FVector PreviousFrameSampleLocation;
 	FName SocketName;
-
+	uint8 Protocol;
 };
 
 USTRUCT()
@@ -50,8 +50,8 @@ struct MELEETRACE_API FActiveMeleeTraceInfo
 	
 
 	TSet<TWeakObjectPtr<AActor>> HitActors; // ※ Prevent repeated hits
-
-	uint8 Protocol;
+	FGameplayTag Ability;
+	
 	uint32 ContextHash = MeleeTrace::INVALID_HASH;
 };
 

@@ -22,4 +22,5 @@ namespace R1Tags
 
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
 }

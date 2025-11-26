@@ -18,6 +18,9 @@ struct MELEETRACE_API FMeleeTraceSmallInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Instanced, Category = "General") // ※ Instanced : Similar With DeppCopy. ※ I Dont Understand WHy This Need Deep COpy. It Works Only For Transfering Base Info
 		TObjectPtr<UMeleeTraceShape> TraceShape;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gemeral")
+	uint8 Protocol = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -27,9 +30,6 @@ struct MELEETRACE_API FMeleeTraceInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "General")
 	TArray<FMeleeTraceSmallInfo> MeleeTraceInfos;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gemeral")
-	uint8 Protocol;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gemeral")
 	FGameplayTag Ability;
