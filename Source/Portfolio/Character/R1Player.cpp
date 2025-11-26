@@ -149,12 +149,6 @@ void AR1Player::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitA
 {
 	//DebugMessage(FString::Printf(TEXT("R1Player.cpp : Protocol IS [%d]"), static_cast<int>(Protocol)));
 	Super::HandleTraceHit(ThisComponent, HitActor, HitLocation, HitNormal, HitBoneName, TraceHandle, Protocol);
-
-	AR1Monster* Monster = Cast<AR1Monster>(HitActor);
-	if (Monster)
-	{
-		Monster->OnDamage(20, this);
-	}
 }
 
 void AR1Player::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
@@ -167,6 +161,11 @@ void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitC
 	FMeleeTraceInstanceHandle TraceHandle)
 {
 	Super::HandleTraceEnded(ThisComponent, HitCount, TraceHandle);
+}
+
+void AR1Player::HandleTraceHit2(FMeleeHitInfo HitInfo)
+{
+	Super::HandleTraceHit2(HitInfo);
 }
 
 void AR1Player::RefreshHpBarRatio()

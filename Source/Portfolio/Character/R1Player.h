@@ -49,6 +49,8 @@ protected:
 	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 		FMeleeTraceInstanceHandle TraceHandle) override;
 
+	virtual void HandleTraceHit2(FMeleeHitInfo HitInfo) override;
+
 protected:
 	virtual void RefreshHpBarRatio() override;
 

@@ -125,6 +125,12 @@ void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 H
 void AR1Character::HandleTraceHit2(FMeleeHitInfo HitInfo)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1Character.cpp : Hit2 Check"));
+
+	AR1Character* HitActor = Cast<AR1Character>(HitInfo.HitActor);
+	if (HitActor)
+	{
+		HitActor->OnDamage(20, this);
+	}
 }
 
 void AR1Character::AddCharacterAbilities()

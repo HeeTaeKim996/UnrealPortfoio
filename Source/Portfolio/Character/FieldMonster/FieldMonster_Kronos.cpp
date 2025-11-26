@@ -26,12 +26,6 @@ void AFieldMonster_Kronos::HandleTraceHit(UMeleeTraceComponent* ThisComponent, A
 {
 	Super::HandleTraceHit(ThisComponent, HitActor, HitLocation, HitNormal, HitBoneName, TraceHandle,
 		Protocol);
-
-	AR1Player* PlayerCh = Cast<AR1Player>(HitActor);
-	if (PlayerCh)
-	{
-		PlayerCh->OnDamage(20, this);
-	}
 }
 
 void AFieldMonster_Kronos::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
