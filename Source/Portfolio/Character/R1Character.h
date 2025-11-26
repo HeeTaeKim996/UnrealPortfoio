@@ -71,10 +71,6 @@ protected:
 
 protected:
 	UFUNCTION()
-	virtual void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
-		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol);
-
-	UFUNCTION()
 	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
 
 	UFUNCTION()
@@ -82,7 +78,7 @@ protected:
 		FMeleeTraceInstanceHandle TraceHandle);
 
 	UFUNCTION()
-	virtual void HandleTraceHit2(FMeleeHitInfo HitInfo);
+	virtual void HandleTraceHit(FMeleeHitInfo HitInfo);
 
 
 

@@ -41,15 +41,12 @@ private:
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
-	virtual void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
-		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol) override;
-
 	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle) override;
 
 	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 		FMeleeTraceInstanceHandle TraceHandle) override;
 
-	virtual void HandleTraceHit2(FMeleeHitInfo HitInfo) override;
+	virtual void HandleTraceHit(FMeleeHitInfo HitInfo) override;
 
 protected:
 	virtual void RefreshHpBarRatio() override;

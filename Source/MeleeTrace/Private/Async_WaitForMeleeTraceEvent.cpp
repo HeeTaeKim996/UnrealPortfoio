@@ -42,7 +42,7 @@ void UAsync_WaitForMeleeTraceEvent::Cancel()
 {
 	if (MeleeTraceComponent.IsValid())
 	{
-		MeleeTraceComponent->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
+		//MeleeTraceComponent->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
 		MeleeTraceComponent->OnTraceStart.RemoveDynamic(this, &ThisClass::HandleTraceStarted);
 		MeleeTraceComponent->OnTraceEnd.RemoveDynamic(this, &ThisClass::HandleTraceEnded);
 	}
@@ -56,7 +56,7 @@ void UAsync_WaitForMeleeTraceEvent::Cancel()
 
 void UAsync_WaitForMeleeTraceEvent::Activate()
 {
-	MeleeTraceComponent->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
+	//MeleeTraceComponent->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
 	MeleeTraceComponent->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
 	MeleeTraceComponent->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
 }

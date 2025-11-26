@@ -85,8 +85,6 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 						if (!ActiveMeleeTrace.HitActors.Contains(HitResult.GetActor()))
 						{
 							ActiveMeleeTrace.HitActors.Add(HitResult.GetActor());
-							OnTraceHit.Broadcast(this, HitResult.GetActor(), HitResult.ImpactPoint, HitResult.ImpactNormal,
-								HitResult.BoneName, ActiveMeleeTrace.TraceHandle, ActiveMeleeTrace.Protocol);
 
 							FMeleeHitInfo HitInfo;
 							HitInfo.ThisComponent = this;
@@ -98,7 +96,7 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 							HitInfo.Ability = FGameplayTag::EmptyTag; // @@ TEMP
 							HitInfo.Protocol = ActiveMeleeTrace.Protocol;
 
-							OnTraceHit2.Broadcast(MoveTemp(HitInfo));
+							OnTraceHit.Broadcast(MoveTemp(HitInfo));
 						}
 					}
 				};	

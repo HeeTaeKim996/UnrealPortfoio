@@ -44,12 +44,11 @@ struct MELEETRACE_API FMeleeHitInfo
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMeleeTraceStart,
 	UMeleeTraceComponent*, ThisComponent, FMeleeTraceInstanceHandle, TraceHandle);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMeleeTraceEnd,
 	UMeleeTraceComponent*, ThisComponent, int32, HitCount, FMeleeTraceInstanceHandle, TraceHandle);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SevenParams(FMeleeTraceHit,
-	UMeleeTraceComponent*, ThisComponent, AActor*, HitActor, const FVector&, HitLocation, const FVector&, HitNormal,
-	FName, HitBoneName, FMeleeTraceInstanceHandle, TraceHandle, uint8, Protocol);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMeleeTraceHit2,
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMeleeTraceHit,
 	FMeleeHitInfo, MeleeHitInfo);
 
 
@@ -128,11 +127,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FMeleeTraceEnd OnTraceEnd;
 
-	UPROPERTY(BlueprintAssignable)
-	FMeleeTraceHit OnTraceHit;
 
 	UPROPERTY(BlueprintAssignable)
-	FMeleeTraceHit2 OnTraceHit2;
+	FMeleeTraceHit OnTraceHit;
 
 
 protected:

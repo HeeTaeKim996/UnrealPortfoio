@@ -20,13 +20,6 @@ void AFieldMonster_Kronos::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void AFieldMonster_Kronos::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, 
-	const FVector& HitLocation, const FVector& HitNormal, FName HitBoneName, 
-	FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
-{
-	Super::HandleTraceHit(ThisComponent, HitActor, HitLocation, HitNormal, HitBoneName, TraceHandle,
-		Protocol);
-}
 
 void AFieldMonster_Kronos::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
 	FMeleeTraceInstanceHandle TraceHandle)

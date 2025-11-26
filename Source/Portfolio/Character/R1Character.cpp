@@ -26,20 +26,18 @@ void AR1Character::BeginPlay()
 
 	AddCharacterAbilities();
 
-	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
 	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
 	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
-	MeleeTrace->OnTraceHit2.AddDynamic(this, &ThisClass::HandleTraceHit2);
+	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
 }
 
 void AR1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	MeleeTrace->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
 	MeleeTrace->OnTraceStart.RemoveDynamic(this, &ThisClass::HandleTraceStarted);
 	MeleeTrace->OnTraceEnd.RemoveDynamic(this, &ThisClass::HandleTraceEnded);
-	MeleeTrace->OnTraceHit2.RemoveDynamic(this, &ThisClass::HandleTraceHit2);
+	MeleeTrace->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
 }
 
 void AR1Character::Tick(float DeltaTime)
@@ -105,11 +103,6 @@ void AR1Character::InitAbilitySystem()
 
 }
 
-void AR1Character::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation, 
-	const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
-{
-
-}
 
 void AR1Character::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle)
 {
@@ -122,7 +115,7 @@ void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 H
 
 }
 
-void AR1Character::HandleTraceHit2(FMeleeHitInfo HitInfo)
+void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1Character.cpp : Hit2 Check"));
 
