@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Character/R1Character.h"
 #include "System/R1GameplayTags.h"
-#include "MeleeTrace/Public/MeleeTraceComponent.h"
 #include "R1Player.generated.h"
 
 class UPlayerAnimInstance;
@@ -42,16 +41,13 @@ private:
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
-	UFUNCTION()
-	void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
-		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol);
+	virtual void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
+		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol) override;
 
-	UFUNCTION()
-	void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
+	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle) override;
 
-	UFUNCTION()
-	void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
-		FMeleeTraceInstanceHandle TraceHandle);
+	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
+		FMeleeTraceInstanceHandle TraceHandle) override;
 
 protected:
 	virtual void RefreshHpBarRatio() override;

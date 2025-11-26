@@ -150,9 +150,11 @@ void AR1Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Cyan, TEXT("@@OnBeginOverlap@@"));
 }
 
-void AR1Player::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation, const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
+void AR1Player::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation, 
+	const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
 {
 	//DebugMessage(FString::Printf(TEXT("R1Player.cpp : Protocol IS [%d]"), static_cast<int>(Protocol)));
+	Super::HandleTraceHit(ThisComponent, HitActor, HitLocation, HitNormal, HitBoneName, TraceHandle, Protocol);
 
 	AR1Monster* Monster = Cast<AR1Monster>(HitActor);
 	if (Monster)
@@ -164,11 +166,13 @@ void AR1Player::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitA
 void AR1Player::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
 	FMeleeTraceInstanceHandle TraceHandle)
 {
+	Super::HandleTraceStarted(ThisComponent, TraceHandle);
 }
 
 void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, 
 	FMeleeTraceInstanceHandle TraceHandle)
 {
+	Super::HandleTraceEnded(ThisComponent, HitCount, TraceHandle);
 }
 
 void AR1Player::RefreshHpBarRatio()

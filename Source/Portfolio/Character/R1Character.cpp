@@ -88,6 +88,23 @@ void AR1Character::InitAbilitySystem()
 
 }
 
+void AR1Character::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation, 
+	const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
+{
+
+}
+
+void AR1Character::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle)
+{
+
+}
+
+void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, 
+	FMeleeTraceInstanceHandle TraceHandle)
+{
+
+}
+
 void AR1Character::AddCharacterAbilities()
 {
 	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);

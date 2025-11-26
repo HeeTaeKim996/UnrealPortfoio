@@ -71,15 +71,3 @@ void AR1Monster::InitAbilitySystem()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 }
 
-void AR1Monster::HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation, const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol)
-{
-
-}
-
-void AR1Monster::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle)
-{
-}
-
-void AR1Monster::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, FMeleeTraceInstanceHandle TraceHandle)
-{
-}

@@ -8,6 +8,7 @@
 #include "R1Define.h"
 #include "System/R1GameplayTags.h"
 #include "AbilitySystemInterface.h"
+#include "MeleeTrace/Public/MeleeTraceComponent.h"
 #include "R1Character.generated.h"
 
 
@@ -66,6 +67,18 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UR1AttributeSet> AttributeSet;
+
+protected:
+	UFUNCTION()
+	virtual void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
+		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol);
+
+	UFUNCTION()
+	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
+
+	UFUNCTION()
+	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
+		FMeleeTraceInstanceHandle TraceHandle);
 
 public:
 	void AddCharacterAbilities();

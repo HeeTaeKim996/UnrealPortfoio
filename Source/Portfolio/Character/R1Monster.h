@@ -33,17 +33,6 @@ public:
 	virtual void InitAbilitySystem();
 
 
-protected:
-	UFUNCTION()
-	virtual void HandleTraceHit(UMeleeTraceComponent* ThisComponent, AActor* HitActor, const FVector& HitLocation,
-		const FVector& HitNormal, FName HitBoneName, FMeleeTraceInstanceHandle TraceHandle, uint8 Protocol);
-
-	UFUNCTION()
-	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
-
-	UFUNCTION()
-	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
-		FMeleeTraceInstanceHandle TraceHandle);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
