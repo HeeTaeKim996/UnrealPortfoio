@@ -7,7 +7,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 #include "MeleeTraceInfo.h"
-
+#include "GameplayTagContainer.h"
 #include "AnimNotifyState_MeleeTrace.generated.h"
 
 UCLASS(DisplayName = "Melee Trace")

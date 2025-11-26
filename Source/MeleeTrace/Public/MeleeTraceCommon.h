@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+
 DECLARE_LOG_CATEGORY_EXTERN(LogMeleeTrace, Log, All);
 
 namespace MeleeTrace

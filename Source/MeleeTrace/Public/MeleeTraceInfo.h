@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "MeleeTraceInfo.generated.h"
 
 class UMeleeTraceShape;
@@ -29,6 +30,9 @@ struct MELEETRACE_API FMeleeTraceInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gemeral")
 	uint8 Protocol;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gemeral")
+	FGameplayTag Ability;
 };
 
 

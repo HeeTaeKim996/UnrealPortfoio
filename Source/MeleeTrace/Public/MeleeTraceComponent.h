@@ -8,6 +8,7 @@
 #include "ActiveMeleeTraceInfo.h"
 #include "MeleeTraceInfo.h"
 #include "MeleeTraceCommon.h"
+#include "GameplayTagContainer.h"
 #include "MeleeTraceComponent.generated.h"
 
 

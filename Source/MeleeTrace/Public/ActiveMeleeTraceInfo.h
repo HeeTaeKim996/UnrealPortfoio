@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CollisionShape.h"
 #include "MeleeTraceCommon.h"
+#include "GameplayTagContainer.h"
 #include "ActiveMeleeTraceInfo.generated.h"
 
 class AActor;

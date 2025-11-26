@@ -25,6 +25,7 @@ public class MeleeTrace : ModuleRules
                 "Slate",
                 "SlateCore",
                 "DeveloperSettings"/* Enable ProjectSetting Modify */,
+                "GameplayTags", 
             }
         );
     }
