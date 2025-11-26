@@ -31,11 +31,4 @@ public:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void InitAbilitySystem();
-
-
-
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
-
 };

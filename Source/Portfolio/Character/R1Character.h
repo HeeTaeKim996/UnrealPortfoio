@@ -25,6 +25,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -80,9 +81,19 @@ protected:
 	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 		FMeleeTraceInstanceHandle TraceHandle);
 
+	UFUNCTION()
+	virtual void HandleTraceHit2(FMeleeHitInfo HitInfo);
+
+
+
 public:
 	void AddCharacterAbilities();
 
 	UPROPERTY(EditAnywhere, Category = Abilities)
 	TArray<TSubclassOf<class UR1GameplayAbility>> StartupAbilities;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
 };
+

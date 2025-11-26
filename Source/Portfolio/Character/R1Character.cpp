@@ -13,6 +13,8 @@ AR1Character::AR1Character(const FObjectInitializer& ObjectInitializer)
 
 	UMeshComponent* CharacterMesh = GetMesh();
 	CharacterMesh->SetRelativeLocationAndRotation(FVector(0, 0, -88.f), FRotator(0, -90.f, 0));
+
+	MeleeTrace = CreateDefaultSubobject<UMeleeTraceComponent>(TEXT("MeleeTrace"));
 }
 
 
@@ -23,6 +25,21 @@ void AR1Character::BeginPlay()
 	RefreshHpBarRatio();
 
 	AddCharacterAbilities();
+
+	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
+	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
+	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
+	MeleeTrace->OnTraceHit2.AddDynamic(this, &ThisClass::HandleTraceHit2);
+}
+
+void AR1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	MeleeTrace->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
+	MeleeTrace->OnTraceStart.RemoveDynamic(this, &ThisClass::HandleTraceStarted);
+	MeleeTrace->OnTraceEnd.RemoveDynamic(this, &ThisClass::HandleTraceEnded);
+	MeleeTrace->OnTraceHit2.RemoveDynamic(this, &ThisClass::HandleTraceHit2);
 }
 
 void AR1Character::Tick(float DeltaTime)
@@ -103,6 +120,11 @@ void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 H
 	FMeleeTraceInstanceHandle TraceHandle)
 {
 
+}
+
+void AR1Character::HandleTraceHit2(FMeleeHitInfo HitInfo)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1Character.cpp : Hit2 Check"));
 }
 
 void AR1Character::AddCharacterAbilities()

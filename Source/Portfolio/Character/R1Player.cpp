@@ -58,7 +58,6 @@ AR1Player::AR1Player() : Super()
 	Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 #endif
 
-	MeleeTrace = CreateDefaultSubobject<UMeleeTraceComponent>(TEXT("MeleeTrace"));
 	MeleeTrace->SetTraceChannel(ECC_GameTraceChannel3);
 }
 
@@ -72,9 +71,7 @@ void AR1Player::BeginPlay()
 
 	SetCreatureState(ECreatureState::Loco);
 
-	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
-	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
-	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
+	
 
 	// TEMP
 	if (TestEffect && AbilitySystemComponent)
@@ -113,9 +110,6 @@ void AR1Player::EndPlay(const EEndPlayReason::Type EndPlayReasion)
 {
 	Super::EndPlay(EndPlayReasion);
 
-	MeleeTrace->OnTraceHit.RemoveDynamic(this, &ThisClass::HandleTraceHit);
-	MeleeTrace->OnTraceStart.RemoveDynamic(this, &ThisClass::HandleTraceStarted);
-	MeleeTrace->OnTraceEnd.RemoveDynamic(this, &ThisClass::HandleTraceEnded);
 }
 
 void AR1Player::Tick(float DeltaTime)

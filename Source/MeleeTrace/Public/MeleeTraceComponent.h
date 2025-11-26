@@ -12,6 +12,36 @@
 #include "MeleeTraceComponent.generated.h"
 
 
+USTRUCT(Blueprintable)
+struct MELEETRACE_API FMeleeHitInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info") // ※ Transient : Only Work At Runtime
+		TObjectPtr<UMeleeTraceComponent> ThisComponent;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	TObjectPtr<AActor> HitActor;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	FVector HitLocation;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	FVector HitNormal;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	FName HitBoneName;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	FMeleeTraceInstanceHandle TraceHandle;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	FGameplayTag Ability;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	uint8 Protocol;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMeleeTraceStart,
 	UMeleeTraceComponent*, ThisComponent, FMeleeTraceInstanceHandle, TraceHandle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMeleeTraceEnd,
@@ -19,6 +49,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMeleeTraceEnd,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SevenParams(FMeleeTraceHit,
 	UMeleeTraceComponent*, ThisComponent, AActor*, HitActor, const FVector&, HitLocation, const FVector&, HitNormal,
 	FName, HitBoneName, FMeleeTraceInstanceHandle, TraceHandle, uint8, Protocol);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMeleeTraceHit2,
+	FMeleeHitInfo, MeleeHitInfo);
+
+
+
+
+
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class MELEETRACE_API UMeleeTraceComponent : public UActorComponent
@@ -93,6 +130,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FMeleeTraceHit OnTraceHit;
+
+	UPROPERTY(BlueprintAssignable)
+	FMeleeTraceHit2 OnTraceHit2;
+
 
 protected:
 	TArray<FActiveMeleeTraceInfo> ActiveMeleeTraces;

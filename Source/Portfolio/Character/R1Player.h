@@ -71,8 +71,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> CharMovement;
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
