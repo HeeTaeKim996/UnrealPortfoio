@@ -6,7 +6,6 @@
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
 #include "AbilitySystem/Abilities/R1AbilityTask.h"
 #include "GameplayTagContainer.h"
-
 #include "Ability_Attack.generated.h"
 
 
@@ -26,7 +25,7 @@ public:
 
 	virtual bool TraceHit(struct FMeleeHitInfo MeleeHitInfo) override;
 
-	virtual bool AbilitySuccess(struct FAbilitySuccessInfo InTag) override;
+	virtual bool AbilitySuccess(FAbilitySuccessInfo InTag) override;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

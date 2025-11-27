@@ -50,34 +50,3 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 	}
 }
 
-void UR1AbilitySystemComponent::CacnelAllAbilities()
-{
-	for (FGameplayAbilitySpecHandle& SpecHandle : SpecHandles)
-	{
-		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
-		{
-			if (Spec->IsActive())
-			{
-				CancelAbility(Spec->Ability);
-			}
-		}
-	}
-}
-
-void UR1AbilitySystemComponent::EndAbility123(FGameplayTag InTag)
-{
-	for (FGameplayAbilitySpecHandle& SpecHandle : SpecHandles)
-	{
-		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
-		{
-			if (Spec->Ability && Spec->Ability->AbilityTags.HasTag(InTag))
-			{
-				ensureMsgf(Spec->IsActive(), TEXT("Ability is InActive"));
-
-				Cast<UR1GameplayAbility>(Spec->Ability)->EndAbilitySuccess();
-				
-				return;
-			}
-		}
-	}
-}

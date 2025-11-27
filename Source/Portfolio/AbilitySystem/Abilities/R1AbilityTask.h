@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystem/AbilityCommonStruct.h"
 #include "R1AbilityTask.generated.h"
 
 class AR1Character;
 class UR1GameplayAbility;
-struct FAbilityCancelInfo;
-struct FAbilitySuccessInfo;
+struct FMeleeHitInfo;
 /**
  * 
  */
@@ -24,6 +24,8 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
+protected:
+	void ClearAbility();
 
 private:
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
@@ -33,7 +35,7 @@ private:
 	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
 
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
-	void OnTraceHit(struct FMeleeHitInfo MeleeHitInfo);
+	void OnTraceHit(FMeleeHitInfo MeleeHitInfo);
 
 protected:
 	virtual bool AbilitySuccess(FAbilitySuccessInfo SuccessInfo);

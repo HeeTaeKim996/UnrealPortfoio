@@ -42,6 +42,15 @@ void UR1AbilityTask::OnDestroy(bool bInOwnerFinished)
 	
 }
 
+void UR1AbilityTask::ClearAbility()
+{
+	if (WeakAbility.IsValid())
+	{
+		WeakAbility.Get()->EndAbilitySuccess();
+	}
+	EndTask();
+}
+
 void UR1AbilityTask::OnAbilitySuccess(FAbilitySuccessInfo SucessInfo)
 {
 	AbilitySuccess(MoveTemp(SucessInfo));
@@ -70,6 +79,12 @@ bool UR1AbilityTask::AbilitySuccess(FAbilitySuccessInfo SuccessInfo)
 bool UR1AbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
 	if (AbilityTag != CancelInfo.AbilityTag) return false;
+
+	if (CancelInfo.Cause == CancelCause::ShutDown)
+	{
+		ClearAbility();
+		return false;
+	}
 
 	return true;
 }

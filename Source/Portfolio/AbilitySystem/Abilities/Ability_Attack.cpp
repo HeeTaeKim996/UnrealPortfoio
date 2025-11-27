@@ -10,7 +10,8 @@
 
 
 
-void UAbilityTask_Attack::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter, UAnimMontage* InMontage)
+void UAbilityTask_Attack::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter, 
+	UAnimMontage* InMontage)
 {
 	Super::Initialize(InAbility, InCharacter);
 
@@ -75,19 +76,15 @@ bool UAbilityTask_Attack::AbilitySuccess(FAbilitySuccessInfo InTag)
 {
 	if (Super::AbilitySuccess(InTag) == false) return false;
 
-	if (WeakAbility.IsValid() == false) return false;
-
-	UR1GameplayAbility* R1Ability = WeakAbility.Get();
-	if (R1Ability->AbilityTags.HasTag(InTag.AbilityTag) == false) return false;
-
-	R1Ability->EndAbilitySuccess();
+	
 
 	AR1Character* R1Character = WeakCharacter.Get();
 	if (R1Character)
 	{
 		R1Character->ToLoco();
 	}
-	EndTask();
+
+	ClearAbility();
 
 	return true;
 }

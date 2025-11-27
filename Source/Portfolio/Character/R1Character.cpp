@@ -166,18 +166,7 @@ void AR1Character::AbilitySuccess(FGameplayTag InTag)
 	GAS_OnAbilitySuccess.Broadcast(SuccessInfo);
 }
 
-void AR1Character::AbilityCancel(FGameplayTag InTag)
+void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.AbilityTag = InTag;
 	GAS_OnAbilityCancel.Broadcast(CancelInfo);
 }
-
-void AR1Character::ForceCancelAllAbilities()
-{
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
-	if (ASC == nullptr) return;
-
-	ASC->CancelAbilities();
-}
-

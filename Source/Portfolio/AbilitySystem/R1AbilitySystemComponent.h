@@ -22,10 +22,6 @@ public:
 
 	void ActivateAbility(FGameplayTag InTag);
 
-	void CacnelAllAbilities();
-
-	void EndAbility123(FGameplayTag InTag);
-
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;
 };

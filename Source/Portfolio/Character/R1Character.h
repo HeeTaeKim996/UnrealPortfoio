@@ -9,6 +9,7 @@
 #include "System/R1GameplayTags.h"
 #include "AbilitySystemInterface.h"
 #include "MeleeTrace/Public/MeleeTraceComponent.h"
+#include "AbilitySystem/AbilityCommonStruct.h"
 #include "R1Character.generated.h"
 
 
@@ -17,29 +18,6 @@ class UCameraComponent;
 
 
 
-USTRUCT()
-struct PORTFOLIO_API FAbilityCancelInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	FGameplayTag AbilityTag;
-
-	UPROPERTY()
-	uint8 Temp;
-};
-
-USTRUCT()
-struct PORTFOLIO_API FAbilitySuccessInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	FGameplayTag AbilityTag;
-
-	UPROPERTY()
-	uint8 Temp;
-};
 
 
 
@@ -133,7 +111,7 @@ public:
 
 	virtual void AddCharacterAbilities();
 	virtual void AbilitySuccess(FGameplayTag InTag);
-	virtual void AbilityCancel(FGameplayTag InTag);
+	virtual void AbilityCancel(FAbilityCancelInfo CancelInfo);
 
 public:
 
@@ -149,9 +127,7 @@ public:
 		FAbilityCancelInfo, CancelInfo);
 	FGAS_OnAbilityCancel GAS_OnAbilityCancel;
 
-protected:
-	
-	virtual void ForceCancelAllAbilities();
+
 
 	
 protected:

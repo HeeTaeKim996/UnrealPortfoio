@@ -1,15 +1,34 @@
-
-
 #pragma once
+#include "GameplayTagContainer.h"
+#include "AbilityCommonStruct.generated.h"
 
-#include "CoreMinimal.h"
-
-/**
- * 
- */
-class PORTFOLIO_API AbilityCommonStruct
+UENUM(BlueprintType)
+enum class CancelCause
 {
-public:
-	AbilityCommonStruct();
-	~AbilityCommonStruct();
+	ShutDown,
+	Temp,
+};
+
+USTRUCT()
+struct PORTFOLIO_API FAbilityCancelInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FGameplayTag AbilityTag;
+
+	UPROPERTY()
+	CancelCause Cause;
+};
+
+USTRUCT()
+struct PORTFOLIO_API FAbilitySuccessInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FGameplayTag AbilityTag;
+
+	UPROPERTY()
+	uint8 Temp;
 };
