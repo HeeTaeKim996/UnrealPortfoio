@@ -42,18 +42,42 @@ void UR1AbilityTask::OnDestroy(bool bInOwnerFinished)
 	
 }
 
-
-
-
-
-void UR1AbilityTask::OnAbilitySuccess(FGameplayTag InTag)
+void UR1AbilityTask::OnAbilitySuccess(FAbilitySuccessInfo SucessInfo)
 {
+	AbilitySuccess(MoveTemp(SucessInfo));
 }
 
-void UR1AbilityTask::OnAbilityCancel(FGameplayTag InTag)
+void UR1AbilityTask::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
 {
+	AbilityCancel(MoveTemp(CancelInfo));
 }
 
 void UR1AbilityTask::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 {
+	TraceHit(MoveTemp(MeleeHitInfo));
 }
+
+
+
+
+bool UR1AbilityTask::AbilitySuccess(FAbilitySuccessInfo SuccessInfo)
+{
+	if (AbilityTag != SuccessInfo.AbilityTag) return false;
+
+	return true;
+}
+
+bool UR1AbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
+{
+	if (AbilityTag != CancelInfo.AbilityTag) return false;
+
+	return true;
+}
+
+bool UR1AbilityTask::TraceHit(FMeleeHitInfo MeleeHitInfo)
+{
+	if (AbilityTag != MeleeHitInfo.Ability) return false;
+
+	return true;
+}
+

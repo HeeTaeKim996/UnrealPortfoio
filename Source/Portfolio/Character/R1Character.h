@@ -15,6 +15,37 @@
 class USpringArmComponent;
 class UCameraComponent;
 
+
+
+USTRUCT()
+struct PORTFOLIO_API FAbilityCancelInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FGameplayTag AbilityTag;
+
+	UPROPERTY()
+	uint8 Temp;
+};
+
+USTRUCT()
+struct PORTFOLIO_API FAbilitySuccessInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FGameplayTag AbilityTag;
+
+	UPROPERTY()
+	uint8 Temp;
+};
+
+
+
+
+
+
 UCLASS()
 class PORTFOLIO_API AR1Character : public ACharacter, public IR1HighlightInterface, public IAbilitySystemInterface
 {
@@ -101,12 +132,13 @@ public:
 	void ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void AddCharacterAbilities();
-	virtual void EndAbilitySuccess(FGameplayTag InTag);
-	virtual void CancelAbility(FGameplayTag InTag);
+	virtual void AbilitySuccess(FGameplayTag InTag);
+	virtual void AbilityCancel(FGameplayTag InTag);
 
 public:
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySuccess,
-		FGameplayTag, InTag);
+		FAbilitySuccessInfo, SuccessInfo);
 	FGAS_OnAbilitySuccess GAS_OnAbilitySuccess;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnTraceHit,
@@ -114,12 +146,12 @@ public:
 	FGAS_OnTraceHit GAS_OnTraceHit;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilityCancel,
-		FGameplayTag, InTag);
+		FAbilityCancelInfo, CancelInfo);
 	FGAS_OnAbilityCancel GAS_OnAbilityCancel;
 
 protected:
 	
-	virtual void CancelAbilities();
+	virtual void ForceCancelAllAbilities();
 
 	
 protected:

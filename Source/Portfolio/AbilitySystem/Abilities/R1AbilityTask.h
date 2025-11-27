@@ -9,6 +9,8 @@
 
 class AR1Character;
 class UR1GameplayAbility;
+struct FAbilityCancelInfo;
+struct FAbilitySuccessInfo;
 /**
  * 
  */
@@ -23,16 +25,20 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 
-protected:
+private:
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
-	virtual void OnAbilitySuccess(FGameplayTag InTag);
+	void OnAbilitySuccess(FAbilitySuccessInfo SucessInfo);
 	
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
-	virtual void OnAbilityCancel(FGameplayTag InTag);
+	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
 
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
-	virtual void OnTraceHit(struct FMeleeHitInfo MeleeHitInfo);
+	void OnTraceHit(struct FMeleeHitInfo MeleeHitInfo);
 
+protected:
+	virtual bool AbilitySuccess(FAbilitySuccessInfo SuccessInfo);
+	virtual bool AbilityCancel(FAbilityCancelInfo CancelInfo);
+	virtual bool TraceHit(FMeleeHitInfo MeleeHitInfo);
 
 protected:
 	UPROPERTY()

@@ -159,17 +159,21 @@ void AR1Character::AddCharacterAbilities()
 	ASC->AddCharacterAbilities(StartupAbilities);
 }
 
-void AR1Character::EndAbilitySuccess(FGameplayTag InTag)
+void AR1Character::AbilitySuccess(FGameplayTag InTag)
 {
-	GAS_OnAbilitySuccess.Broadcast(InTag);
+	FAbilitySuccessInfo SuccessInfo;
+	SuccessInfo.AbilityTag = InTag;
+	GAS_OnAbilitySuccess.Broadcast(SuccessInfo);
 }
 
-void AR1Character::CancelAbility(FGameplayTag InTag)
+void AR1Character::AbilityCancel(FGameplayTag InTag)
 {
-	GAS_OnAbilityCancel.Broadcast(InTag);
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.AbilityTag = InTag;
+	GAS_OnAbilityCancel.Broadcast(CancelInfo);
 }
 
-void AR1Character::CancelAbilities()
+void AR1Character::ForceCancelAllAbilities()
 {
 	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
 	if (ASC == nullptr) return;

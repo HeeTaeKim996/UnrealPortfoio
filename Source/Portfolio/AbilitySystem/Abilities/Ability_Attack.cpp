@@ -53,32 +53,32 @@ void UAbilityTask_Attack::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-
-
-void UAbilityTask_Attack::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
+bool UAbilityTask_Attack::TraceHit(FMeleeHitInfo MeleeHitInfo)
 {
-	Super::OnTraceHit(MeleeHitInfo);
+	if (Super::TraceHit(MeleeHitInfo) == false) return false;
 
-	if (WeakAbility.IsValid() == false) return;
+	if (WeakAbility.IsValid() == false) return false;
 
 	UR1GameplayAbility* R1Ability = WeakAbility.Get();
-	if (R1Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return;
+	if (R1Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
 
 	AActor* HitActor = MeleeHitInfo.HitActor;
 	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
-	if (HItCharacter == nullptr) return;
+	if (HItCharacter == nullptr) return false;
 
 	HItCharacter->OnDamage(20, WeakCharacter.Get());
+
+	return true;
 }
 
-void UAbilityTask_Attack::OnAbilitySuccess(FGameplayTag InTag)
+bool UAbilityTask_Attack::AbilitySuccess(FAbilitySuccessInfo InTag)
 {
-	Super::OnAbilitySuccess(InTag);
+	if (Super::AbilitySuccess(InTag) == false) return false;
 
-	if (WeakAbility.IsValid() == false) return;
+	if (WeakAbility.IsValid() == false) return false;
 
 	UR1GameplayAbility* R1Ability = WeakAbility.Get();
-	if (R1Ability->AbilityTags.HasTag(InTag) == false) return;
+	if (R1Ability->AbilityTags.HasTag(InTag.AbilityTag) == false) return false;
 
 	R1Ability->EndAbilitySuccess();
 
@@ -88,7 +88,12 @@ void UAbilityTask_Attack::OnAbilitySuccess(FGameplayTag InTag)
 		R1Character->ToLoco();
 	}
 	EndTask();
+
+	return true;
 }
+
+
+
 
 
 

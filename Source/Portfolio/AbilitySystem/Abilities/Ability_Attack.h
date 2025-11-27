@@ -24,9 +24,9 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
-	virtual void OnTraceHit(struct FMeleeHitInfo MeleeHitInfo) override;
+	virtual bool TraceHit(struct FMeleeHitInfo MeleeHitInfo) override;
 
-	virtual void OnAbilitySuccess(FGameplayTag InTag) override;
+	virtual bool AbilitySuccess(struct FAbilitySuccessInfo InTag) override;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
