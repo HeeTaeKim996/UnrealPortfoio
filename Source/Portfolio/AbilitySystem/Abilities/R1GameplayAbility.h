@@ -23,7 +23,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 public:
-	FORCEINLINE void EndAbilitySuccessfuly()
+	FORCEINLINE void EndAbilitySuccess()
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 	}

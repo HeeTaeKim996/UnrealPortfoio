@@ -24,5 +24,5 @@ void UAnimNotify_EndAbility::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 	AR1Character* R1Character = CharacterAnimInst->GetOwnerCharacter();
 	if (!R1Character) return;
 
-	R1Character->EndAbilitySuccessfuly(Ability);
+	R1Character->EndAbilitySuccess(Ability);
 }

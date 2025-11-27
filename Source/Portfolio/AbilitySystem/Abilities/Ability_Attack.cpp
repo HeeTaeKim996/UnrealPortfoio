@@ -5,6 +5,117 @@
 #include "Player/R1PlayerController.h"
 #include "Character/R1Player.h"
 #include "System/R1GameplayTags.h"
+#include "Character/R1Player.h"
+
+
+
+UAbilityTask_Attack* UAbilityTask_Attack::CreateTask(UR1GameplayAbility* OwningAbility, AR1Character* R1Character,
+	UAnimMontage* InAttackMontage)
+{
+	UAbilityTask_Attack* Task = NewAbilityTask< UAbilityTask_Attack>(OwningAbility);
+	Task->bTickingTask = true;
+	Task->WeakCharacter = R1Character;
+	Task->AttackMontage = InAttackMontage;
+	Task->WeakAbility = OwningAbility;
+
+	R1Character->OnAbilitySuccess.AddDynamic(Task, &UAbilityTask_Attack::OnAbilitySuccess);
+	R1Character->OnTraceHit.AddDynamic(Task, &UAbilityTask_Attack::OnTraceHit);
+
+	return Task;
+}
+
+void UAbilityTask_Attack::Activate()
+{
+	Super::Activate();
+
+	if (!WeakCharacter.IsValid()) return;
+
+	
+	AR1PlayerController* PlayerController = Cast<AR1PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController == nullptr) return;
+	FVector CursorPos = PlayerController->GetCursorPos();
+
+	
+	AR1Player* PlayerCh = Cast<AR1Player>(WeakCharacter.Get());
+	if (PlayerCh == nullptr) return;
+
+	FVector Dir = CursorPos - PlayerCh->GetActorLocation();
+	Dir.Z = 0;
+	Dir.Normalize();
+	PlayerCh->SetDesiredVec(Dir);
+
+	if (AttackMontage == nullptr) return;
+	PlayerCh->PlayAnimMontage(AttackMontage);
+
+	PlayerCh->SetCreatureState(ECreatureState::Acting);
+}
+
+void UAbilityTask_Attack::TickTask(float DeltaTime)
+{
+	Super::TickTask(DeltaTime);
+}
+
+void UAbilityTask_Attack::OnDestroy(bool bInOwnerFinished)
+{
+	Super::OnDestroy(bInOwnerFinished);
+
+	AR1Character* R1Character = WeakCharacter.Get();
+	if (R1Character)
+	{
+		R1Character->OnAbilitySuccess.RemoveDynamic(this, &UAbilityTask_Attack::OnAbilitySuccess);
+		R1Character->OnTraceHit.RemoveDynamic(this, &UAbilityTask_Attack::OnTraceHit);
+	}
+}
+
+
+
+void UAbilityTask_Attack::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
+{
+	if (WeakAbility.IsValid() == false) return;
+
+	UR1GameplayAbility* R1Ability = WeakAbility.Get();
+	if (R1Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return;
+
+	AActor* HitActor = MeleeHitInfo.HitActor;
+	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
+	if (HItCharacter == nullptr) return;
+
+	HItCharacter->OnDamage(20, WeakCharacter.Get());
+}
+
+void UAbilityTask_Attack::OnAbilitySuccess(FGameplayTag InTag)
+{
+	if (WeakAbility.IsValid() == false) return;
+
+	UR1GameplayAbility* R1Ability = WeakAbility.Get();
+	if (R1Ability->AbilityTags.HasTag(InTag) == false) return;
+
+	R1Ability->EndAbilitySuccess();
+
+	AR1Character* R1Character = WeakCharacter.Get();
+	if (R1Character)
+	{
+		R1Character->ToLoco();
+	}
+	EndTask();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 UAbility_Attack::UAbility_Attack(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -30,26 +141,13 @@ void UAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	// Do Something
-	AR1PlayerController* PlayerController = Cast<AR1PlayerController>(GetWorld()->GetFirstPlayerController());
-	if (PlayerController == nullptr) return;
-	FVector CursorPos = PlayerController->GetCursorPos();
+	AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor.Get());
+	if (R1Character == nullptr) return;
 
-	AActor* Owner = ActorInfo->AvatarActor.Get();
-	if (Owner == nullptr) return;
-
-	AR1Player* PlayerCh = Cast<AR1Player>(Owner);
-	if (PlayerCh == nullptr) return;
-
-	FVector Dir = CursorPos - PlayerCh->GetActorLocation();
-	Dir.Z = 0;
-	Dir.Normalize();
-	PlayerCh->SetDesiredVec(Dir);
-
-	if (AttackMontage == nullptr) return;
-	PlayerCh->PlayAnimMontage(AttackMontage);
-
-	PlayerCh->SetCreatureState(ECreatureState::Acting);
+	UAbilityTask_Attack* Task = UAbilityTask_Attack::CreateTask(this, R1Character, AttackMontage);
+	Task->ReadyForActivation();
+	
+	
 }
 
 void UAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

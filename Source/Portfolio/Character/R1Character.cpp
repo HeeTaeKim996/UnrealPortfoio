@@ -134,12 +134,22 @@ void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, 
 		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString() ));
 
-	AR1Character* HitActor = Cast<AR1Character>(HitInfo.HitActor);
-	if (HitActor)
-	{
-		HitActor->OnDamage(20, this);
-	}
+	OnTraceHit.Broadcast(HitInfo);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void AR1Character::AddCharacterAbilities()
 {
@@ -149,12 +159,9 @@ void AR1Character::AddCharacterAbilities()
 	ASC->AddCharacterAbilities(StartupAbilities);
 }
 
-void AR1Character::EndAbilitySuccessfuly(FGameplayTag InTag)
+void AR1Character::EndAbilitySuccess(FGameplayTag InTag)
 {
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
-	if (ASC == nullptr) return;
-
-	ASC->EndAbility123(InTag);
+	OnAbilitySuccess.Broadcast(InTag);
 }
 
 void AR1Character::CancelAbilities()

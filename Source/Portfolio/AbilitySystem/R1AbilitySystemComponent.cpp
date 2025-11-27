@@ -74,7 +74,7 @@ void UR1AbilitySystemComponent::EndAbility123(FGameplayTag InTag)
 			{
 				ensureMsgf(Spec->IsActive(), TEXT("Ability is InActive"));
 
-				Cast<UR1GameplayAbility>(Spec->Ability)->EndAbilitySuccessfuly();
+				Cast<UR1GameplayAbility>(Spec->Ability)->EndAbilitySuccess();
 				
 				return;
 			}

@@ -81,6 +81,8 @@ protected:
 	UFUNCTION()
 	virtual void HandleTraceHit(FMeleeHitInfo HitInfo);
 
+
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
@@ -99,7 +101,17 @@ public:
 	void ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void AddCharacterAbilities();
-	virtual void EndAbilitySuccessfuly(FGameplayTag InTag);
+	virtual void EndAbilitySuccess(FGameplayTag InTag);
+
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilitySuccess,
+		FGameplayTag, InTag);
+	FOnAbilitySuccess OnAbilitySuccess;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTraceHit,
+		FMeleeHitInfo, MeleeHitInfo);
+	FOnTraceHit OnTraceHit;
 
 protected:
 	
