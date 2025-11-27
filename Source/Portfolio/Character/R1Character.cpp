@@ -134,7 +134,7 @@ void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, 
 		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString() ));
 
-	OnTraceHit.Broadcast(HitInfo);
+	GAS_OnTraceHit.Broadcast(HitInfo);
 }
 
 
@@ -161,7 +161,12 @@ void AR1Character::AddCharacterAbilities()
 
 void AR1Character::EndAbilitySuccess(FGameplayTag InTag)
 {
-	OnAbilitySuccess.Broadcast(InTag);
+	GAS_OnAbilitySuccess.Broadcast(InTag);
+}
+
+void AR1Character::CancelAbility(FGameplayTag InTag)
+{
+	GAS_OnAbilityCancel.Broadcast(InTag);
 }
 
 void AR1Character::CancelAbilities()

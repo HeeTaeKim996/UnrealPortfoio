@@ -24,13 +24,13 @@ public:
 
 
 protected:
-	UFUNCTION()
+	UFUNCTION(meta = (AllowPrivateAccess = "true"))
 	virtual void OnAbilitySuccess(FGameplayTag InTag);
 	
-	UFUNCTION()
+	UFUNCTION(meta = (AllowPrivateAccess = "true"))
 	virtual void OnAbilityCancel(FGameplayTag InTag);
 
-	UFUNCTION()
+	UFUNCTION(meta = (AllowPrivateAccess = "true"))
 	virtual void OnTraceHit(struct FMeleeHitInfo MeleeHitInfo);
 
 

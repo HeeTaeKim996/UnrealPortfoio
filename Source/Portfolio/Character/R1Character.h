@@ -102,16 +102,20 @@ public:
 
 	virtual void AddCharacterAbilities();
 	virtual void EndAbilitySuccess(FGameplayTag InTag);
-
+	virtual void CancelAbility(FGameplayTag InTag);
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilitySuccess,
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySuccess,
 		FGameplayTag, InTag);
-	FOnAbilitySuccess OnAbilitySuccess;
+	FGAS_OnAbilitySuccess GAS_OnAbilitySuccess;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTraceHit,
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnTraceHit,
 		FMeleeHitInfo, MeleeHitInfo);
-	FOnTraceHit OnTraceHit;
+	FGAS_OnTraceHit GAS_OnTraceHit;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilityCancel,
+		FGameplayTag, InTag);
+	FGAS_OnAbilityCancel GAS_OnAbilityCancel;
 
 protected:
 	

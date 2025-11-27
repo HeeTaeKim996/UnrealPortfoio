@@ -11,8 +11,9 @@ void UR1AbilityTask::Initialize(UR1GameplayAbility* InAbility, AR1Character* InC
 	WeakCharacter = InCharacter;
 	AbilityTag = InAbility->AbilityTags.First();
 
-	InCharacter->OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
-	InCharacter->OnTraceHit.AddDynamic(this, &UR1AbilityTask::OnTraceHit);
+	InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
+	InCharacter->GAS_OnTraceHit.AddDynamic(this, &UR1AbilityTask::OnTraceHit);
+	InCharacter->GAS_OnAbilityCancel.AddDynamic(this, &UR1AbilityTask::OnAbilityCancel);
 
 	
 }
@@ -34,8 +35,9 @@ void UR1AbilityTask::OnDestroy(bool bInOwnerFinished)
 	if (WeakCharacter.IsValid())
 	{
 		AR1Character* R1Character = WeakCharacter.Get();
-		R1Character->OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
-		R1Character->OnTraceHit.RemoveDynamic(this, &UR1AbilityTask::OnTraceHit);
+		R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
+		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UR1AbilityTask::OnTraceHit);
+		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UR1AbilityTask::OnAbilityCancel);
 	}
 	
 }
