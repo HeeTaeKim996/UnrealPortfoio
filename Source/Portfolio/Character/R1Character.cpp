@@ -44,10 +44,13 @@ void AR1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
-	float Alpha = FMath::Clamp(DeltaTime * 8.f, 0.f, 1.f);
-	FQuat SlerpQuat = FQuat::Slerp(GetActorRotation().Quaternion(), DesiredVec.Rotation().Quaternion(), Alpha);
-	SetActorRotation(SlerpQuat);
+	if (bUseDesiredVec)
+	{
+		float Alpha = FMath::Clamp(DeltaTime * 8.f, 0.f, 1.f);
+		FQuat SlerpQuat = FQuat::Slerp(GetActorRotation().Quaternion(), DesiredVec.Rotation().Quaternion(), Alpha);
+		SetActorRotation(SlerpQuat);
+	}
+	
 }
 
 void AR1Character::Highlight()
@@ -84,12 +87,18 @@ void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 	
 }
 
+void AR1Character::ToLoco()
+{
+	CreatureState = ECreatureState::Loco;
+	bUseDesiredVec = true;
+}
+
 
 void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 {
 	if(EventTag.MatchesTag(R1Tags::Event_Montage_End))
 	{
-		CreatureState = ECreatureState::Loco;
+		
 	}
 }
 
@@ -138,5 +147,21 @@ void AR1Character::AddCharacterAbilities()
 	if (ASC == nullptr) return;
 
 	ASC->AddCharacterAbilities(StartupAbilities);
+}
+
+void AR1Character::EndAbilitySuccessfuly(FGameplayTag InTag)
+{
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
+	if (ASC == nullptr) return;
+
+	ASC->EndAbility123(InTag);
+}
+
+void AR1Character::CancelAbilities()
+{
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
+	if (ASC == nullptr) return;
+
+	ASC->CancelAbilities();
 }
 

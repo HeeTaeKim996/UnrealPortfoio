@@ -7,6 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "R1AbilitySystemComponent.generated.h"
 
+
+
 /**
  * 
  */
@@ -20,7 +22,9 @@ public:
 
 	void ActivateAbility(FGameplayTag InTag);
 
-	void EndAbility(FGameplayTag InTag, bool bWasCanceled);
+	void CacnelAllAbilities();
+
+	void EndAbility123(FGameplayTag InTag);
 
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;

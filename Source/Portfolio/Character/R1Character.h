@@ -36,19 +36,16 @@ public:
 	virtual void OnDamage(int Damage, TObjectPtr<AR1Character> From);
 	virtual void OnDead(TObjectPtr<AR1Character> From);
 
-	
+	virtual void ToLoco();
 
 	virtual void HandleGameplayTagEvent(FGameplayTag EventTag);
+
+
 
 protected:
 	virtual void RefreshHpBarRatio() {}
 
-public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	virtual void InitAbilitySystem();
-	void ActivateAbility(FGameplayTag AbilityTag);
-
-
+	
 
 public:
 	ECreatureState GetCreatureState() { return CreatureState; }
@@ -64,7 +61,7 @@ protected:
 	ECreatureState CreatureState = ECreatureState::None;
 
 	FVector DesiredVec = FVector(1, 0, 0);
-
+	bool bUseDesiredVec = true;
 
 
 
@@ -97,7 +94,17 @@ protected:
 
 	/* GAS */
 public:
-	void AddCharacterAbilities();
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void InitAbilitySystem();
+	void ActivateAbility(FGameplayTag AbilityTag);
+
+	virtual void AddCharacterAbilities();
+	virtual void EndAbilitySuccessfuly(FGameplayTag InTag);
+
+protected:
+	
+	virtual void CancelAbilities();
+
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = Abilities)

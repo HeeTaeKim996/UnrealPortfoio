@@ -29,7 +29,6 @@ protected:
 
 
 
-
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UAnimMontage> AttackMontage;
