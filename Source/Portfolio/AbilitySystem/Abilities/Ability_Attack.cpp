@@ -6,22 +6,15 @@
 #include "Character/R1Player.h"
 #include "System/R1GameplayTags.h"
 #include "Character/R1Player.h"
+#include "Abilities/Tasks/AbilityTask.h"
 
 
 
-UAbilityTask_Attack* UAbilityTask_Attack::CreateTask(UR1GameplayAbility* OwningAbility, AR1Character* R1Character,
-	UAnimMontage* InAttackMontage)
+void UAbilityTask_Attack::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter, UAnimMontage* InMontage)
 {
-	UAbilityTask_Attack* Task = NewAbilityTask< UAbilityTask_Attack>(OwningAbility);
-	Task->bTickingTask = true;
-	Task->WeakCharacter = R1Character;
-	Task->AttackMontage = InAttackMontage;
-	Task->WeakAbility = OwningAbility;
+	Super::Initialize(InAbility, InCharacter);
 
-	R1Character->OnAbilitySuccess.AddDynamic(Task, &UAbilityTask_Attack::OnAbilitySuccess);
-	R1Character->OnTraceHit.AddDynamic(Task, &UAbilityTask_Attack::OnTraceHit);
-
-	return Task;
+	AttackMontage = InMontage;
 }
 
 void UAbilityTask_Attack::Activate()
@@ -58,19 +51,14 @@ void UAbilityTask_Attack::TickTask(float DeltaTime)
 void UAbilityTask_Attack::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
-
-	AR1Character* R1Character = WeakCharacter.Get();
-	if (R1Character)
-	{
-		R1Character->OnAbilitySuccess.RemoveDynamic(this, &UAbilityTask_Attack::OnAbilitySuccess);
-		R1Character->OnTraceHit.RemoveDynamic(this, &UAbilityTask_Attack::OnTraceHit);
-	}
 }
 
 
 
 void UAbilityTask_Attack::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 {
+	Super::OnTraceHit(MeleeHitInfo);
+
 	if (WeakAbility.IsValid() == false) return;
 
 	UR1GameplayAbility* R1Ability = WeakAbility.Get();
@@ -85,6 +73,8 @@ void UAbilityTask_Attack::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 
 void UAbilityTask_Attack::OnAbilitySuccess(FGameplayTag InTag)
 {
+	Super::OnAbilitySuccess(InTag);
+
 	if (WeakAbility.IsValid() == false) return;
 
 	UR1GameplayAbility* R1Ability = WeakAbility.Get();
@@ -120,7 +110,7 @@ void UAbilityTask_Attack::OnAbilitySuccess(FGameplayTag InTag)
 UAbility_Attack::UAbility_Attack(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	AbilityTags.AddTag(R1Tags::Ability_Attack_Test);
+	
 }
 
 bool UAbility_Attack::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -144,7 +134,8 @@ void UAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor.Get());
 	if (R1Character == nullptr) return;
 
-	UAbilityTask_Attack* Task = UAbilityTask_Attack::CreateTask(this, R1Character, AttackMontage);
+	UAbilityTask_Attack* Task = UAbilityTask::NewAbilityTask<UAbilityTask_Attack>(this);
+	Task->Initialize(this, R1Character, AttackMontage);
 	Task->ReadyForActivation();
 	
 	

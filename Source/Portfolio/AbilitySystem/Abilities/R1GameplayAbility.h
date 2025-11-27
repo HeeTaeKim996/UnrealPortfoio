@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
 #include "Character/R1Character.h"
+#include "GameplayTagContainer.h"
 #include "R1GameplayAbility.generated.h"
 
 /**
@@ -14,7 +15,10 @@ UCLASS()
 class PORTFOLIO_API UR1GameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
-	
+public:
+	UR1GameplayAbility(const FObjectInitializer& ObjectInitializer);
+
+
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -27,4 +31,8 @@ public:
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 	}
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
 };
