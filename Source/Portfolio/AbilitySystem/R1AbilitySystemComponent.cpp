@@ -29,12 +29,10 @@ void UR1AbilitySystemComponent::AddCharacterAbilities(
 				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Ability : Null"));
 			}
 		}
-		
-
 	}
 #endif
 }
-
+	
 void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 {
 	for (FGameplayAbilitySpecHandle& SpecHandle : SpecHandles)
@@ -44,6 +42,28 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 			if (Spec->Ability && Spec->Ability->AbilityTags.HasTag(InTag))
 			{
 				TryActivateAbility(SpecHandle);
+				return;
+			}
+		}
+	}
+}
+
+void UR1AbilitySystemComponent::EndAbility(FGameplayTag InTag, bool bWasCanceled)
+{
+	for (FGameplayAbilitySpecHandle& SpecHandle : SpecHandles)
+	{
+		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (Spec->Ability && Spec->Ability->AbilityTags.HasTag(InTag))
+			{
+				if (bWasCanceled)
+				{
+					CancelAbility(Spec->Ability);
+				}
+				else
+				{
+					Cast<UR1GameplayAbility>(Spec->Ability)->EndAbilitySuccessfuly();
+				}
 				return;
 			}
 		}

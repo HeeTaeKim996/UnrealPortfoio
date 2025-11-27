@@ -51,8 +51,6 @@ protected:
 protected:
 	virtual void RefreshHpBarRatio() override;
 
-public:
-	void ActivateAbility(FGameplayTag AbilityTag);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

@@ -20,6 +20,8 @@ public:
 
 	void ActivateAbility(FGameplayTag InTag);
 
+	void EndAbility(FGameplayTag InTag, bool bWasCanceled);
+
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;
 };

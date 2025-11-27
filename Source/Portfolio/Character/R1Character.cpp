@@ -103,6 +103,11 @@ void AR1Character::InitAbilitySystem()
 
 }
 
+void AR1Character::ActivateAbility(FGameplayTag AbilityTag)
+{
+	AbilitySystemComponent->ActivateAbility(AbilityTag);
+}
+
 
 void AR1Character::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle)
 {

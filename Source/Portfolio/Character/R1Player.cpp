@@ -171,9 +171,6 @@ void AR1Player::RefreshHpBarRatio()
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerHealthBar(Ratio);
 }
 
-void AR1Player::ActivateAbility(FGameplayTag AbilityTag)
-{
-	AbilitySystemComponent->ActivateAbility(AbilityTag);
-}
+
 
 

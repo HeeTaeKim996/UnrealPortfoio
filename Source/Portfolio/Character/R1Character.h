@@ -46,6 +46,9 @@ protected:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void InitAbilitySystem();
+	void ActivateAbility(FGameplayTag AbilityTag);
+
+
 
 public:
 	ECreatureState GetCreatureState() { return CreatureState; }
@@ -62,13 +65,14 @@ protected:
 
 	FVector DesiredVec = FVector(1, 0, 0);
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UR1AbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UR1AttributeSet> AttributeSet;
 
+
+
+
+
+
+	/* MeleeTrace */
 protected:
 	UFUNCTION()
 	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
@@ -80,16 +84,30 @@ protected:
 	UFUNCTION()
 	virtual void HandleTraceHit(FMeleeHitInfo HitInfo);
 
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
 
 
+
+
+
+
+
+
+	/* GAS */
 public:
 	void AddCharacterAbilities();
-
+	
+protected:
 	UPROPERTY(EditAnywhere, Category = Abilities)
 	TArray<TSubclassOf<class UR1GameplayAbility>> StartupAbilities;
 
 protected:
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UR1AbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UR1AttributeSet> AttributeSet;
 };
 
