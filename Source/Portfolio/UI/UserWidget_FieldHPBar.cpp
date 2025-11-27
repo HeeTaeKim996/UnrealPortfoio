@@ -18,4 +18,7 @@ void UUserWidget_FieldHPBar::NativeConstruct()
 void UUserWidget_FieldHPBar::SetHpRatio(float Ratio)
 {
 	HpBar->SetPercent(Ratio);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
+		FString::Printf(TEXT("UserWidget_FieldHPBar.cpp : [%f]."), Ratio));
 }
