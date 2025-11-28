@@ -4,6 +4,11 @@
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
 
+
+const FGameplayTag UR1AbilitySystemComponent::LifeRootTag = FGameplayTag::RequestGameplayTag(TEXT("State.Life"));
+const FGameplayTag UR1AbilitySystemComponent::HitStateRootTag = FGameplayTag::RequestGameplayTag(TEXT("State.HitState"));
+const FGameplayTag UR1AbilitySystemComponent::InputRootTag = FGameplayTag::RequestGameplayTag(TEXT("State.Input"));
+
 void UR1AbilitySystemComponent::AddCharacterAbilities(
 	const TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
 {
@@ -48,5 +53,21 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 			}
 		}
 	}
+}
+
+void UR1AbilitySystemComponent::SetState(const FGameplayTag& RootTag, FGameplayTag NewState)
+{
+	FGameplayTagContainer OwnedTags;
+	GetOwnedGameplayTags(OwnedTags);
+
+	for (const FGameplayTag& Tag : OwnedTags)
+	{
+		if (Tag.MatchesTag(RootTag))
+		{
+			RemoveLooseGameplayTag(Tag);
+		}
+	}
+
+	AddLooseGameplayTag(NewState);
 }
 

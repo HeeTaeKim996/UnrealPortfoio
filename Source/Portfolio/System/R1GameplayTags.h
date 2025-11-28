@@ -23,4 +23,30 @@ namespace R1Tags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
+
+
+
+	/*-------------------
+		    State
+	--------------------*/
+	/* Life */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Life_Alive);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Life_Dead);
+
+	/* HitState */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState_Vulnerable);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState_Invincible);
+
+	/* Action */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_None);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Blocking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_UsingItem);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Parry);
+
+	/* Input */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Input_Full);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Input_Disabled);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Input_DodgeOnly);
 }
