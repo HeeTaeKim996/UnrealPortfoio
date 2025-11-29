@@ -57,8 +57,6 @@ protected:
 	
 
 public:
-	ECreatureState GetCreatureState() { return CreatureState; }
-	void SetCreatureState(ECreatureState InState) { CreatureState = InState; }
 	void SetDesiredVec(FVector InVec) { DesiredVec = InVec; }
 	FVector GetDesiredVec() { return DesiredVec;  }
 
@@ -66,8 +64,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bHighlighted = false;
 
-	UPROPERTY(BlueprintReadWrite)
-	ECreatureState CreatureState = ECreatureState::None;
 
 	FVector DesiredVec = FVector(1, 0, 0);
 	bool bUseDesiredVec = true;
@@ -101,8 +97,6 @@ protected:
 
 
 
-
-
 	/* GAS */
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -112,6 +106,12 @@ public:
 	virtual void AddCharacterAbilities();
 	virtual void AbilitySuccess(FGameplayTag InTag);
 	virtual void AbilityCancel(FAbilityCancelInfo CancelInfo);
+
+public:
+	void AddState(FGameplayTag NewState);
+	bool IsInState(FGameplayTag StateTag) const;
+	bool IsInAnyState(const FGameplayTagContainer& StateTags);
+	bool IsInAllStates(const FGameplayTagContainer& StateTags);
 
 public:
 

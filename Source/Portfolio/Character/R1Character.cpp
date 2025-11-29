@@ -6,6 +6,7 @@
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
 
+
 AR1Character::AR1Character(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UR1CharacterMovementComponent>(CharacterMovementComponentName))
 {
@@ -36,6 +37,7 @@ void AR1Character::BeginPlay()
 	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
 	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
 	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
+
 }
 
 void AR1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -88,15 +90,14 @@ void AR1Character::OnDamage(int Damage, TObjectPtr<AR1Character> From)
 
 void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 {
-	if (CreatureState == ECreatureState::Dead) return;
+	if (AbilitySystemComponent->HasMatchingGameplayTag(R1Tags::State_Dead)) return;
 
-	CreatureState = ECreatureState::Dead;
-	
+	AbilitySystemComponent->AddLooseGameplayTag(R1Tags::State_Dead);
 }
 
 void AR1Character::ToLoco()
 {
-	CreatureState = ECreatureState::Loco;
+	AbilitySystemComponent->ClearRoot(R1Tags::State_Action);
 	bUseDesiredVec = true;
 }
 
@@ -178,4 +179,28 @@ void AR1Character::AbilitySuccess(FGameplayTag InTag)
 void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
 	GAS_OnAbilityCancel.Broadcast(CancelInfo);
+}
+
+
+
+
+
+void AR1Character::AddState(FGameplayTag NewState)
+{
+	AbilitySystemComponent->AddLooseGameplayTag(NewState);
+}
+
+bool AR1Character::IsInState(FGameplayTag StateTag) const
+{
+	return AbilitySystemComponent->HasMatchingGameplayTag(StateTag);
+}
+
+bool AR1Character::IsInAnyState(const FGameplayTagContainer& StateTags)
+{
+	return AbilitySystemComponent->HasAnyMatchingGameplayTags(StateTags);
+}
+
+bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
+{
+	return AbilitySystemComponent->HasAllMatchingGameplayTags(StateTags);
 }

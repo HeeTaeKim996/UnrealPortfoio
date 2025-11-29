@@ -22,6 +22,7 @@
 #include "UI/MainUserWidget.h"
 #include "Data/Data_MainUserWidget.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "System/Subsystem/TagContainersManager.h"
 
 AR1PlayerController::AR1PlayerController(const FObjectInitializer& objectInitializer)
 	: Super(objectInitializer)
@@ -196,10 +197,14 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
-	if (GetCreatureState() != ECreatureState::Loco) return;
+	FGameplayTagContainer BlockTags;
+	BlockTags.AddTag(R1Tags::State_Dead);
+	BlockTags.AddTag(R1Tags::State_Action);
+	if (R1Player->IsInAnyState(BlockTags)) return;
 
-	ECreatureState currState = GetCreatureState();
-	if (currState == ECreatureState::Dead || currState == ECreatureState::Acting) return;
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	
+	
 
 	FVector2D MovementVector = InputValue.Get<FVector2D>();
 	MovementVector.Normalize();
@@ -241,7 +246,8 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 void AR1PlayerController::OnWheelStarted()
 {
 	bWheelPressed = true;
-	if (GetCreatureState() != ECreatureState::Loco) return;
+	
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
 	StopMovement(); // ※ NavigationSystem's Stop Movement
 	if (Highlighted)
@@ -256,7 +262,7 @@ void AR1PlayerController::OnWheelStarted()
 
 void AR1PlayerController::OnWheelTriggered()
 {
-	if (GetCreatureState() != ECreatureState::Loco) return;
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 	if (TargetMonster) return; // ※ Obsolatable
 
 
@@ -279,7 +285,7 @@ void AR1PlayerController::OnWheelReleased()
 {
 	bWheelPressed = false;
 
-	if (GetCreatureState() != ECreatureState::Loco) return;
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return; 
 
 	if (cursorPushedTime <= ShortPressThreshold)
 	{
@@ -299,24 +305,20 @@ void AR1PlayerController::OnWheelReleased()
 
 void AR1PlayerController::OnLeftMouseStarted()
 {
-	ECreatureState currState = GetCreatureState();
-	if (currState == ECreatureState::Dead || currState == ECreatureState::Acting) return;
-
+	
 	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Cyan, TEXT("LeftMouseStart"));
 }
 
 void AR1PlayerController::OnLeftMouseTriggered()
 {
-	ECreatureState currState = GetCreatureState();
-	if (currState == ECreatureState::Dead || currState == ECreatureState::Acting) return;
-
+	
 
 }
 
 void AR1PlayerController::OnLeftMouseReleased()
 {
-	ECreatureState currState = GetCreatureState();
-	if (currState == ECreatureState::Dead || currState == ECreatureState::Acting) return;
+
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return; // @@@ TEMP. WILL BE REMOVED @@@
 
 	R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
 }
@@ -336,14 +338,3 @@ void AR1PlayerController::OnRightMouseReleased()
 
 }
 
-ECreatureState AR1PlayerController::GetCreatureState()
-{
-	if (R1Player) return R1Player->GetCreatureState();
-
-	return ECreatureState::None;
-}
-
-void AR1PlayerController::SetCreatureState(ECreatureState InState)
-{
-	if (R1Player) R1Player->SetCreatureState(InState);
-}

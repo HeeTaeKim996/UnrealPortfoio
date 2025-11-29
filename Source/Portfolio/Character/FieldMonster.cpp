@@ -18,7 +18,7 @@ AFieldMonster::AFieldMonster()
 	// ※ Assigning TSubclass at ContructorPhase by BP or AssetManager is Impossible (they didnt loaded yet)
 	//    So Assigning by address is only option
 	ConstructorHelpers::FClassFinder<UUserWidget> HealthBarWidgetClass(
-		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Blueprint/UI/WBP_HpBar.WBP_HpBar_C'"));
+		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Data/StaticPaths/WBP_HpBar.WBP_HpBar_C'"));
 	if (HealthBarWidgetClass.Succeeded())
 	{
 		HpBarComponent->SetWidgetClass(HealthBarWidgetClass.Class);

@@ -22,14 +22,10 @@ public:
 
 	void ActivateAbility(FGameplayTag InTag);
 
-	void SetState(const FGameplayTag& RootTag, FGameplayTag NewState);
+	
+	void ClearRoot(const FGameplayTag& RootTag);
 
-
-public:
-	static const FGameplayTag LifeRootTag;
-	static const FGameplayTag HitStateRootTag;
-	static const FGameplayTag InputRootTag;
-
+	
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;
 };

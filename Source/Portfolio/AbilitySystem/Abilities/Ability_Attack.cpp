@@ -7,7 +7,7 @@
 #include "System/R1GameplayTags.h"
 #include "Character/R1Player.h"
 #include "Abilities/Tasks/AbilityTask.h"
-
+#include "AbilitySystem/R1AbilitySystemComponent.h"
 
 
 void UAbilityTask_Attack::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter, 
@@ -41,7 +41,7 @@ void UAbilityTask_Attack::Activate()
 	if (AttackMontage == nullptr) return;
 	PlayerCh->PlayAnimMontage(AttackMontage);
 
-	PlayerCh->SetCreatureState(ECreatureState::Acting);
+	PlayerCh->AddState(R1Tags::State_Action_Attack);
 }
 
 void UAbilityTask_Attack::TickTask(float DeltaTime)

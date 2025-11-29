@@ -13,6 +13,7 @@ namespace R1Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Asset_IMC_Base, "Asset.IMC.Base");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_UserWidget_MainUserWidget, "Asset.UserWidget.MainUserWidget");
+	//UE_DEFINE_GAMEPLAY_TAG(Asset_ETC_GameplayTagContainers, "Asset.ETC.GameplayTagContainers");
 
 	UE_DEFINE_GAMEPLAY_TAG(Asset_Label_Preload, "Asset.Label.Preload");
 
@@ -24,26 +25,26 @@ namespace R1Tags
 	/*-------------------
 			State
 	--------------------*/
-	/* Life */
-	UE_DEFINE_GAMEPLAY_TAG(State_Life_Alive, "State.Life.Alive");
-	UE_DEFINE_GAMEPLAY_TAG(State_Life_Dead, "State.Life.Dead");
+	/// Dead
+	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
 
-	/* HitState */
-	UE_DEFINE_GAMEPLAY_TAG(State_HitState_Vulnerable, "State.HitState.Vulnerable");
+	/// HitState
+	UE_DEFINE_GAMEPLAY_TAG(State_HitState, "State.HitState");
 	UE_DEFINE_GAMEPLAY_TAG(State_HitState_Invincible, "State.HitState.Invincible");
 
-	/* Action */
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_None, "State.Action.None");
+	/// Action
+	UE_DEFINE_GAMEPLAY_TAG(State_Action, "State.Action");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack, "State.Action.Attack");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Blocking, "State.Action.Blocking");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_UsingItem, "State.Action.UsingItem");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact, "State.Action.HitReact");
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Knockdown, "State.Action.Knockdown");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Parry, "State.Action.Parry");
 
-	/* Input */
-	UE_DEFINE_GAMEPLAY_TAG(State_Input_Full, "State.Input.Full");
-	UE_DEFINE_GAMEPLAY_TAG(State_Input_Disabled, "State.Input.Disabled");
-	UE_DEFINE_GAMEPLAY_TAG(State_Input_DodgeOnly, "State.Input.DodgeOnly");
+	/// Mode
+	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Blocking, "State.Mode.Blocking");
+	UE_DEFINE_GAMEPLAY_TAG(State_Mode_UsingItem, "State.Mode.UsingItem");
+	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Aiming, "State.Mode.Aiming");
+	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Sneaking, "State.Mode.Sneaking");
 }
 
 

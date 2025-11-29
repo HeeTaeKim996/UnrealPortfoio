@@ -53,8 +53,6 @@ private:
 	void OnRightMouseTriggered();
 	void OnRightMouseReleased();
 
-	ECreatureState GetCreatureState();
-	void SetCreatureState(ECreatureState InState);
 
 public:
 	FVector GetCursorPos() { return CursorPos; }

@@ -69,8 +69,7 @@ void AR1Player::BeginPlay()
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
-	SetCreatureState(ECreatureState::Loco);
-
+	
 	
 
 	// TEMP
