@@ -15,7 +15,7 @@ struct FMeleeHitInfo;
  * 
  */
 UCLASS()
-class PORTFOLIO_API UR1AbilityTask : public UAbilityTask
+class PORTFOLIO_API UR1AbilityTask123 : public UAbilityTask
 {
 	GENERATED_BODY()
 public:

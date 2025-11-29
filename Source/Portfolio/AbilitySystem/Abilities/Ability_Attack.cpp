@@ -112,7 +112,8 @@ bool UAbilityTask_Attack::AbilitySuccess(FAbilitySuccessInfo InTag)
 UAbility_Attack::UAbility_Attack(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	
+	ActivationBlockedTags.AddTag(R1Tags::State_Action_Attack);
+	ActivationBlockedTags.AddTag(R1Tags::State_Dead);
 }
 
 bool UAbility_Attack::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,

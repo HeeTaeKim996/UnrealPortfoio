@@ -15,9 +15,6 @@ struct PORTFOLIO_API FAbilityCancelInfo
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FGameplayTag AbilityTag;
-
-	UPROPERTY()
 	CancelCause Cause;
 };
 

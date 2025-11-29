@@ -317,9 +317,6 @@ void AR1PlayerController::OnLeftMouseTriggered()
 
 void AR1PlayerController::OnLeftMouseReleased()
 {
-
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return; // @@@ TEMP. WILL BE REMOVED @@@
-
 	R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
 }
 

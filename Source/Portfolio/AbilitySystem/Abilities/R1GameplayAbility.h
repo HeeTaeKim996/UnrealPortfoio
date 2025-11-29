@@ -6,11 +6,28 @@
 #include "Abilities/GameplayAbility.h"
 #include "Character/R1Character.h"
 #include "GameplayTagContainer.h"
+#include "Abilities/Tasks/AbilityTask.h"
 #include "R1GameplayAbility.generated.h"
 
-/**
- * 
- */
+class UR1AbilitySystemComponent;
+
+UCLASS()
+class PORTFOLIO_API UR1AbilityTask : public UAbilityTask
+{
+	GENERATED_BODY()
+protected:
+	void SuccessAbility();
+	void CancelAbility();
+};
+
+
+
+
+
+
+
+
+
 UCLASS()
 class PORTFOLIO_API UR1GameplayAbility : public UGameplayAbility
 {
@@ -31,8 +48,14 @@ public:
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 	}
+	FORCEINLINE void EndAbilityCancel()
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	}
+
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
+	void PlayMontage(UAnimMontage* Montage);
+
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 };

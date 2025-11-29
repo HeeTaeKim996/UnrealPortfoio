@@ -13,7 +13,7 @@ class AR1Character;
 
 
 UCLASS()
-class PORTFOLIO_API UAbilityTask_Attack : public UR1AbilityTask
+class PORTFOLIO_API UAbilityTask_Attack : public UR1AbilityTask123
 {
 	GENERATED_BODY()
 public:

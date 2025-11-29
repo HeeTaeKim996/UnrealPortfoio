@@ -5,44 +5,44 @@
 #include "Character/R1Character.h"
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
 
-void UR1AbilityTask::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter)
+void UR1AbilityTask123::Initialize(UR1GameplayAbility* InAbility, AR1Character* InCharacter)
 {
 	WeakAbility = InAbility;
 	WeakCharacter = InCharacter;
 	AbilityTag = InAbility->AbilityTags.First();
 
-	InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
-	InCharacter->GAS_OnTraceHit.AddDynamic(this, &UR1AbilityTask::OnTraceHit);
-	InCharacter->GAS_OnAbilityCancel.AddDynamic(this, &UR1AbilityTask::OnAbilityCancel);
+	InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
+	InCharacter->GAS_OnTraceHit.AddDynamic(this, &UR1AbilityTask123::OnTraceHit);
+	InCharacter->GAS_OnAbilityCancel.AddDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 
 	
 }
 
-void UR1AbilityTask::Activate()
+void UR1AbilityTask123::Activate()
 {
 	Super::Activate();
 }
 
-void UR1AbilityTask::TickTask(float DeltaTime)
+void UR1AbilityTask123::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 }
 
-void UR1AbilityTask::OnDestroy(bool bInOwnerFinished)
+void UR1AbilityTask123::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
 
 	if (WeakCharacter.IsValid())
 	{
 		AR1Character* R1Character = WeakCharacter.Get();
-		R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask::OnAbilitySuccess);
-		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UR1AbilityTask::OnTraceHit);
-		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UR1AbilityTask::OnAbilityCancel);
+		R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
+		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UR1AbilityTask123::OnTraceHit);
+		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 	}
 	
 }
 
-void UR1AbilityTask::ClearAbility()
+void UR1AbilityTask123::ClearAbility()
 {
 	if (WeakAbility.IsValid())
 	{
@@ -51,17 +51,17 @@ void UR1AbilityTask::ClearAbility()
 	EndTask();
 }
 
-void UR1AbilityTask::OnAbilitySuccess(FAbilitySuccessInfo SucessInfo)
+void UR1AbilityTask123::OnAbilitySuccess(FAbilitySuccessInfo SucessInfo)
 {
 	AbilitySuccess(MoveTemp(SucessInfo));
 }
 
-void UR1AbilityTask::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
+void UR1AbilityTask123::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
 {
 	AbilityCancel(MoveTemp(CancelInfo));
 }
 
-void UR1AbilityTask::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
+void UR1AbilityTask123::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 {
 	TraceHit(MoveTemp(MeleeHitInfo));
 }
@@ -69,17 +69,15 @@ void UR1AbilityTask::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 
 
 
-bool UR1AbilityTask::AbilitySuccess(FAbilitySuccessInfo SuccessInfo)
+bool UR1AbilityTask123::AbilitySuccess(FAbilitySuccessInfo SuccessInfo)
 {
 	if (AbilityTag != SuccessInfo.AbilityTag) return false;
 
 	return true;
 }
 
-bool UR1AbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
+bool UR1AbilityTask123::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	if (AbilityTag != CancelInfo.AbilityTag) return false;
-
 	if (CancelInfo.Cause == CancelCause::ShutDown)
 	{
 		ClearAbility();
@@ -89,7 +87,7 @@ bool UR1AbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
 	return true;
 }
 
-bool UR1AbilityTask::TraceHit(FMeleeHitInfo MeleeHitInfo)
+bool UR1AbilityTask123::TraceHit(FMeleeHitInfo MeleeHitInfo)
 {
 	if (AbilityTag != MeleeHitInfo.Ability) return false;
 

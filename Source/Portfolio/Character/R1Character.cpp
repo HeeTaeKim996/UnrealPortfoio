@@ -97,8 +97,9 @@ void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 
 void AR1Character::ToLoco()
 {
-	AbilitySystemComponent->ClearRoot(R1Tags::State_Action);
 	bUseDesiredVec = true;
+
+	// ※ Player can override to play reserved Action
 }
 
 

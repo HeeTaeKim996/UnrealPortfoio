@@ -7,4 +7,4 @@
    이후에 .h 에서 다시 include 하면 됨. 특이한건, 이후에는, .cpp에서 사용되는 .h를 지워도 아무 문제 없음. 이후부터는 자유롭게 사용하는 .h에서 사용되는 모듈의 .h를 자유롭게 include 가능
 
 
-※ https://github.com/tranek/GASDocumentation : 언리얼 공부하기에 좋은 문서. (언리얼 공식 문서는 아님)
+※ https://github.com/tranek/GASDocumentation : GAS 공부하기에 좋은 문서. (언리얼 공식 문서는 아님)
