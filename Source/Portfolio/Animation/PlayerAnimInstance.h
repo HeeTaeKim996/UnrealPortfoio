@@ -30,6 +30,17 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> IdleAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> ForwardAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> BlockingAnimation;
+
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsUpperLowerSplit = false;
 
