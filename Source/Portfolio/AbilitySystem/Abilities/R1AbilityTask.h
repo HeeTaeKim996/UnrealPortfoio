@@ -27,10 +27,7 @@ public:
 protected:
 	void ClearAbility();
 
-private:
-	UFUNCTION(meta = (AllowPrivateAccess = "true"))
-	void OnAbilitySuccess(FAbilitySuccessInfo SucessInfo);
-	
+private:	
 	UFUNCTION(meta = (AllowPrivateAccess = "true"))
 	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
 
@@ -38,7 +35,7 @@ private:
 	void OnTraceHit(FMeleeHitInfo MeleeHitInfo);
 
 protected:
-	virtual bool AbilitySuccess(FAbilitySuccessInfo SuccessInfo);
+	//virtual bool AbilitySuccess(FAbilitySuccessInfo SuccessInfo);
 	virtual bool AbilityCancel(FAbilityCancelInfo CancelInfo);
 	virtual bool TraceHit(FMeleeHitInfo MeleeHitInfo);
 

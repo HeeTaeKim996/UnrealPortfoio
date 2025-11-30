@@ -9,6 +9,9 @@
 
 class UR1GameplayAbility;
 
+DECLARE_DELEGATE_TwoParams(FOnTagUpdated,
+	const FGameplayTag&, bool)
+
 UCLASS()
 class PORTFOLIO_API UR1AbilitySystemComponent : public UAbilitySystemComponent
 {
@@ -22,7 +25,13 @@ public:
 	
 	void ClearRoot(const FGameplayTag& RootTag);
 
+	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 	
+
+public:
+	FOnTagUpdated Delegate_OnTagUpdated;
+
+
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;
 };

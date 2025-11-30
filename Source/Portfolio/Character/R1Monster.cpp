@@ -3,7 +3,7 @@
 
 #include "Character/R1Monster.h"
 #include "Character/R1Player.h"
-#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "AbilitySystem/ASC/MonsterASC.h"
 #include "AbilitySystem/Attributes/R1MonsterSet.h"
 
 AR1Monster::AR1Monster()
@@ -13,7 +13,7 @@ AR1Monster::AR1Monster()
 
 	MeleeTrace->SetTraceChannel(ECC_GameTraceChannel14);
 
-	AbilitySystemComponent = CreateDefaultSubobject<UR1AbilitySystemComponent>("AbilitySystemComponent");
+	AbilitySystemComponent = CreateDefaultSubobject<UMonsterASC>("AbilitySystemComponent");
 	AttributeSet = CreateDefaultSubobject<UR1MonsterSet>("MonsterSet");
 }
 	

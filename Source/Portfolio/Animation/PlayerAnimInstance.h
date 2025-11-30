@@ -9,9 +9,14 @@
 class AR1Character;
 class UCharacterMovementComponent;
 
-/**
- * 
- */
+UENUM(BlueprintType)
+enum class EUpperBodyState : uint8
+{
+	Idle,
+	Shielding,
+	Aiming
+};
+
 UCLASS()
 class PORTFOLIO_API UPlayerAnimInstance : public UCharacterAnimInstance
 {
@@ -24,4 +29,13 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsUpperLowerSplit = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator UnderRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EUpperBodyState UpperBodyState = EUpperBodyState::Idle;
 };

@@ -25,7 +25,7 @@ public:
 
 	virtual bool TraceHit(struct FMeleeHitInfo MeleeHitInfo) override;
 
-	virtual bool AbilitySuccess(FAbilitySuccessInfo InTag) override;
+	//virtual bool AbilitySuccess(FAbilitySuccessInfo InTag) override;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

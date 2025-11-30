@@ -23,7 +23,10 @@ public:
 
 public:
 	const FGameplayTagContainer& CantBaseActableTags() const { return TagContainersData->CantBaseActableTags; }
-	
+	FORCEINLINE const FGameplayTagContainer& OnActionCall_CancelingTags() const
+	{
+		return TagContainersData->OnActionCall_CancelingTags;
+	}
 
 protected:
 	UPROPERTY()

@@ -35,12 +35,16 @@ namespace R1Tags
 	/// Action
 	UE_DEFINE_GAMEPLAY_TAG(State_Action, "State.Action");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack, "State.Action.Attack");
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Base, "State.Action.Attack.Base");
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Skill, "State.Action.Attack.Skill");
+
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_UsingItem, "State.Action.UsingItem");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact, "State.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Knockdown, "State.Action.Knockdown");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Parry, "State.Action.Parry");
 
 	/// Mode
+	UE_DEFINE_GAMEPLAY_TAG(State_Mode, "State.Mode");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Blocking, "State.Mode.Blocking");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_UsingItem, "State.Mode.UsingItem");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Aiming, "State.Mode.Aiming");

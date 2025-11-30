@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/AttackAbility.h"
+#include "AbilitySystem/Abilities/BaseAttackAbility.h"
 #include "AttackAbility_Test.generated.h"
 
 UCLASS()
@@ -21,7 +21,7 @@ protected:
 };
 
 UCLASS()
-class PORTFOLIO_API UAttackAbility_Test : public UAttackAbility
+class PORTFOLIO_API UAttackAbility_Test : public UBaseAttackAbility
 {
 	GENERATED_BODY()
 public:

@@ -2,7 +2,7 @@
 #include "Character/R1Character.h"
 #include "Components/CapsuleComponent.h"
 #include "Character/R1CharacterMovementComponent.h"
-#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "AbilitySystem/ASC/CharacterASC.h"
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
 
@@ -37,6 +37,8 @@ void AR1Character::BeginPlay()
 	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
 	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
 	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
+
+	AbilitySystemComponent->Delegate_OnTagUpdated.BindUObject(this, &AR1Character::OnTagUpdated);
 
 }
 
@@ -170,12 +172,7 @@ void AR1Character::AddCharacterAbilities()
 	ASC->AddCharacterAbilities(StartupAbilities);
 }
 
-void AR1Character::AbilitySuccess(FGameplayTag InTag)
-{
-	FAbilitySuccessInfo SuccessInfo;
-	SuccessInfo.AbilityTag = InTag;
-	GAS_OnAbilitySuccess.Broadcast(SuccessInfo);
-}
+
 
 void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
@@ -204,4 +201,8 @@ bool AR1Character::IsInAnyState(const FGameplayTagContainer& StateTags)
 bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
 {
 	return AbilitySystemComponent->HasAllMatchingGameplayTags(StateTags);
+}
+
+void AR1Character::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
+{
 }

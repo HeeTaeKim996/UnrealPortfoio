@@ -14,4 +14,5 @@ class PORTFOLIO_API UCharacterASC : public UR1AbilitySystemComponent
 {
 	GENERATED_BODY()
 	
+
 };

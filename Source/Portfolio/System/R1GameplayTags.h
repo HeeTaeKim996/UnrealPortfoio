@@ -12,6 +12,9 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Wheel);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_RightMouse);
 
+
+
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_End);
 
@@ -40,12 +43,16 @@ namespace R1Tags
 	/* Action */
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Base);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Skill);
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_UsingItem);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Knockdown);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Parry);
 
 	/* Mode */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Blocking);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_UsingItem);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Aiming);

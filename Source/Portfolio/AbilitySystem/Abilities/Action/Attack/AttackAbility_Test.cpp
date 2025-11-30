@@ -21,9 +21,6 @@ void UAttacAbilityTask_Test::Activate()
 	Dir.Z = 0;
 	Dir.Normalize();
 	PlayerCh->SetDesiredVec(Dir);
-
-
-	PlayerCh->AddState(R1Tags::State_Action_Attack); // TEMP
 }
 
 void UAttacAbilityTask_Test::TickTask(float DeltaTime)
@@ -69,10 +66,6 @@ UAttackAbility_Test::UAttackAbility_Test(const FObjectInitializer& ObjectInitial
 	: Super(ObjectInitializer)
 {
 
-	{ // TEMP
-		ActivationBlockedTags.AddTag(R1Tags::State_Action_Attack);
-		ActivationBlockedTags.AddTag(R1Tags::State_Dead);
-	}
 }
 
 bool UAttackAbility_Test::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const

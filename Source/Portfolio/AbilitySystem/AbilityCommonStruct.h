@@ -5,8 +5,8 @@
 UENUM(BlueprintType)
 enum class CancelCause
 {
-	ShutDown,
-	Temp,
+	ShutDownAll,
+	OnActionInvoked,
 };
 
 USTRUCT()
@@ -16,16 +16,9 @@ struct PORTFOLIO_API FAbilityCancelInfo
 
 	UPROPERTY()
 	CancelCause Cause;
-};
 
-USTRUCT()
-struct PORTFOLIO_API FAbilitySuccessInfo
-{
-	GENERATED_BODY()
 
 	UPROPERTY()
-	FGameplayTag AbilityTag;
-
-	UPROPERTY()
-	uint8 Temp;
+	FGameplayTagContainer CancelTags;
 };
+

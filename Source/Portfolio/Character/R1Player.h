@@ -52,6 +52,10 @@ protected:
 	virtual void RefreshHpBarRatio() override;
 
 
+public:
+	void Input_Action(FGameplayTag InActionState);
+
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> SpringArm;

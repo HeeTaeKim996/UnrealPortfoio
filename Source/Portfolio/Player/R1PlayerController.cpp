@@ -317,12 +317,14 @@ void AR1PlayerController::OnLeftMouseTriggered()
 
 void AR1PlayerController::OnLeftMouseReleased()
 {
-	R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
+	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
+	R1Player->Input_Action(R1Tags::State_Action_Attack_Base);
+
 }
 
 void AR1PlayerController::OnRightMouseStarted()
 {
-
+	R1Player->Input_Action(R1Tags::State_Mode_Blocking);
 }
 
 void AR1PlayerController::OnRightMouseTriggered()

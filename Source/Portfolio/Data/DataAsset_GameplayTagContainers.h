@@ -19,4 +19,7 @@ class PORTFOLIO_API UDataAsset_GameplayTagContainers : public UDataAsset
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
 	FGameplayTagContainer CantBaseActableTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
+	FGameplayTagContainer OnActionCall_CancelingTags;
 };

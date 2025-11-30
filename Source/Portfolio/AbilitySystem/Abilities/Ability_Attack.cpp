@@ -72,22 +72,22 @@ bool UAbilityTask_Attack::TraceHit(FMeleeHitInfo MeleeHitInfo)
 	return true;
 }
 
-bool UAbilityTask_Attack::AbilitySuccess(FAbilitySuccessInfo InTag)
-{
-	if (Super::AbilitySuccess(InTag) == false) return false;
-
-	
-
-	AR1Character* R1Character = WeakCharacter.Get();
-	if (R1Character)
-	{
-		R1Character->ToLoco();
-	}
-
-	ClearAbility();
-
-	return true;
-}
+//bool UAbilityTask_Attack::AbilitySuccess(FAbilitySuccessInfo InTag)
+//{
+//	if (Super::AbilitySuccess(InTag) == false) return false;
+//
+//	
+//
+//	AR1Character* R1Character = WeakCharacter.Get();
+//	if (R1Character)
+//	{
+//		R1Character->ToLoco();
+//	}
+//
+//	ClearAbility();
+//
+//	return true;
+//}
 
 
 

@@ -13,7 +13,9 @@
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "Player/R1PlayerState.h"
 #include "AbilitySystem/Attributes/R1PlayerSet.h"
-#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "AbilitySystem/ASC/PlayerASC.h"
+#include "System/Subsystem/TagContainersManager.h"
+
 
 AR1Player::AR1Player() : Super()
 {
@@ -98,7 +100,7 @@ void AR1Player::InitAbilitySystem()
 
 	if (AR1PlayerState* PS = GetPlayerState<AR1PlayerState>())
 	{
-		AbilitySystemComponent = Cast<UR1AbilitySystemComponent>(PS->GetAbilitySystemComponent());
+		AbilitySystemComponent = Cast<UCharacterASC>(PS->GetAbilitySystemComponent());
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
 
 		AttributeSet = PS->GetR1PlayerSet();
@@ -168,6 +170,20 @@ void AR1Player::RefreshHpBarRatio()
 
 	float Ratio = Hp / MaxHp;
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerHealthBar(Ratio);
+}
+
+void AR1Player::Input_Action(FGameplayTag InActionState)
+{
+	if(IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
+	CancelInfo.Cause = CancelCause::OnActionInvoked;
+	AbilityCancel(CancelInfo);
+
+
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+	PlayerASC->Action(InActionState);
 }
 
 

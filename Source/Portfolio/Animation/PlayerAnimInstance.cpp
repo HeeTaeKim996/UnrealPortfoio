@@ -14,11 +14,13 @@ UPlayerAnimInstance::UPlayerAnimInstance(const FObjectInitializer& ObjectInitial
 void UPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
+	UpperBodyState = EUpperBodyState::Idle;
 }
 
 void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+
 }
 
 

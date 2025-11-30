@@ -104,8 +104,7 @@ public:
 	void ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void AddCharacterAbilities();
-	virtual void AbilitySuccess(FGameplayTag InTag);
-	virtual void AbilityCancel(FAbilityCancelInfo CancelInfo);
+	void AbilityCancel(FAbilityCancelInfo CancelInfo);
 
 public:
 	void AddState(FGameplayTag NewState);
@@ -113,11 +112,14 @@ public:
 	bool IsInAnyState(const FGameplayTagContainer& StateTags);
 	bool IsInAllStates(const FGameplayTagContainer& StateTags);
 
+
+protected:
+	UFUNCTION()
+	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists);
+
+
 public:
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySuccess,
-		FAbilitySuccessInfo, SuccessInfo);
-	FGAS_OnAbilitySuccess GAS_OnAbilitySuccess;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnTraceHit,
 		FMeleeHitInfo, MeleeHitInfo);
@@ -136,7 +138,7 @@ protected:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UR1AbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<class UCharacterASC> AbilitySystemComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UR1AttributeSet> AttributeSet;

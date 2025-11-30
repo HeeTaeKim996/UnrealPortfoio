@@ -40,6 +40,27 @@ UCLASS()
 class PORTFOLIO_API UCharacterAbility : public UR1GameplayAbility
 {
 	GENERATED_BODY()
-	
+public:
+	UCharacterAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+protected:
+	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr,
+		OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+
+
+
+
+public:
+	FGameplayTag GetStateTag() { return StateTag; }
+
+protected:
+	FGameplayTag StateTag = FGameplayTag::EmptyTag;
 };

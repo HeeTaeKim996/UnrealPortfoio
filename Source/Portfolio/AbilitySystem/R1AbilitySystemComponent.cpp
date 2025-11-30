@@ -66,3 +66,11 @@ void UR1AbilitySystemComponent::ClearRoot(const FGameplayTag& RootTag)
 		}
 	}
 }
+
+
+void UR1AbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
+{
+	Super::OnTagUpdated(Tag, TagExists);
+	Delegate_OnTagUpdated.Execute(Tag, TagExists);
+}
+

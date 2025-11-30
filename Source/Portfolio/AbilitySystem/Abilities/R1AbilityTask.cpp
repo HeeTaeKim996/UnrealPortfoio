@@ -11,7 +11,7 @@ void UR1AbilityTask123::Initialize(UR1GameplayAbility* InAbility, AR1Character* 
 	WeakCharacter = InCharacter;
 	AbilityTag = InAbility->AbilityTags.First();
 
-	InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
+	//InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
 	InCharacter->GAS_OnTraceHit.AddDynamic(this, &UR1AbilityTask123::OnTraceHit);
 	InCharacter->GAS_OnAbilityCancel.AddDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 
@@ -35,7 +35,7 @@ void UR1AbilityTask123::OnDestroy(bool bInOwnerFinished)
 	if (WeakCharacter.IsValid())
 	{
 		AR1Character* R1Character = WeakCharacter.Get();
-		R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
+		//R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
 		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UR1AbilityTask123::OnTraceHit);
 		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 	}
@@ -51,10 +51,7 @@ void UR1AbilityTask123::ClearAbility()
 	EndTask();
 }
 
-void UR1AbilityTask123::OnAbilitySuccess(FAbilitySuccessInfo SucessInfo)
-{
-	AbilitySuccess(MoveTemp(SucessInfo));
-}
+
 
 void UR1AbilityTask123::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
 {
@@ -69,16 +66,10 @@ void UR1AbilityTask123::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
 
 
 
-bool UR1AbilityTask123::AbilitySuccess(FAbilitySuccessInfo SuccessInfo)
-{
-	if (AbilityTag != SuccessInfo.AbilityTag) return false;
-
-	return true;
-}
 
 bool UR1AbilityTask123::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	if (CancelInfo.Cause == CancelCause::ShutDown)
+	if (CancelInfo.Cause == CancelCause::ShutDownAll)
 	{
 		ClearAbility();
 		return false;
