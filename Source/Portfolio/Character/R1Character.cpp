@@ -61,7 +61,7 @@ void AR1Character::Tick(float DeltaTime)
 		FQuat SlerpQuat = FQuat::Slerp(GetActorRotation().Quaternion(), DesiredVec.Rotation().Quaternion(), Alpha);
 		SetActorRotation(SlerpQuat);
 	}
-	
+
 }
 
 void AR1Character::Highlight()

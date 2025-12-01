@@ -40,6 +40,7 @@ private:
 
 private:
 	void Input_Move(const FInputActionValue& InputValue);
+	void OnMoveReleased(const FInputActionValue& InputValue);
 
 	void OnWheelStarted();
 	void OnWheelTriggered();
@@ -69,6 +70,7 @@ private:
 	FVector CursorPos;
 	float cursorPushedTime;
 	bool bWheelPressed = false;
+	bool bMovePressed = false;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
@@ -90,18 +92,4 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMainUserWidget> MainUI;
 
-protected:
-	/* // Obsolate_BlueprintAssign
-	UPROPERTY(EditAnywhere, Category = Input)
-	TObjectPtr<UInputMappingContext> InputMappingContext;
-
-	UPROPERTY(EditAnywhere, Category = Input)
-	TObjectPtr<UInputAction> TestAction;
-
-	UPROPERTY(EditAnywhere, Category = Input)
-	TObjectPtr<UInputAction> MoveAction;
-
-	UPROPERTY(EditAnywhere, Category = Input)
-	TObjectPtr<UInputAction> TurnAction;
-	*/
 };

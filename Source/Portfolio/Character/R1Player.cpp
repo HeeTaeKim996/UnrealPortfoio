@@ -117,6 +117,11 @@ void AR1Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	if (bUpperLowerSplit && SurplusAlertTime > 0)
+	{
+		SurplusAlertTime -= DeltaTime;
+		if (SurplusAlertTime < 0) bUpperLowerSplit = false;
+	}
 }
 
 void AR1Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -173,10 +178,11 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 		if (TagExists == true)
 		{
 			bUpperLowerSplit = true;
+			SurplusAlertTime = -1.f;
 		}
 		else
 		{
-			bUpperLowerSplit = false;
+			SurplusAlertTime = 5.f;
 		}
 	}
 }

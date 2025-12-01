@@ -83,6 +83,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (R1Player->IsInState(R1Tags::State_Mode_Blocking))
 		{
 			UpperBodyState = EUpperBodyState::Blocking;
+			//DebugMessage(TEXT("PlayerAnimInstance : Blocking"));
+		}
+		else
+		{
+			UpperBodyState = EUpperBodyState::Idle;
+			//DebugMessage(TEXT("PlayerAnimInstance : Idle"));
 		}
 	}
 }

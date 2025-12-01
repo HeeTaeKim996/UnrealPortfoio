@@ -93,6 +93,8 @@ void AR1PlayerController::SetupInputComponent()
 
 		const UInputAction* Action1 = InputData->FindInputActionByTag(R1Tags::Input_Action_Move);
 		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Canceled, this, &ThisClass::OnMoveReleased);
+		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Completed, this, &ThisClass::OnMoveReleased);
 
 		const UInputAction* WheelAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Wheel);
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Started, this, &ThisClass::OnWheelStarted);
@@ -121,15 +123,13 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 	TickCursorTrace();
 	ChaseTargetAndAttack();
 
-	if (R1Player->IsUpperLowerSplit())
+	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags()) 
+		&& R1Player->IsUpperLowerSplit())
 	{
-		if (R1Player->IsInState(R1Tags::State_Mode_Blocking))
-		{
-			FVector LookDirection = CursorPos - R1Player->GetActorLocation();
-			LookDirection.Z = 0;
-			LookDirection.Normalize();
-			R1Player->SetDesiredVec(LookDirection);
-		}
+		FVector LookDirection = CursorPos - R1Player->GetActorLocation();
+		LookDirection.Z = 0;
+		LookDirection.Normalize();
+		R1Player->SetDesiredVec(LookDirection);
 	}
 }
 
@@ -187,7 +187,7 @@ void AR1PlayerController::ChaseTargetAndAttack()
 	{
 		if (R1Player->AttackMontage && GetCreatureState() == ECreatureState::Loco)
 		{
-			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(R1Player->GetActorLocation(), 
+			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(R1Player->GetActorLocation(),
 				TargetMonster->GetActorLocation());
 			R1Player->SetActorRotation(Rotator);
 
@@ -208,14 +208,9 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
-	FGameplayTagContainer BlockTags;
-	BlockTags.AddTag(R1Tags::State_Dead);
-	BlockTags.AddTag(R1Tags::State_Action);
-	if (R1Player->IsInAnyState(BlockTags)) return;
-
 	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-	
-	
+	bMovePressed = true;
+
 
 	FVector2D MovementVector = InputValue.Get<FVector2D>();
 	MovementVector.Normalize();
@@ -257,10 +252,15 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 #endif
 }
 
+void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
+{
+	bMovePressed = false;
+}
+
 void AR1PlayerController::OnWheelStarted()
 {
 	bWheelPressed = true;
-	
+
 	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
 	StopMovement(); // ※ NavigationSystem's Stop Movement
@@ -299,7 +299,7 @@ void AR1PlayerController::OnWheelReleased()
 {
 	bWheelPressed = false;
 
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return; 
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
 	if (cursorPushedTime <= ShortPressThreshold)
 	{
@@ -319,13 +319,13 @@ void AR1PlayerController::OnWheelReleased()
 
 void AR1PlayerController::OnLeftMouseStarted()
 {
-	
+
 	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Cyan, TEXT("LeftMouseStart"));
 }
 
 void AR1PlayerController::OnLeftMouseTriggered()
 {
-	
+
 
 }
 

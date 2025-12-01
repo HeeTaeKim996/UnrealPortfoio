@@ -59,11 +59,10 @@ protected:
 public:
 	void SetDesiredVec(FVector InVec) { DesiredVec = InVec; }
 	FVector GetDesiredVec() { return DesiredVec;  }
-
+	
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bHighlighted = false;
-
 
 	FVector DesiredVec = FVector(1, 0, 0);
 	bool bUseDesiredVec = true;

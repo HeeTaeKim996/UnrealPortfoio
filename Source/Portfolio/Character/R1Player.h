@@ -64,7 +64,8 @@ public:
 	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
 
 private:
-	bool bUpperLowerSplit;
+	bool bUpperLowerSplit = false;
+	float SurplusAlertTime;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

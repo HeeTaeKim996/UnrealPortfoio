@@ -69,7 +69,6 @@ void UBlockAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	Task->ReadyForActivation();
 
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("BlockStart"));
 }
 
 void UBlockAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
@@ -77,5 +76,4 @@ void UBlockAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("BlockEnd"));
 }
