@@ -7,6 +7,7 @@ enum class CancelCause
 {
 	ShutDownAll,
 	OnActionInvoked,
+	CancelMode
 };
 
 USTRUCT()

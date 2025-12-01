@@ -13,15 +13,25 @@ UENUM(BlueprintType)
 enum class EUpperBodyState : uint8
 {
 	Idle,
-	Shielding,
+	Blocking,
 	Aiming
+};
+
+UENUM(BlueprintType)
+enum class ELowerBodyDir : uint8
+{
+	Forward,
+	Right,
+	Left,
+	Backward
 };
 
 UCLASS()
 class PORTFOLIO_API UPlayerAnimInstance : public UCharacterAnimInstance
 {
 	GENERATED_BODY()
-	
+	friend class AR1Player;
+
 public:
 	UPlayerAnimInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -49,4 +59,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EUpperBodyState UpperBodyState = EUpperBodyState::Idle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ELowerBodyDir LowerBodyDir = ELowerBodyDir::Forward;
 };

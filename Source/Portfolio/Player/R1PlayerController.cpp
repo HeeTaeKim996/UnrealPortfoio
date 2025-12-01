@@ -120,6 +120,16 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 
 	TickCursorTrace();
 	ChaseTargetAndAttack();
+
+	if (R1Player->IsUpperLowerSplit())
+	{
+		if (R1Player->IsInState(R1Tags::State_Mode_Blocking))
+		{
+			FVector LookDirection = CursorPos - R1Player->GetActorLocation();
+			LookDirection.Z = 0;
+			R1Player->SetDesiredVec(LookDirection);
+		}
+	}
 }
 
 void AR1PlayerController::TickCursorTrace()
@@ -211,7 +221,10 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 	GetPawn()->AddMovementInput(FVector::ForwardVector, MovementVector.X);
 	GetPawn()->AddMovementInput(FVector::RightVector, MovementVector.Y);
 
-	R1Player->SetDesiredVec(FVector(MovementVector.X, MovementVector.Y, 0));
+	if (R1Player->IsUpperLowerSplit() == false)
+	{
+		R1Player->SetDesiredVec(FVector(MovementVector.X, MovementVector.Y, 0));
+	}
 
 #if 0 // Obsolate
 	if (MovementVector.X != 0)
@@ -334,6 +347,8 @@ void AR1PlayerController::OnRightMouseTriggered()
 
 void AR1PlayerController::OnRightMouseReleased()
 {
-
+	FGameplayTagContainer CancelContainer;
+	CancelContainer.AddTagFast(R1Tags::State_Mode_Blocking);
+	R1Player->Input_Cancel(CancelContainer);
 }
 

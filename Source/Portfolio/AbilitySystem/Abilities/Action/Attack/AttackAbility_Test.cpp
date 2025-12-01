@@ -83,13 +83,6 @@ void UAttackAbility_Test::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor.Get());
-	if (R1Character == nullptr)
-	{
-		EndAbilityCancel();
-		return;
-	}
-
 	UAttacAbilityTask_Test* Task = UAbilityTask::NewAbilityTask<UAttacAbilityTask_Test>(this);
 	Task->ReadyForActivation();
 }

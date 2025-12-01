@@ -25,9 +25,14 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Label_Preload);
 
 
+
+
+	/*-------------------
+			Ability
+	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
-
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Blocking);
 
 
 	/*-------------------

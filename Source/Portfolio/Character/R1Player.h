@@ -51,10 +51,20 @@ protected:
 protected:
 	virtual void RefreshHpBarRatio() override;
 
+protected:
+	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 
 public:
 	void Input_Action(FGameplayTag InActionState);
+	void Input_Mode(FGameplayTag InModeState);
+	void Input_Cancel(FGameplayTagContainer InCancelStates);
+	
 
+public:
+	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
+
+private:
+	bool bUpperLowerSplit;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

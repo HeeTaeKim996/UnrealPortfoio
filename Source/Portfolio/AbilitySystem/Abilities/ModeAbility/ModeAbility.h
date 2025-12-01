@@ -7,7 +7,7 @@
 #include "ModeAbility.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UModAbilityTask : public UCharacterAbilityTask
+class PORTFOLIO_API UModeAbilityTask : public UCharacterAbilityTask
 {
 	GENERATED_BODY()
 };

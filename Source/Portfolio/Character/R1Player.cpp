@@ -116,13 +116,7 @@ void AR1Player::EndPlay(const EEndPlayReason::Type EndPlayReasion)
 void AR1Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	 
-#if 0 // Obsolate
-	if (bSweep) // TEMP
-	{
-		TempSweep(DeltaTime);
-	}
-#endif
+	
 }
 
 void AR1Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -172,6 +166,21 @@ void AR1Player::RefreshHpBarRatio()
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerHealthBar(Ratio);
 }
 
+void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
+{
+	if (Tag.MatchesTag(R1Tags::State_Mode_Blocking)) // Abount Upper Lower Split 
+	{
+		if (TagExists == true)
+		{
+			bUpperLowerSplit = true;
+		}
+		else
+		{
+			bUpperLowerSplit = false;
+		}
+	}
+}
+
 void AR1Player::Input_Action(FGameplayTag InActionState)
 {
 	if(IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
@@ -184,6 +193,27 @@ void AR1Player::Input_Action(FGameplayTag InActionState)
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
 	PlayerASC->Action(InActionState);
+}
+
+void AR1Player::Input_Mode(FGameplayTag InModeState)
+{
+	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
+	CancelInfo.Cause = CancelCause::OnActionInvoked;
+	AbilityCancel(CancelInfo);
+
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+	PlayerASC->Action(InModeState);
+}
+
+void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
+{
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.CancelTags = InCancelStates;
+	CancelInfo.Cause = CancelCause::CancelMode;
+	AbilityCancel(CancelInfo);
 }
 
 

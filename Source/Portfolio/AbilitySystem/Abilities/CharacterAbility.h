@@ -28,7 +28,7 @@ private:
 	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
 
 protected:
-	bool AbilityCancel(FAbilityCancelInfo CancelInfo);
+	virtual bool AbilityCancel(FAbilityCancelInfo CancelInfo);
 
 protected:
 	FGameplayTag AbilityTag;

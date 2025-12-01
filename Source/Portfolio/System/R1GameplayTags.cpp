@@ -17,9 +17,16 @@ namespace R1Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Asset_Label_Preload, "Asset.Label.Preload");
 
+
+
+
+
+	/*-------------------
+		  Ability
+	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test, "Ability.Attack.Test");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test2, "Ability.Attack.Test2");
-
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Blocking, "Ability.Mode.Blocking");
 
 
 	/*-------------------
