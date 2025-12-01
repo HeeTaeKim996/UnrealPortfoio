@@ -47,6 +47,17 @@ protected:
 	TObjectPtr<UAnimSequenceBase> ForwardAnimation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> RightAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> LeftAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> BackwardAnimation;
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimSequenceBase> BlockingAnimation;
 
 

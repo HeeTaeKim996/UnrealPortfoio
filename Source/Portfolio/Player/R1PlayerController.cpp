@@ -127,6 +127,7 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 		{
 			FVector LookDirection = CursorPos - R1Player->GetActorLocation();
 			LookDirection.Z = 0;
+			LookDirection.Normalize();
 			R1Player->SetDesiredVec(LookDirection);
 		}
 	}
