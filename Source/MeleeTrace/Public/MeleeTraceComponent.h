@@ -40,6 +40,9 @@ struct MELEETRACE_API FMeleeHitInfo
 
 	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
 	uint8 Protocol;
+
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
+	double HitTime;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMeleeTraceStart,

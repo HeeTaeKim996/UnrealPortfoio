@@ -13,6 +13,7 @@
 #ifdef ENABLE_DRAW_DEBUG
 #include "MeleeTraceDebug.h"
 
+
 static TAutoConsoleVariable<bool> CVarMeleeTraceShouldDrawDebug(TEXT("MeleeTrace.ShouldDrawDebug"),
 	false,
 	TEXT("when set to true or 1 will draw debug drawings of meleetraces. Set to false or 0 to disable."));
@@ -57,9 +58,11 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 			FVector PreviousSampleLocation = SocketShapeInfo.PreviousFrameSampleLocation;
 			SocketShapeInfo.PreviousFrameSampleLocation = CurrentSampleLocation;
 
+			double CurrentFrameTime = GetWorld()->TimeSeconds;
+			double PreviousFrameTime = SocketShapeInfo.PreviousFrameTime;
+			SocketShapeInfo.PreviousFrameTime = CurrentFrameTime;
 
-
-			auto AddressTwoPoint = [&](FVector Start, FVector End) -> void
+			auto AddressTwoPoint = [&](FVector Start, FVector End, double StartTime, double EndTime) -> void
 				{
 					if (Start.Equals(End))
 					{
@@ -95,6 +98,7 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 							HitInfo.TraceHandle = ActiveMeleeTrace.TraceHandle;
 							HitInfo.Ability = ActiveMeleeTrace.Ability;
 							HitInfo.Protocol = SocketShapeInfo.Protocol;
+							HitInfo.HitTime = StartTime + (EndTime - StartTime) * HitResult.Time;
 
 							OnTraceHit.Broadcast(MoveTemp(HitInfo));
 						}
@@ -102,7 +106,7 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 				};	
 
 
-			AddressTwoPoint(PreviousSampleLocation, CurrentSampleLocation);
+			AddressTwoPoint(PreviousSampleLocation, CurrentSampleLocation, PreviousFrameTime, CurrentFrameTime);
 
 			// TODO : Make Lag Redundancy Address
 			//		  referencing 'Making Bazier Graph' would be good
@@ -232,6 +236,7 @@ void UMeleeTraceComponent::InternalStartTrace(const FMeleeTraceInfo& MeleeTraceI
 			if (!SocketShape.SourceMeshComponent.IsValid()) continue;
 
 			SocketShape.PreviousFrameSampleLocation = SocketShape.SourceMeshComponent->GetSocketLocation(SocketShape.SocketName);
+			SocketShape.PreviousFrameTime = GetWorld()->TimeSeconds;
 		}
 		ActiveMeleeTraces.Add(*Found);
 
@@ -291,9 +296,7 @@ void UMeleeTraceComponent::InternalStartTrace(const FMeleeTraceInfo& MeleeTraceI
 
 				newSocketShapeInfo.PreviousFrameSampleLocation = newSocketShapeInfo.SourceMeshComponent
 					->GetSocketLocation(newSocketShapeInfo.SocketName);
-				// Obsolate
-				//GetTraceSamples(TypedMeshComponent, MeleeTraceInfo.TraceDensity, MeleeTraceInfo.StartSocketName,
-					//MeleeTraceInfo.EndSocketName, NewMeleeTraceInfo.PreviousFrameSampleLocation);
+				newSocketShapeInfo.PreviousFrameTime = GetWorld()->TimeSeconds;
 
 				
 				NewMeleeTraceInfo.SocketShapeInfos.Add(newSocketShapeInfo);

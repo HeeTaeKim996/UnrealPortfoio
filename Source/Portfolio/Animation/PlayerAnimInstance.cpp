@@ -43,14 +43,14 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		float Alpha = FMath::Clamp(DeltaSeconds * 180.f, 0.f, 360.f);
 		//float Alpha = 8.f;
 
-		if (Dot > COS45)
+		if (Dot > COS_45)
 		{
 			LowerBodyDir = ELowerBodyDir::Forward;
 			UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw,Angle, Alpha);
 
 			//DebugMessage(TEXT("PlayerAnimInstance : Forward"));
 		}
-		else if (Dot > -COS45)
+		else if (Dot > -COS_45)
 		{
 			if (CrossZ > 0.f)
 			{

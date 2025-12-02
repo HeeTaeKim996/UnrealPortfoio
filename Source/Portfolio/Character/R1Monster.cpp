@@ -6,6 +6,7 @@
 #include "AbilitySystem/ASC/MonsterASC.h"
 #include "AbilitySystem/Attributes/R1MonsterSet.h"
 
+
 AR1Monster::AR1Monster()
 	: Super()
 {
@@ -61,5 +62,58 @@ void AR1Monster::InitAbilitySystem()
 	Super::InitAbilitySystem();
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+}
+
+void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
+{
+	Super::HandleTraceHit(HitInfo);
+
+	double HitTime = HitInfo.HitTime;
+
+	AR1Player* R1Player = Cast<AR1Player>(HitInfo.HitActor);
+	if (R1Player == nullptr) return;
+
+	const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
+	for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
+	{
+		const FDeflectInfo& DeflectInfo = DeflectInfos[i];
+		if (HitTime >= DeflectInfo.Start)
+		{
+			if (HitTime < DeflectInfo.End || DeflectInfo.End == -1)
+			{
+				FVector PlayerForward = R1Player->GetDesiredVec();
+				PlayerForward.Z = 0;
+				PlayerForward.Normalize();
+
+				FVector PlayerToMonster = GetActorLocation() - R1Player->GetActorLocation();
+				PlayerToMonster.Z = 0;
+				PlayerToMonster.Normalize();
+
+				float Dot = PlayerForward.Dot(PlayerToMonster);
+				if (Dot < BLOCK_SUCCEED_COS)
+				{
+
+					if (HitTime < DeflectInfo.Start + PARRY_SUCCEED_TIME)
+					{
+						DebugMessage(TEXT("R1Monster : Parry Succeed"));
+					}
+					else
+					{
+						DebugMessage(TEXT("R1Monster : Just Block Succeed"));
+					}
+
+					return;
+				}
+
+				break;
+			}
+
+			
+		}
+
+		if (DeflectInfo.End < HitTime) break;
+	}
+
+	DebugMessage(TEXT("R1Monster : Player Hit"));
 }
 

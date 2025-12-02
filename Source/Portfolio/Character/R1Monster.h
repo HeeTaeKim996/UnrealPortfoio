@@ -31,4 +31,8 @@ public:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void InitAbilitySystem();
+
+
+protected:
+	virtual void HandleTraceHit(FMeleeHitInfo HitInfo) override;
 };

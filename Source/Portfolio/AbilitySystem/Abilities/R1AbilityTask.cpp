@@ -12,7 +12,7 @@ void UR1AbilityTask123::Initialize(UR1GameplayAbility* InAbility, AR1Character* 
 	AbilityTag = InAbility->AbilityTags.First();
 
 	//InCharacter->GAS_OnAbilitySuccess.AddDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
-	InCharacter->GAS_OnTraceHit.AddDynamic(this, &UR1AbilityTask123::OnTraceHit);
+	InCharacter->GAS_OnAttackSucceed.AddDynamic(this, &UR1AbilityTask123::OnTraceHit);
 	InCharacter->GAS_OnAbilityCancel.AddDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 
 	
@@ -36,7 +36,7 @@ void UR1AbilityTask123::OnDestroy(bool bInOwnerFinished)
 	{
 		AR1Character* R1Character = WeakCharacter.Get();
 		//R1Character->GAS_OnAbilitySuccess.RemoveDynamic(this, &UR1AbilityTask123::OnAbilitySuccess);
-		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UR1AbilityTask123::OnTraceHit);
+		R1Character->GAS_OnAttackSucceed.RemoveDynamic(this, &UR1AbilityTask123::OnTraceHit);
 		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UR1AbilityTask123::OnAbilityCancel);
 	}
 	

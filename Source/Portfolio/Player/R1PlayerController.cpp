@@ -338,7 +338,7 @@ void AR1PlayerController::OnLeftMouseReleased()
 
 void AR1PlayerController::OnRightMouseStarted()
 {
-	R1Player->Input_Action(R1Tags::State_Mode_Blocking);
+	R1Player->Input_Deflect(true);
 }
 
 void AR1PlayerController::OnRightMouseTriggered()
@@ -348,8 +348,6 @@ void AR1PlayerController::OnRightMouseTriggered()
 
 void AR1PlayerController::OnRightMouseReleased()
 {
-	FGameplayTagContainer CancelContainer;
-	CancelContainer.AddTagFast(R1Tags::State_Mode_Blocking);
-	R1Player->Input_Cancel(CancelContainer);
+	R1Player->Input_Deflect(false);
 }
 

@@ -92,7 +92,7 @@ protected:
 	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
 
 
-
+	
 
 
 
@@ -120,9 +120,13 @@ protected:
 public:
 
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnTraceHit,
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackSucceed,
 		FMeleeHitInfo, MeleeHitInfo);
-	FGAS_OnTraceHit GAS_OnTraceHit;
+	FGAS_OnAttackSucceed GAS_OnAttackSucceed;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackParried,
+		FMeleeHitInfo, MeleeHitInfo);
+	FGAS_OnAttackParried GAS_OnAttackParried;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilityCancel,
 		FAbilityCancelInfo, CancelInfo);

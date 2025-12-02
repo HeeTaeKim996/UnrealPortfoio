@@ -35,6 +35,7 @@ struct MELEETRACE_API FMeleeTraceSocketShapeInfo
 	FCollisionShape TraceCollisionShape;
 	TWeakObjectPtr<UMeshComponent> SourceMeshComponent;
 	FVector PreviousFrameSampleLocation;
+	double PreviousFrameTime;
 	FName SocketName;
 	uint8 Protocol;
 };

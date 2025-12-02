@@ -10,10 +10,15 @@
 class UPlayerAnimInstance;
 class UAnimMontage;
 
+USTRUCT()
+struct PORTFOLIO_API FDeflectInfo
+{
+	GENERATED_BODY()
 
-/**
- * 
- */
+	double Start;
+	double End = -1;
+};
+
 UCLASS()
 class PORTFOLIO_API AR1Player : public AR1Character
 {
@@ -56,12 +61,20 @@ protected:
 
 public:
 	void Input_Action(FGameplayTag InActionState);
-	void Input_Mode(FGameplayTag InModeState);
+	void Input_Deflect(bool bIsStart);
+	
 	void Input_Cancel(FGameplayTagContainer InCancelStates);
 	
 
 public:
 	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
+	const TArray<FDeflectInfo>& GetDeflectInfos() { return DeflectInfos; }
+
+
+protected:
+	TArray<FDeflectInfo> DeflectInfos;
+	int DeflectMax = 10;
+
 
 private:
 	bool bUpperLowerSplit = false;

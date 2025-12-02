@@ -147,7 +147,7 @@ void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString() ));
 #endif
 
-	GAS_OnTraceHit.Broadcast(HitInfo);
+	//GAS_OnAttackSucceed.Broadcast(HitInfo);
 }
 
 

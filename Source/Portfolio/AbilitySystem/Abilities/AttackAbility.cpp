@@ -15,7 +15,7 @@ void UAttackAbilityTask::Activate()
 		return;
 	}
 
-	R1Character->GAS_OnTraceHit.AddDynamic(this, &UAttackAbilityTask::OnTraceHit);
+	R1Character->GAS_OnAttackSucceed.AddDynamic(this, &UAttackAbilityTask::OnTraceHit);
 }
 
 void UAttackAbilityTask::TickTask(float DeltaTime)
@@ -30,7 +30,7 @@ void UAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
 	if (R1Character)
 	{
-		R1Character->GAS_OnTraceHit.RemoveDynamic(this, &UAttackAbilityTask::OnTraceHit);
+		R1Character->GAS_OnAttackSucceed.RemoveDynamic(this, &UAttackAbilityTask::OnTraceHit);
 	}
 }
 

@@ -71,7 +71,7 @@ void AR1Player::BeginPlay()
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
-	
+	DeflectInfos.Reserve(DeflectMax);
 	
 
 	// TEMP
@@ -160,6 +160,7 @@ void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitC
 void AR1Player::HandleTraceHit(FMeleeHitInfo HitInfo)
 {
 	Super::HandleTraceHit(HitInfo);
+	GAS_OnAttackSucceed.Broadcast(HitInfo);
 }
 
 void AR1Player::RefreshHpBarRatio()
@@ -201,18 +202,46 @@ void AR1Player::Input_Action(FGameplayTag InActionState)
 	PlayerASC->Action(InActionState);
 }
 
-void AR1Player::Input_Mode(FGameplayTag InModeState)
+void AR1Player::Input_Deflect(bool bIsStart)
 {
-	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	if (bIsStart)
+	{
+		if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
-	CancelInfo.Cause = CancelCause::OnActionInvoked;
-	AbilityCancel(CancelInfo);
+		FAbilityCancelInfo CancelInfo;
+		CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
+		CancelInfo.Cause = CancelCause::OnActionInvoked;
+		AbilityCancel(CancelInfo);
 
-	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
-	PlayerASC->Action(InModeState);
+		UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+		PlayerASC->Action(R1Tags::State_Mode_Blocking);
+
+
+
+		if (DeflectInfos.Num() == DeflectMax)
+		{
+			DeflectInfos.RemoveAt(0);
+		}
+		FDeflectInfo DeflectInfo;
+		DeflectInfo.Start = GetWorld()->TimeSeconds;
+		DeflectInfos.Push(DeflectInfo);
+	}
+	else
+	{
+		FAbilityCancelInfo CancelInfo;
+		FGameplayTagContainer TagContainer;
+		TagContainer.AddTagFast(R1Tags::State_Mode_Blocking);
+		CancelInfo.CancelTags = TagContainer;
+		CancelInfo.Cause = CancelCause::CancelMode;
+		AbilityCancel(CancelInfo);
+
+		if (DeflectInfos.Num() > 1)
+		{
+			DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
+		}
+	}
 }
+
 
 void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 {
