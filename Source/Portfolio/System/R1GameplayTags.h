@@ -34,6 +34,8 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Blocking);
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_Sweep);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_JumpAttack);
 
 	/*-------------------
 		    State

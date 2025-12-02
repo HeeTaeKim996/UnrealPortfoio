@@ -28,6 +28,8 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test2, "Ability.Attack.Test2");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Blocking, "Ability.Mode.Blocking");
 
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Monster_FieldMonster_Kronos_Sweep, "Ability.Monster.FieldMonster.Kronos.Sweep");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Monster_FieldMonster_Kronos_JumpAttack, "Ability.Monster.FieldMonster.Kronos.JumpAttack");
 
 	/*-------------------
 			State

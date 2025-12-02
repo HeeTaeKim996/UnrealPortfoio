@@ -52,7 +52,7 @@ AR1Player::AR1Player() : Super()
 	Camera->bUsePawnControlRotation = false; // ※ camera does not rotate relative to arm
 
 	PlayerMesh = GetMesh();
-	
+
 
 #if 0 // Can Address Collision State In Cpp. But Addressing It in ProjectSettings is Recommanded
 	UCapsuleComponent* Capsule = GetCapsuleComponent();
@@ -72,7 +72,7 @@ void AR1Player::BeginPlay()
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
 	DeflectInfos.Reserve(DeflectMax);
-	
+
 
 	// TEMP
 	if (TestEffect && AbilitySystemComponent)
@@ -116,7 +116,7 @@ void AR1Player::EndPlay(const EEndPlayReason::Type EndPlayReasion)
 void AR1Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	if (bUpperLowerSplit && SurplusAlertTime > 0)
 	{
 		SurplusAlertTime -= DeltaTime;
@@ -134,7 +134,7 @@ void AR1Player::HandleGameplayTagEvent(FGameplayTag EventTag)
 	Super::HandleGameplayTagEvent(EventTag);
 	if (EventTag.MatchesTag(R1Tags::Event_Montage_End))
 	{
-		
+
 	}
 }
 
@@ -145,13 +145,13 @@ void AR1Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 }
 
 
-void AR1Player::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
+void AR1Player::HandleTraceStarted(UMeleeTraceComponent* ThisComponent,
 	FMeleeTraceInstanceHandle TraceHandle)
 {
 	Super::HandleTraceStarted(ThisComponent, TraceHandle);
 }
 
-void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, 
+void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 	FMeleeTraceInstanceHandle TraceHandle)
 {
 	Super::HandleTraceEnded(ThisComponent, HitCount, TraceHandle);
@@ -174,7 +174,7 @@ void AR1Player::RefreshHpBarRatio()
 
 void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 {
-	if (Tag.MatchesTag(R1Tags::State_Mode_Blocking)) // Abount Upper Lower Split 
+	if (Tag.MatchesTag(R1Tags::State_Mode_Blocking))
 	{
 		if (TagExists == true)
 		{
@@ -184,14 +184,19 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 		else
 		{
 			SurplusAlertTime = 5.f;
+
+			if (DeflectInfos.Num() > 1)
+			{
+				DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
+			}
 		}
 	}
 }
 
 void AR1Player::Input_Action(FGameplayTag InActionState)
 {
-	if(IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-	
+	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+
 	FAbilityCancelInfo CancelInfo;
 	CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
 	CancelInfo.Cause = CancelCause::OnActionInvoked;
@@ -202,44 +207,42 @@ void AR1Player::Input_Action(FGameplayTag InActionState)
 	PlayerASC->Action(InActionState);
 }
 
-void AR1Player::Input_Deflect(bool bIsStart)
+void AR1Player::Input_Block()
 {
-	if (bIsStart)
+
+	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
+	CancelInfo.Cause = CancelCause::OnActionInvoked;
+	AbilityCancel(CancelInfo);
+
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+	PlayerASC->Action(R1Tags::State_Mode_Blocking);
+
+
+
+	if (DeflectInfos.Num() == DeflectMax)
 	{
-		if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-
-		FAbilityCancelInfo CancelInfo;
-		CancelInfo.CancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
-		CancelInfo.Cause = CancelCause::OnActionInvoked;
-		AbilityCancel(CancelInfo);
-
-		UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
-		PlayerASC->Action(R1Tags::State_Mode_Blocking);
-
-
-
-		if (DeflectInfos.Num() == DeflectMax)
-		{
-			DeflectInfos.RemoveAt(0);
-		}
-		FDeflectInfo DeflectInfo;
-		DeflectInfo.Start = GetWorld()->TimeSeconds;
-		DeflectInfos.Push(DeflectInfo);
+		DeflectInfos.RemoveAt(0);
 	}
-	else
-	{
-		FAbilityCancelInfo CancelInfo;
-		FGameplayTagContainer TagContainer;
-		TagContainer.AddTagFast(R1Tags::State_Mode_Blocking);
-		CancelInfo.CancelTags = TagContainer;
-		CancelInfo.Cause = CancelCause::CancelMode;
-		AbilityCancel(CancelInfo);
+	FDeflectInfo DeflectInfo;
+	double Current = GetWorld()->TimeSeconds;
+	DeflectInfo.Start = Current;
 
-		if (DeflectInfos.Num() > 1)
+	int Cumulative = 0;
+	for (const FDeflectInfo& Defl : DeflectInfos)
+	{
+		if (Defl.Start > Current - 0.8)
 		{
-			DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
+			Cumulative++;
 		}
 	}
+	double ParrySuccedableTime = 0.2 - Cumulative * 0.6;
+	if (ParrySuccedableTime < 0) ParrySuccedableTime = 0;
+
+	DeflectInfo.ParrySuccedableTime = ParrySuccedableTime;
+	DeflectInfos.Push(DeflectInfo);
 }
 
 

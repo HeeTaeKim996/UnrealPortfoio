@@ -90,10 +90,11 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 				PlayerToMonster.Normalize();
 
 				float Dot = PlayerForward.Dot(PlayerToMonster);
-				if (Dot < BLOCK_SUCCEED_COS)
-				{
 
-					if (HitTime < DeflectInfo.Start + PARRY_SUCCEED_TIME)
+				
+				if (Dot > BLOCK_SUCCEED_COS)
+				{
+					if (HitTime < DeflectInfo.Start + DeflectInfo.ParrySuccedableTime)
 					{
 						DebugMessage(TEXT("R1Monster : Parry Succeed"));
 					}

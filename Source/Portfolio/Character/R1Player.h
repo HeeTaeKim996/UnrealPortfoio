@@ -17,6 +17,7 @@ struct PORTFOLIO_API FDeflectInfo
 
 	double Start;
 	double End = -1;
+	double ParrySuccedableTime;
 };
 
 UCLASS()
@@ -61,7 +62,7 @@ protected:
 
 public:
 	void Input_Action(FGameplayTag InActionState);
-	void Input_Deflect(bool bIsStart);
+	void Input_Block();
 	
 	void Input_Cancel(FGameplayTagContainer InCancelStates);
 	
