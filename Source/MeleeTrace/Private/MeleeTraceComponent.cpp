@@ -13,6 +13,7 @@
 #ifdef ENABLE_DRAW_DEBUG
 #include "MeleeTraceDebug.h"
 
+#define MIN_FRAME 0.02
 
 static TAutoConsoleVariable<bool> CVarMeleeTraceShouldDrawDebug(TEXT("MeleeTrace.ShouldDrawDebug"),
 	false,
@@ -55,11 +56,11 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 			const FQuat OffsetRotation = SocketShapeInfo.RotationOffset * SampleRotation;
 
 			FVector CurrentSampleLocation = SocketShapeInfo.SourceMeshComponent->GetSocketLocation(SocketShapeInfo.SocketName);
-			FVector PreviousSampleLocation = SocketShapeInfo.PreviousFrameSampleLocation;
+			FVector PrevSampleLocation = SocketShapeInfo.PreviousFrameSampleLocation;
 			SocketShapeInfo.PreviousFrameSampleLocation = CurrentSampleLocation;
 
 			double CurrentFrameTime = GetWorld()->TimeSeconds;
-			double PreviousFrameTime = SocketShapeInfo.PreviousFrameTime;
+			double PrevFrameTime = SocketShapeInfo.PreviousFrameTime;
 			SocketShapeInfo.PreviousFrameTime = CurrentFrameTime;
 
 			auto AddressTwoPoint = [&](FVector Start, FVector End, double StartTime, double EndTime) -> void
@@ -105,11 +106,35 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 					}
 				};	
 
+			double DiffTime = CurrentFrameTime - PrevFrameTime;
+			if (DiffTime <= MIN_FRAME)
+			{
+				AddressTwoPoint(PrevSampleLocation, CurrentSampleLocation, PrevFrameTime, CurrentFrameTime);
+			}
+			else
+			{
+				int SegmentCount = FMath::CeilToInt((DiffTime) / MIN_FRAME);
+				double Interval = DiffTime / static_cast<double>(SegmentCount);
 
-			AddressTwoPoint(PreviousSampleLocation, CurrentSampleLocation, PreviousFrameTime, CurrentFrameTime);
+				FVector AddVec = (CurrentSampleLocation - PrevSampleLocation) / static_cast<double>(SegmentCount);
+				FVector StartPos = PrevSampleLocation;
+				FVector EndPos = PrevSampleLocation + AddVec;
 
-			// TODO : Make Lag Redundancy Address
-			//		  referencing 'Making Bazier Graph' would be good
+				double StartTime = PrevFrameTime;
+				double EndTime = PrevFrameTime + Interval;
+
+				AddressTwoPoint(StartPos, EndPos, StartTime, EndTime);
+				while(--SegmentCount > 0)
+				{
+					StartPos += AddVec;
+					EndPos += AddVec;
+
+					StartTime += Interval;
+					EndTime += Interval;
+
+					AddressTwoPoint(StartPos, EndPos, StartTime, EndTime);
+				}
+			}
 		}
 	}
 }
