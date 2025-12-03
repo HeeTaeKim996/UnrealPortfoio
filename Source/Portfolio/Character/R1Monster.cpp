@@ -71,50 +71,60 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 	double HitTime = HitInfo.HitTime;
 
 	AR1Player* R1Player = Cast<AR1Player>(HitInfo.HitActor);
-	if (R1Player == nullptr) return;
-
-	const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
-	for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
+	if (R1Player)
 	{
-		const FDeflectInfo& DeflectInfo = DeflectInfos[i];
-		if (HitTime >= DeflectInfo.Start)
+		const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
+		for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
 		{
-			if (HitTime < DeflectInfo.End || DeflectInfo.End == -1)
+			const FDeflectInfo& DeflectInfo = DeflectInfos[i];
+			if (HitTime >= DeflectInfo.Start)
 			{
-				FVector PlayerForward = R1Player->GetDesiredVec();
-				PlayerForward.Z = 0;
-				PlayerForward.Normalize();
-
-				FVector PlayerToMonster = GetActorLocation() - R1Player->GetActorLocation();
-				PlayerToMonster.Z = 0;
-				PlayerToMonster.Normalize();
-
-				float Dot = PlayerForward.Dot(PlayerToMonster);
-
-				
-				if (Dot > BLOCK_SUCCEED_COS)
+				if (HitTime < DeflectInfo.End || DeflectInfo.End == -1)
 				{
-					if (HitTime < DeflectInfo.Start + DeflectInfo.ParrySuccedableTime)
+					FVector PlayerForward = R1Player->GetDesiredVec();
+					PlayerForward.Z = 0;
+					PlayerForward.Normalize();
+
+					FVector PlayerToMonster = GetActorLocation() - R1Player->GetActorLocation();
+					PlayerToMonster.Z = 0;
+					PlayerToMonster.Normalize();
+
+					float Dot = PlayerForward.Dot(PlayerToMonster);
+
+
+					if (Dot > BLOCK_SUCCEED_COS)
 					{
-						DebugMessage(TEXT("R1Monster : Parry Succeed"));
-					}
-					else
-					{
-						DebugMessage(TEXT("R1Monster : Just Block Succeed"));
+						if (HitTime < DeflectInfo.Start + DeflectInfo.ParrySuccedableTime)
+						{
+							DebugMessage(TEXT("R1Monster : Parry Succeed"));
+						}
+						else
+						{
+							DebugMessage(TEXT("R1Monster : Just Block Succeed"));
+						}
+
+						return;
 					}
 
-					return;
+					break;
 				}
 
-				break;
+
 			}
 
-			
+			if (DeflectInfo.End < HitTime) break;
 		}
 
-		if (DeflectInfo.End < HitTime) break;
+		DebugMessage(TEXT("R1Monster : Player Hit"));
+		GAS_OnAttackSucceed.Broadcast(HitInfo);
+	}
+	else
+	{
+		// TODO : Address Other Character Hit (Not Player)
 	}
 
-	DebugMessage(TEXT("R1Monster : Player Hit"));
+	
+
+	
 }
 

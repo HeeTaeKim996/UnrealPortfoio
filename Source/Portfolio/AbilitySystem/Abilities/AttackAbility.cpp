@@ -15,7 +15,7 @@ void UAttackAbilityTask::Activate()
 		return;
 	}
 
-	R1Character->GAS_OnAttackSucceed.AddDynamic(this, &UAttackAbilityTask::OnTraceHit);
+	R1Character->GAS_OnAttackSucceed.AddDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
 }
 
 void UAttackAbilityTask::TickTask(float DeltaTime)
@@ -30,10 +30,28 @@ void UAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
 	if (R1Character)
 	{
-		R1Character->GAS_OnAttackSucceed.RemoveDynamic(this, &UAttackAbilityTask::OnTraceHit);
+		R1Character->GAS_OnAttackSucceed.RemoveDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
 	}
 }
 
-void UAttackAbilityTask::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
+void UAttackAbilityTask::OnAttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
+	AttackSucceed(MoveTemp(MeleeHitInfo));
+}
+
+bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+{
+	if (Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
+
+	{ // Will be reversed with AttributeSet Info
+		AActor* HitActor = MeleeHitInfo.HitActor;
+		AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
+		if (HItCharacter == nullptr) return false;
+
+		HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
+	}
+
+	
+
+	return true;
 }

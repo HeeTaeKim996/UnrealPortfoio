@@ -19,9 +19,12 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
-protected:
+private:
 	UFUNCTION()
-	virtual void OnTraceHit(FMeleeHitInfo MeleeHitInfo);
+	void OnAttackSucceed(FMeleeHitInfo MeleeHitInfo);
+
+protected:
+	virtual bool AttackSucceed(FMeleeHitInfo MeleeHitInfo);
 };
 
 

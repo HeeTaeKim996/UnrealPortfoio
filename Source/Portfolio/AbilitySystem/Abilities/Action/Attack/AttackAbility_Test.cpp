@@ -33,19 +33,14 @@ void UAttacAbilityTask_Test::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-void UAttacAbilityTask_Test::OnTraceHit(FMeleeHitInfo MeleeHitInfo)
+bool UAttacAbilityTask_Test::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
-	UR1GameplayAbility* R1Ability = Cast<UR1GameplayAbility>(Ability);
-	if (!R1Ability) return;
+	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 
-	if (R1Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return;
-
-	AActor* HitActor = MeleeHitInfo.HitActor;
-	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
-	if (HItCharacter == nullptr) return;
-
-	HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
+	return true;
 }
+
+
 
 
 

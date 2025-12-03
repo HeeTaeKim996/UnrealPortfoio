@@ -64,4 +64,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_UsingItem);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Aiming);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Sneaking);
+
+	/* Monster */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Monster_Attack);
 }

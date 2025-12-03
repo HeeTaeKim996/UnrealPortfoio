@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/BaseAttackAbility.h"
-#include "AttackAbility_Test.generated.h"
+#include "AbilitySystem/Abilities/Monster/MonsterAttackAbility.h"
+#include "KronosAbility_SweepAttack.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UAttacAbilityTask_Test : public UBaseAttackAbilityTask
+class  PORTFOLIO_API UKronosAbility_SweepAttackTask : public UMonsterAttackAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -17,15 +17,15 @@ public:
 
 protected:
 	virtual bool AttackSucceed(FMeleeHitInfo MeleeHitInfo) override;
-
 };
 
+
 UCLASS()
-class PORTFOLIO_API UAttackAbility_Test : public UBaseAttackAbility
+class PORTFOLIO_API UKronosAbility_SweepAttack : public UMonsterAttackAbility
 {
 	GENERATED_BODY()
 public:
-	UAttackAbility_Test(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UKronosAbility_SweepAttack();
 
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

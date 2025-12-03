@@ -58,6 +58,9 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_UsingItem, "State.Mode.UsingItem");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Aiming, "State.Mode.Aiming");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Sneaking, "State.Mode.Sneaking");
+
+	// Monster
+	UE_DEFINE_GAMEPLAY_TAG(State_Monster_Attack, "State.Monster.Attack");
 }
 
 
