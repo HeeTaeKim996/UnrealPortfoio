@@ -4,7 +4,6 @@
 #include "AI/BTTaskNode_AsyncAbilityContainer.h"
 #include "Character/R1Character.h"
 #include "AIController.h"
-#include "GameplayTagContainer.h"
 
 UBTTaskNode_AsyncAbilityContainer::UBTTaskNode_AsyncAbilityContainer()
 	: Super()

@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "AbilitySystem/AbilityCommonStruct.h"
+#include "GameplayTagContainer.h"
 #include "BTTaskNode_AsyncAbilityContainer.generated.h"
 
-struct FGameplayTag;
+
 /**
  * 
  */
@@ -29,7 +30,7 @@ private:
 	void OnAbilitySucceed(FAbilitySucceedInfo SucceedInfo);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag AbilityTag;
 
 	UPROPERTY()

@@ -98,6 +98,18 @@ void UCharacterAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
+	if (bWasCancelled == false)
+	{
+		AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor);
+		if (R1Character)
+		{
+			FAbilitySucceedInfo SuccessInfo;			
+			SuccessInfo.AbilitySucceedTags = AbilityTags;
+			SuccessInfo.StateSucceedTag = StateTag;
+			R1Character->Invoke_AbilitySucceed(SuccessInfo);
+		}
+	}
+
 	UCharacterASC* CharacterASC = Cast<UCharacterASC>(ActorInfo->AbilitySystemComponent);
 	CharacterASC->RemoveLooseGameplayTag(StateTag);
 }
