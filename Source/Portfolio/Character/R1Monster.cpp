@@ -70,8 +70,8 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 
 	double HitTime = HitInfo.HitTime;
 
-	AR1Player* R1Player = Cast<AR1Player>(HitInfo.HitActor);
-	if (R1Player)
+	AActor* HitActor = HitInfo.HitResult.GetActor();
+	if (AR1Player* R1Player = Cast<AR1Player>(HitActor))
 	{
 		const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
 		for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
@@ -117,11 +117,13 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 
 		DebugMessage(TEXT("R1Monster : Player Hit"));
 		GAS_OnAttackSucceed.Broadcast(HitInfo);
+		return;
 	}
-	else
+	if (AR1Monster* R1Monster = Cast<AR1Monster>(HitActor))
 	{
 		// TODO : Address Other Character Hit (Not Player)
 	}
+	
 
 	
 

@@ -92,9 +92,7 @@ void UMeleeTraceComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 							FMeleeHitInfo HitInfo;
 							HitInfo.ThisComponent = this;
-							HitInfo.HitActor = HitResult.GetActor();
-							HitInfo.HitLocation = HitResult.ImpactPoint;
-							HitInfo.HitNormal = HitResult.ImpactNormal;
+							HitInfo.HitResult = HitResult;
 							HitInfo.HitBoneName = HitResult.BoneName;
 							HitInfo.TraceHandle = ActiveMeleeTrace.TraceHandle;
 							HitInfo.Ability = ActiveMeleeTrace.Ability;

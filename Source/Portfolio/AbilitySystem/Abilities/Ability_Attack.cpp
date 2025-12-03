@@ -63,7 +63,7 @@ bool UAbilityTask_Attack::TraceHit(FMeleeHitInfo MeleeHitInfo)
 	UR1GameplayAbility* R1Ability = WeakAbility.Get();
 	if (R1Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
 
-	AActor* HitActor = MeleeHitInfo.HitActor;
+	AActor* HitActor = MeleeHitInfo.HitResult.GetActor();
 	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
 	if (HItCharacter == nullptr) return false;
 

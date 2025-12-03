@@ -21,13 +21,7 @@ struct MELEETRACE_API FMeleeHitInfo
 		TObjectPtr<UMeleeTraceComponent> ThisComponent;
 
 	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
-	TObjectPtr<AActor> HitActor;
-
-	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
-	FVector HitLocation;
-
-	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
-	FVector HitNormal;
+	FHitResult HitResult;
 
 	UPROPERTY(BlueprintReadOnly, Transient, Category = "Melee Hit Info")
 	FName HitBoneName;

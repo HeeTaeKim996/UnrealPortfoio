@@ -67,4 +67,10 @@ namespace R1Tags
 
 	/* Monster */
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Monster_Attack);
+
+
+	/*-------------------
+		  GameplayCue
+	--------------------*/
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Test);
 }

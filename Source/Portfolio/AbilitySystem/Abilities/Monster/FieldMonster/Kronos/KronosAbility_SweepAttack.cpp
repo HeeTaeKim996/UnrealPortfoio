@@ -45,13 +45,6 @@ bool UKronosAbility_SweepAttackTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 
-	{ // Will be Replace by GE
-		AActor* HitActor = MeleeHitInfo.HitActor;
-		AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
-		if (HItCharacter == nullptr) return false;
-
-		HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
-	}
 
 	return true;
 }

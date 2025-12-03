@@ -34,4 +34,8 @@ class PORTFOLIO_API UAttackAbility : public UActionAbility
 {
 	GENERATED_BODY()
 	
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TMap<uint8, TSubclassOf<class UGameplayEffect>> AttackGEMap;
 };

@@ -61,6 +61,14 @@ namespace R1Tags
 
 	// Monster
 	UE_DEFINE_GAMEPLAY_TAG(State_Monster_Attack, "State.Monster.Attack");
+
+
+
+
+	/*-------------------
+	      GameplayCue
+	--------------------*/
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Test, "GameplayCue.Test");
 }
 
 

@@ -36,11 +36,5 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<class UGameplayEffect> GETest;
-
-	
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;	
 };

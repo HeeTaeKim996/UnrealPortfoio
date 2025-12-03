@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/AttackAbility.h"
 #include "Character/R1Character.h"
+#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "GameplayEffect.h"
 
 void UAttackAbilityTask::Activate()
 {
@@ -42,6 +44,36 @@ void UAttackAbilityTask::OnAttackSucceed(FMeleeHitInfo MeleeHitInfo)
 bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
 	if (Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
+
+	AActor* HitActor = MeleeHitInfo.HitResult.GetActor();
+	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
+	if (HItCharacter == nullptr) return false;
+
+
+	AActor* SourceActor = GetAvatarActor();
+	AR1Character* SourceCharacter = Cast<AR1Character>(SourceActor);
+	UR1AbilitySystemComponent* SourceASC
+		= Cast<UR1AbilitySystemComponent>(SourceCharacter->GetAbilitySystemComponent());
+
+	UR1AbilitySystemComponent* TargetASC
+		= Cast<UR1AbilitySystemComponent>(HItCharacter->GetAbilitySystemComponent());
+	TSubclassOf<UGameplayEffect> GE = Cast<UAttackAbility>(Ability)->AttackGEMap[MeleeHitInfo.Protocol];
+	if (TargetASC && GE && SourceASC)
+	{
+		FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
+		EffectContext.AddHitResult(MeleeHitInfo.HitResult);
+		EffectContext.AddInstigator(SourceActor, SourceActor);
+
+
+		FGameplayEffectSpecHandle SpecHandle =
+			SourceASC->MakeOutgoingSpec(GE, 1, EffectContext);
+
+		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+		HItCharacter->RefreshHpBarRatio();
+	}
+
+
 
 	return true;
 }
