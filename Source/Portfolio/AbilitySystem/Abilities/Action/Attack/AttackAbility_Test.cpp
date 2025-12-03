@@ -4,11 +4,13 @@
 #include "AbilitySystem/Abilities/Action/Attack/AttackAbility_Test.h"
 #include "Player/R1PlayerController.h"
 #include "Character/R1Player.h"
+#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "GameplayEffect.h"
 
 void UAttacAbilityTask_Test::Activate()
 {
 	Super::Activate();
-	
+
 	AR1PlayerController* PlayerController = Cast<AR1PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerController == nullptr) return;
 	FVector CursorPos = PlayerController->GetCursorPos();
@@ -37,13 +39,30 @@ bool UAttacAbilityTask_Test::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 
-	{ // Will be Replace by GE
-		AActor* HitActor = MeleeHitInfo.HitActor;
-		AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
-		if (HItCharacter == nullptr) return false;
+	AActor* HitActor = MeleeHitInfo.HitActor;
+	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
+	if (HItCharacter == nullptr) return false;
 
-		HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
+	HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
+
+	AR1Character* SourceCharacter = Cast<AR1Character>(GetAvatarActor());
+	UR1AbilitySystemComponent* SourceASC
+		= Cast<UR1AbilitySystemComponent>(SourceCharacter->GetAbilitySystemComponent());
+
+	UR1AbilitySystemComponent* TargetASC
+		= Cast<UR1AbilitySystemComponent>(HItCharacter->GetAbilitySystemComponent());
+	TSubclassOf<UGameplayEffect> GETest = Cast<UAttackAbility_Test>(Ability)->GETest;
+	if (TargetASC && GETest && SourceASC)
+	{
+		FGameplayEffectContextHandle EffectContext = TargetASC->MakeEffectContext();
+		FGameplayEffectSpecHandle SpecHandle =
+			SourceASC->MakeOutgoingSpec(GETest, 1, EffectContext);
+
+		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+		HItCharacter->RefreshHpBarRatio();
 	}
+
 
 	return true;
 }
@@ -80,8 +99,8 @@ bool UAttackAbility_Test::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 	return true;
 }
 
-void UAttackAbility_Test::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, 
+void UAttackAbility_Test::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);

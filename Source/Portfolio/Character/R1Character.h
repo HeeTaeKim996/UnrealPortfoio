@@ -42,7 +42,10 @@ public:
 	virtual void Highlight() override;
 	virtual void UnHighlight() override;
 
+
 	virtual void OnDamage(int Damage, TObjectPtr<AR1Character> From);
+
+
 	virtual void OnDead(TObjectPtr<AR1Character> From);
 
 	virtual void ToLoco();
@@ -51,7 +54,7 @@ public:
 
 
 
-protected:
+public:
 	virtual void RefreshHpBarRatio() {}
 
 	
@@ -117,9 +120,9 @@ protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists);
 
 
+
+
 public:
-
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackSucceed,
 		FMeleeHitInfo, MeleeHitInfo);
 	FGAS_OnAttackSucceed GAS_OnAttackSucceed;
