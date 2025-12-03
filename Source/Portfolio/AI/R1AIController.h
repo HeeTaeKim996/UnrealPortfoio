@@ -22,4 +22,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AIComponents")
+	TObjectPtr<class UBlackboardData> BlackboardAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AIComponents")
+	TObjectPtr<class UBehaviorTree> BehaviorTreeAsset;
 };
