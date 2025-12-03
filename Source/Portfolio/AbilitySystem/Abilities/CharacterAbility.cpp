@@ -56,7 +56,7 @@ bool UCharacterAbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
 	const FGameplayTag& StateTag = CharacterAbility->GetStateTag();
 	
 
-	for (const FGameplayTag& Tag : CancelInfo.CancelTags)
+	for (const FGameplayTag& Tag : CancelInfo.StateCancelTags)
 	{
 		if (StateTag.MatchesTag(Tag))
 		{

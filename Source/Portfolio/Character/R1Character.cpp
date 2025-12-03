@@ -182,7 +182,6 @@ void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 
 
 
-
 void AR1Character::AddState(FGameplayTag NewState)
 {
 	AbilitySystemComponent->AddLooseGameplayTag(NewState);
@@ -201,6 +200,11 @@ bool AR1Character::IsInAnyState(const FGameplayTagContainer& StateTags)
 bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
 {
 	return AbilitySystemComponent->HasAllMatchingGameplayTags(StateTags);
+}
+
+void AR1Character::Invoke_AbilitySucceed(FAbilitySucceedInfo SucceedInfo)
+{
+	GAS_OnAbilitySucceed.Broadcast(SucceedInfo);
 }
 
 void AR1Character::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)

@@ -351,7 +351,7 @@ void AR1PlayerController::OnRightMouseReleased()
 	FAbilityCancelInfo CancelInfo;
 	FGameplayTagContainer TagContainer;
 	TagContainer.AddTagFast(R1Tags::State_Mode_Blocking);
-	CancelInfo.CancelTags = TagContainer;
+	CancelInfo.StateCancelTags = TagContainer;
 	CancelInfo.Cause = CancelCause::CancelMode;
 
 	R1Player->AbilityCancel(CancelInfo);

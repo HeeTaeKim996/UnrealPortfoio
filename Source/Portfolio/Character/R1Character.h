@@ -110,7 +110,7 @@ public:
 	bool IsInState(FGameplayTag StateTag) const;
 	bool IsInAnyState(const FGameplayTagContainer& StateTags);
 	bool IsInAllStates(const FGameplayTagContainer& StateTags);
-
+	void Invoke_AbilitySucceed(FAbilitySucceedInfo SucceedInfo);
 
 protected:
 	UFUNCTION()
@@ -131,7 +131,9 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilityCancel,
 		FAbilityCancelInfo, CancelInfo);
 	FGAS_OnAbilityCancel GAS_OnAbilityCancel;
-
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySucceed,
+		FAbilitySucceedInfo, SucceedInfo);
+	FGAS_OnAbilitySucceed GAS_OnAbilitySucceed;
 
 
 	
