@@ -55,7 +55,7 @@ void UR1GameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 
 
-void UR1GameplayAbility::PlayMontage(UAnimMontage* Montage)
+void UR1GameplayAbility::PlayMontage(UAnimMontage* Montage, FName SectionName)
 {
 	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
 	if (!AnimInstance || !Montage)
@@ -70,6 +70,11 @@ void UR1GameplayAbility::PlayMontage(UAnimMontage* Montage)
 		EndAbilityCancel();
 		return;
 	}
+	if (SectionName != "")
+	{
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+	
 
 	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
 	if (!MontageInstance)

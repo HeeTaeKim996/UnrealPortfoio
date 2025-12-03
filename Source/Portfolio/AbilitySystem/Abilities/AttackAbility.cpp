@@ -43,15 +43,5 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 {
 	if (Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
 
-	{ // Will be reversed with AttributeSet Info
-		AActor* HitActor = MeleeHitInfo.HitActor;
-		AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
-		if (HItCharacter == nullptr) return false;
-
-		HItCharacter->OnDamage(20, Cast<AR1Character>(GetAvatarActor()));
-	}
-
-	
-
 	return true;
 }

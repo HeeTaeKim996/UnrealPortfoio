@@ -41,4 +41,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UAnimMontage> PlayingMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FName SectionName = "";
 };

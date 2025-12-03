@@ -40,7 +40,7 @@ void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	PlayMontage(PlayingMontage);
+	PlayMontage(PlayingMontage, SectionName);
 }
 
 void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 

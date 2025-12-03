@@ -72,7 +72,12 @@ void AR1Player::BeginPlay()
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
 	DeflectInfos.Reserve(DeflectMax);
-
+	FDeflectInfo DummyInfo;
+	double CurrentTime = GetWorld()->TimeSeconds;
+	DummyInfo.Start = CurrentTime;
+	DummyInfo.End = CurrentTime;
+	DummyInfo.ParrySuccedableTime = 0;
+	DeflectInfos.Add(DummyInfo);
 
 	// TEMP
 	if (TestEffect && AbilitySystemComponent)
