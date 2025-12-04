@@ -55,27 +55,23 @@ void UR1GameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 
 
-void UR1GameplayAbility::PlayMontage(UAnimMontage* Montage, FName SectionName)
+void UR1GameplayAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName)
 {
-	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
-	if (!AnimInstance || !Montage)
+	if (R1ASC == nullptr || Montage == nullptr)
 	{
 		EndAbilityCancel();
 		return;
 	}
 
-	float duration = AnimInstance->Montage_Play(Montage, 1.f);
+	float duration = R1ASC->PlayMontage(this, GetCurrentActivationInfo(), Montage, 1.f, SectionName, 0.f);
 	if (duration < 0.f)
 	{
 		EndAbilityCancel();
 		return;
 	}
-	if (SectionName != "")
-	{
-		AnimInstance->Montage_JumpToSection(SectionName);
-	}
 	
-
+	
+	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
 	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
 	if (!MontageInstance)
 	{

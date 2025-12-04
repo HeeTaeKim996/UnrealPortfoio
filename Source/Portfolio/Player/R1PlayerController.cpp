@@ -343,7 +343,7 @@ void AR1PlayerController::OnRightMouseStarted()
 
 void AR1PlayerController::OnRightMouseTriggered()
 {
-
+	R1Player->Input_Block();
 }
 
 void AR1PlayerController::OnRightMouseReleased()

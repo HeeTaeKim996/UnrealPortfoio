@@ -19,11 +19,6 @@ class UCameraComponent;
 
 
 
-
-
-
-
-
 UCLASS()
 class PORTFOLIO_API AR1Character : public ACharacter, public IR1HighlightInterface, public IAbilitySystemInterface
 {
@@ -45,14 +40,14 @@ public:
 
 	virtual void OnDamage(int Damage, TObjectPtr<AR1Character> From);
 
-
 	virtual void OnDead(TObjectPtr<AR1Character> From);
 
 	virtual void ToLoco();
 
 	virtual void HandleGameplayTagEvent(FGameplayTag EventTag);
 
-
+public:
+	void HitReact(const FHitResult* HitResult, FGameplayTag ReactTag);
 
 public:
 	virtual void RefreshHpBarRatio() {}
@@ -146,7 +141,7 @@ protected:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UCharacterASC> AbilitySystemComponent;
+	TObjectPtr<class UCharacterASC> CharacterASC;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UR1AttributeSet> AttributeSet;

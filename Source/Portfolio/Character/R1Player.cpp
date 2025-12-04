@@ -80,6 +80,7 @@ void AR1Player::BeginPlay()
 	DeflectInfos.Add(DummyInfo);
 
 	// TEMP
+#if 0
 	if (TestEffect && AbilitySystemComponent)
 	{
 		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
@@ -90,6 +91,7 @@ void AR1Player::BeginPlay()
 
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+#endif
 }
 
 void AR1Player::PossessedBy(AController* NewController)
@@ -105,8 +107,8 @@ void AR1Player::InitAbilitySystem()
 
 	if (AR1PlayerState* PS = GetPlayerState<AR1PlayerState>())
 	{
-		AbilitySystemComponent = Cast<UCharacterASC>(PS->GetAbilitySystemComponent());
-		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
+		CharacterASC = Cast<UCharacterASC>(PS->GetAbilitySystemComponent());
+		CharacterASC->InitAbilityActorInfo(PS, this);
 
 		AttributeSet = PS->GetR1PlayerSet();
 	}
@@ -208,13 +210,13 @@ void AR1Player::Input_Action(FGameplayTag InActionState)
 	AbilityCancel(CancelInfo);
 
 
-	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	PlayerASC->Action(InActionState);
 }
 
 void AR1Player::Input_Block()
 {
-
+	if (IsInState(R1Tags::Ability_Mode_Blocking)) return;
 	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
 	FAbilityCancelInfo CancelInfo;
@@ -222,7 +224,7 @@ void AR1Player::Input_Block()
 	CancelInfo.Cause = CancelCause::OnActionInvoked;
 	AbilityCancel(CancelInfo);
 
-	UPlayerASC* PlayerASC = Cast<UPlayerASC>(AbilitySystemComponent);
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	PlayerASC->Action(R1Tags::State_Mode_Blocking);
 
 

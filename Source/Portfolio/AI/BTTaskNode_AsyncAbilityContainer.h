@@ -29,6 +29,9 @@ private:
 	UFUNCTION()
 	void OnAbilitySucceed(FAbilitySucceedInfo SucceedInfo);
 
+private:
+	void CleanUpDelegate();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag AbilityTag;

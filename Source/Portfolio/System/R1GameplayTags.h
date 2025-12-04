@@ -32,7 +32,18 @@ namespace R1Tags
 	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Fwd);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Right);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Left);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Bwd);
+
+
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Blocking);
+
+
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_Sweep);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_JumpAttack);
@@ -54,8 +65,13 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Skill);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_UsingItem);
+
+	// HitReact
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Knockdown);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact_Base);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact_Knockdown);
+
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Parry);
 
 	/* Mode */
@@ -73,4 +89,5 @@ namespace R1Tags
 		  GameplayCue
 	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Test);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_HitReact_HitReaction);
 }

@@ -26,6 +26,16 @@ namespace R1Tags
 	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test, "Ability.Attack.Test");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test2, "Ability.Attack.Test2");
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base, "Ability.Action.HitReact.Base");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Fwd, "Ability.Action.HitReact.Base.Fwd");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Right, "Ability.Action.HitReact.Base.Right");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Left, "Ability.Action.HitReact.Base.Left");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Bwd, "Ability.Action.HitReact.Base.Bwd");
+
+
+
+
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Blocking, "Ability.Mode.Blocking");
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Monster_FieldMonster_Kronos_Sweep, "Ability.Monster.FieldMonster.Kronos.Sweep");
@@ -48,8 +58,13 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Skill, "State.Action.Attack.Skill");
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_UsingItem, "State.Action.UsingItem");
+
+	// HitReact
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact, "State.Action.HitReact");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Knockdown, "State.Action.Knockdown");
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact_Base, "State.Action.HitReact.Base");
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact_Knockdown, "State.Action.HitReact.Knockdown");
+
+
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Parry, "State.Action.Parry");
 
 	/// Mode
@@ -69,6 +84,7 @@ namespace R1Tags
 	      GameplayCue
 	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Test, "GameplayCue.Test");
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitReact_HitReaction, "GameplayCue.HitReact.HitReaction");
 }
 
 

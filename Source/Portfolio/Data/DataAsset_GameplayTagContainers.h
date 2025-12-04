@@ -14,7 +14,8 @@ UCLASS()
 class PORTFOLIO_API UDataAsset_GameplayTagContainers : public UDataAsset
 {
 	GENERATED_BODY()
-	
+public:
+	UDataAsset_GameplayTagContainers();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
@@ -22,4 +23,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
 	FGameplayTagContainer OnActionCall_CancelingTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
+	FGameplayTagContainer OnHitReact_CancelTags;
 };

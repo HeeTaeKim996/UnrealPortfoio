@@ -40,7 +40,12 @@ void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	PlayMontage(PlayingMontage, SectionName);
+	UR1AbilitySystemComponent* R1ASC = Cast<UR1AbilitySystemComponent>(ActorInfo->AbilitySystemComponent);
+	if (R1ASC)
+	{
+		PlayMontage(R1ASC, PlayingMontage, SectionName);
+	}
+	
 }
 
 void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 

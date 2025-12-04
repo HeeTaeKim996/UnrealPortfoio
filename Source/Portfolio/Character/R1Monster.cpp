@@ -14,7 +14,7 @@ AR1Monster::AR1Monster()
 
 	MeleeTrace->SetTraceChannel(ECC_GameTraceChannel14);
 
-	AbilitySystemComponent = CreateDefaultSubobject<UMonsterASC>("AbilitySystemComponent");
+	CharacterASC = CreateDefaultSubobject<UMonsterASC>("AbilitySystemComponent");
 	AttributeSet = CreateDefaultSubobject<UR1MonsterSet>("MonsterSet");
 }
 	
@@ -61,7 +61,7 @@ void AR1Monster::InitAbilitySystem()
 {
 	Super::InitAbilitySystem();
 
-	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	CharacterASC->InitAbilityActorInfo(this, this);
 }
 
 void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)

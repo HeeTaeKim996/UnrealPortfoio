@@ -36,12 +36,7 @@ void UBTTaskNode_AsyncAbilityContainer::OnTaskFinished(UBehaviorTreeComponent& O
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 
-	AR1Character* R1Character = Cast<AR1Character>(OwnerComp.GetAIOwner()->GetPawn());
-	if (R1Character)
-	{
-		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel);
-		R1Character->GAS_OnAbilitySucceed.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
-	}
+	CleanUpDelegate();
 }
 
 
@@ -53,6 +48,7 @@ void UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel(FAbilityCancelInfo Cance
 		{
 			if (WeakOwnerComp.IsValid())
 			{
+				CleanUpDelegate();
 				FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Failed);
 			}
 			return;
@@ -68,9 +64,23 @@ void UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed(FAbilitySucceedInfo Suc
 		{
 			if (WeakOwnerComp.IsValid())
 			{
+				CleanUpDelegate();
 				FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Succeeded);
 			}
 			return;
 		}
 	}
+}
+
+void UBTTaskNode_AsyncAbilityContainer::CleanUpDelegate()
+{
+	if (WeakOwnerComp.IsValid() == false) return;
+
+	UBehaviorTreeComponent* OwnerComp = WeakOwnerComp.Get();
+
+	AR1Character* R1Character = Cast<AR1Character>(OwnerComp->GetAIOwner()->GetPawn());
+	if (R1Character == nullptr) return;
+
+	R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel);
+	R1Character->GAS_OnAbilitySucceed.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
 }

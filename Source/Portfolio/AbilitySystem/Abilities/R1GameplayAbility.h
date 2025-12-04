@@ -55,7 +55,7 @@ public:
 
 
 protected:
-	void PlayMontage(UAnimMontage* Montage, FName SectionName);
+	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
 
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 };

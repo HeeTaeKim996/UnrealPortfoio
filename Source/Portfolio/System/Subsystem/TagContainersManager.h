@@ -28,6 +28,11 @@ public:
 		return TagContainersData->OnActionCall_CancelingTags;
 	}
 
+	FORCEINLINE const FGameplayTagContainer& OnHitReact_CancelTags() const
+	{
+		return TagContainersData->OnHitReact_CancelTags;
+	}
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UDataAsset_GameplayTagContainers> TagContainersData;

@@ -5,6 +5,7 @@
 #include "AbilitySystem/ASC/CharacterASC.h"
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "AbilitySystem/Abilities/R1GameplayAbility.h"
+#include "System/Subsystem/TagContainersManager.h"
 
 
 AR1Character::AR1Character(const FObjectInitializer& ObjectInitializer)
@@ -38,7 +39,7 @@ void AR1Character::BeginPlay()
 	MeleeTrace->OnTraceEnd.AddDynamic(this, &ThisClass::HandleTraceEnded);
 	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
 
-	AbilitySystemComponent->Delegate_OnTagUpdated.BindUObject(this, &AR1Character::OnTagUpdated);
+	CharacterASC->Delegate_OnTagUpdated.BindUObject(this, &AR1Character::OnTagUpdated);
 
 }
 
@@ -92,9 +93,9 @@ void AR1Character::OnDamage(int Damage, TObjectPtr<AR1Character> From)
 
 void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 {
-	if (AbilitySystemComponent->HasMatchingGameplayTag(R1Tags::State_Dead)) return;
+	if (CharacterASC->HasMatchingGameplayTag(R1Tags::State_Dead)) return;
 
-	AbilitySystemComponent->AddLooseGameplayTag(R1Tags::State_Dead);
+	CharacterASC->AddLooseGameplayTag(R1Tags::State_Dead);
 }
 
 void AR1Character::ToLoco()
@@ -109,13 +110,50 @@ void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 {
 	if(EventTag.MatchesTag(R1Tags::Event_Montage_End))
 	{
-		
+
 	}
 }
 
+void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
+{
+	FAbilityCancelInfo CancelInfo;
+	CancelInfo.Cause = CancelCause::HitReact;
+	CancelInfo.StateCancelTags = UTagContainersManager::Get(this)->OnHitReact_CancelTags();
+
+	AbilityCancel(CancelInfo);
+
+	FVector ReactDir = HitResult->Location - GetActorLocation();
+	ReactDir.Z = 0;
+	ReactDir.Normalize();
+
+	float Cos = DesiredVec.Dot(ReactDir);
+	float Sin = DesiredVec.Cross(ReactDir).Z; // Prelude Two Vectors are span of x,y
+	
+	if (Cos > COS_45)
+	{
+		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Bwd);
+	}
+	else if (Cos > -COS_45)
+	{
+		if (Sin > 0)
+		{
+			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Left);
+		}
+		else
+		{
+			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Right);
+		}
+	}
+	else
+	{
+		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Fwd);
+	}
+}
+
+
 UAbilitySystemComponent* AR1Character::GetAbilitySystemComponent() const
 {
-	return AbilitySystemComponent;
+	return CharacterASC;
 }
 
 void AR1Character::InitAbilitySystem()
@@ -125,7 +163,7 @@ void AR1Character::InitAbilitySystem()
 
 void AR1Character::ActivateAbility(FGameplayTag AbilityTag)
 {
-	AbilitySystemComponent->ActivateAbility(AbilityTag);
+	CharacterASC->ActivateAbility(AbilityTag);
 }
 
 
@@ -166,7 +204,7 @@ void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 
 void AR1Character::AddCharacterAbilities()
 {
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(AbilitySystemComponent);
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(CharacterASC);
 	if (ASC == nullptr) return;
 
 	ASC->AddCharacterAbilities(StartupAbilities);
@@ -184,22 +222,22 @@ void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 
 void AR1Character::AddState(FGameplayTag NewState)
 {
-	AbilitySystemComponent->AddLooseGameplayTag(NewState);
+	CharacterASC->AddLooseGameplayTag(NewState);
 }
 
 bool AR1Character::IsInState(FGameplayTag StateTag) const
 {
-	return AbilitySystemComponent->HasMatchingGameplayTag(StateTag);
+	return CharacterASC->HasMatchingGameplayTag(StateTag);
 }
 
 bool AR1Character::IsInAnyState(const FGameplayTagContainer& StateTags)
 {
-	return AbilitySystemComponent->HasAnyMatchingGameplayTags(StateTags);
+	return CharacterASC->HasAnyMatchingGameplayTags(StateTags);
 }
 
 bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
 {
-	return AbilitySystemComponent->HasAllMatchingGameplayTags(StateTags);
+	return CharacterASC->HasAllMatchingGameplayTags(StateTags);
 }
 
 void AR1Character::Invoke_AbilitySucceed(FAbilitySucceedInfo SucceedInfo)

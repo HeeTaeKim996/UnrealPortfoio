@@ -8,3 +8,29 @@
 
 
 ※ https://github.com/tranek/GASDocumentation : GAS 공부하기에 좋은 문서. (언리얼 공식 문서는 아님)
+
+
+□ GC(GameplayCueNotify) C++ 베이느 인식 못함 정리
+ - 언리얼 5. 초반대에 주로 나타나는 증상으로, BP GC 는 인식하지만, GAmeplayCueNotify_static, _actor 를 상속한 클래스를, ue 의 GameplayCueManager 가 인식하지 못함
+ - 아래는 검색한 해결 방법들을 나열
+ - 1) 방법으로 해결했으나, 정확하게 1) 방법으로 해결된건지 확신이 없다. 클래스에 직접 Notify를 할당하지 않고, GE -> GC 전역 호출이라는 점도 흥미롭고(비례하여 버그도 많고), 공부할 점이 많아보인다.
+      따라서 1) 외에 서칭했던 다른 방법들도 기록해둠
+
+ 1) 해결했던 방법 - GC 읽는 경로 지정
+    Config/DefaultGame.ini 에, 
+  	 [/Script/GameplayAbilities.AbilitySystemGlobals]
+	 +GameplayCueNotifyPaths="/Game/Blueprint/AbilitySystem/GC" 
+    를 추가. 저기서 폴더는, GC 에셋(사용자 C++상속자로 구현된 BP들 위치) 이 있는 위치를 직접 지정해서, GameplayCueManager가 추가로 해당 주소를 인식하도록 요청 
+   ( 경로는 GC 넣는 경로로 지정. [ /Game == ..../Contents ]
+   
+ 	※ [/Script/GameplayAbilities.GameplayCueManager] 	+ .. 주소
+       	동일 양식으로 위도 같은 경로 지정하는 방법이 있다 하는데, AbilitySystemGlobals 에 처리하는 게 좋다 함
+  
+ 2) 단독 C++ 는 GCManager가 인식 불가. C++라 해도, BP로 C++ 를 상속해서 1)의 주소에 위치시켜야 함
+
+ 3) C++ 내용을, Make It a Blueprint Library Method 를 활용하여, BP로 내용을 통째로 옮기기 (성능 떨어지지만, 방법일 수는 있을듯)
+
+ ※ 위 내용들은 모두, https://forums.unrealengine.com/t/howto-implement-gameplaycue-in-c/523166/14 	를 참조
+
+ 4) https://locketgoma.tistory.com/92
+ - 시도해보지는 않았으나, 고급기법. 라이라 코드를 참조해서 만들었다는데, 어차피 GC 전역 호출 기법도 궁금하니, 나중에 이부분 공부해봐도 좋을듯
