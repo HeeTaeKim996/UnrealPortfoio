@@ -2,37 +2,74 @@
 
 
 #include "AbilitySystem/R1AbilitySystemComponent.h"
-#include "AbilitySystem/Abilities/R1GameplayAbility.h"
-
+#include "AbilitySystem/Abilities/CharacterAbility.h"
 
 
 void UR1AbilitySystemComponent::AddCharacterAbilities(
-	const TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
+	TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
 {
-	for (const TSubclassOf<UR1GameplayAbility>& AbilityClass : StartupAbilities)
+	for (TSubclassOf<UR1GameplayAbility>& AbilityClass : StartupAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-		FGameplayAbilitySpecHandle SpecHandle = GiveAbility(AbilitySpec);
-		// GiveAbility -> ActivatableAbilities.Add (New )
-		SpecHandles.Add(SpecHandle);
+		AddCharacterAbility(AbilityClass);
 	}
+}
 
-#if 0
+void UR1AbilitySystemComponent::AddCharacterAbility(TSubclassOf<UR1GameplayAbility>& AddAbility)
+{
+	UR1GameplayAbility* COD = AddAbility->GetDefaultObject<UR1GameplayAbility>();
+
+	for (FGameplayAbilitySpecHandle& SpecHandle : SpecHandles)
 	{
-		for (const FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
 		{
-			if (Spec.Ability)
+			if (Spec->Ability && Spec->Ability->AbilityTags.First().MatchesTag(COD->AbilityTags.First()))
+				// Prelude First Tag Represents Ability
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
-					FString::Printf(TEXT("Ability : [%s], Level : [%d]."), *Spec.Ability.GetName(), Spec.Level));
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Ability : Null"));
+				ensureAlwaysMsgf(!Spec->IsActive(), TEXT("ASC Already Has That ability"));
+
+				return;
 			}
 		}
 	}
-#endif
+
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AddAbility, 1);
+	FGameplayAbilitySpecHandle SpecHandle = GiveAbility(AbilitySpec);
+	SpecHandles.Add(SpecHandle);
+}
+
+void UR1AbilitySystemComponent::RemoveAbilityByStateTag(FGameplayTag InStateTag)
+{
+	for(int i = SpecHandles.Num() - 1; i >= 0; i--)
+	{
+		FGameplayAbilitySpecHandle& SpecHandle = SpecHandles[i];
+		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (UCharacterAbility* CharacterAbility = Cast<UCharacterAbility>(Spec->Ability))
+			{
+				if (CharacterAbility->GetStateTag().MatchesTag(InStateTag))
+				{
+					SpecHandles.RemoveAt(i);
+					ClearAbility(SpecHandle);
+				}
+			}
+		}
+	}
+}
+
+void UR1AbilitySystemComponent::RemoveAbilityByAbilityTag(FGameplayTag InAbilityTag)
+{
+	for (int i = SpecHandles.Num() - 1; i >= 0; i--)
+	{
+		FGameplayAbilitySpecHandle& SpecHandle = SpecHandles[i];
+		if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (Spec->Ability && Spec->Ability->AbilityTags.HasTag(InAbilityTag))
+			{
+				SpecHandles.RemoveAt(i);
+				ClearAbility(SpecHandle);
+			}
+		}
+	}
 }
 
 void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
@@ -43,7 +80,21 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 		{
 			if (Spec->Ability && Spec->Ability->AbilityTags.HasTag(InTag))
 			{
-				ensureAlwaysMsgf(!Spec->IsActive(), TEXT("Ability is Already Active"));
+				if (Spec->IsActive())
+				{
+					UCharacterAbility* R1Ability = Cast<UCharacterAbility>(Spec->Ability);
+					
+					if (R1Ability && R1Ability->GetStateTag().MatchesTag(R1Tags::State_Action_HitReact))
+					{
+						R1Ability->CancelAbility(SpecHandle, R1Ability->GetCurrentActorInfo(),
+							R1Ability->GetCurrentActivationInfo(), true);
+					}
+					else
+					{
+						ensureAlwaysMsgf(false, TEXT("Ability is Already Active"));
+						return;
+					}
+				}
 
 				TryActivateAbility(SpecHandle);
 				return;

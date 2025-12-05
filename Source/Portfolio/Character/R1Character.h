@@ -15,9 +15,27 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UR1GameplayAbility;
+class UCharacterAbility;
 
 
+USTRUCT(BlueprintType)
+struct FBaseAbilities
+{
+	GENERATED_BODY()
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UR1GameplayAbility> HitReact_Fwd;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UR1GameplayAbility> HitReact_Right;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UR1GameplayAbility> HitReact_Left;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UR1GameplayAbility> HitReact_Bwd;
+};
 
 UCLASS()
 class PORTFOLIO_API AR1Character : public ACharacter, public IR1HighlightInterface, public IAbilitySystemInterface
@@ -48,6 +66,7 @@ public:
 
 public:
 	void HitReact(const FHitResult* HitResult, FGameplayTag ReactTag);
+	void Die(const FHitResult* HitResult, FGameplayTag ReactTag);
 
 public:
 	virtual void RefreshHpBarRatio() {}
@@ -100,7 +119,7 @@ public:
 	virtual void InitAbilitySystem();
 	void ActivateAbility(FGameplayTag AbilityTag);
 
-	virtual void AddCharacterAbilities();
+	virtual void InitializeCharacterAbilities();
 	void AbilityCancel(FAbilityCancelInfo CancelInfo);
 
 public:
@@ -136,8 +155,11 @@ public:
 
 	
 protected:
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	TArray<TSubclassOf<class UR1GameplayAbility>> StartupAbilities;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TArray<TSubclassOf<UR1GameplayAbility>> StartupAbilities;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	FBaseAbilities BaseAbilities;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

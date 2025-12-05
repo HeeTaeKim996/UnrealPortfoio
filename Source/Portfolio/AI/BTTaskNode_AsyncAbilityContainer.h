@@ -34,6 +34,9 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag StateTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag AbilityTag;
 
 	UPROPERTY()

@@ -18,10 +18,14 @@ class PORTFOLIO_API UR1AbilitySystemComponent : public UAbilitySystemComponent
 	GENERATED_BODY()
 	
 public:
-	void AddCharacterAbilities(const TArray<TSubclassOf<UR1GameplayAbility>>& StartupAbilities);
+	void AddCharacterAbilities(TArray<TSubclassOf<UR1GameplayAbility>>& StartupAbilities);
+	void AddCharacterAbility(TSubclassOf<UR1GameplayAbility>& AddAbility);
+	
+	void RemoveAbilityByStateTag(FGameplayTag InStateTag);
+	void RemoveAbilityByAbilityTag(FGameplayTag InAbilityTag);
+
 
 	void ActivateAbility(FGameplayTag InTag);
-
 	
 	void ClearRoot(const FGameplayTag& RootTag);
 

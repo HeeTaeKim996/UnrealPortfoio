@@ -58,7 +58,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState_Invincible);
 
-	/* Action */
+	/* Attack */
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Base);
@@ -81,8 +81,10 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Aiming);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Sneaking);
 
-	/* Monster */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Monster_Attack);
+
+	/* Die */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Die);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Die_Normal);
 
 
 	/*-------------------
@@ -90,4 +92,5 @@ namespace R1Tags
 	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_HitReact_HitReaction);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Die);
 }

@@ -18,10 +18,12 @@ void UGC_HitReaction::HandleGameplayCue(AActor* Target, EGameplayCueEvent::Type 
 	if (EventType != EGameplayCueEvent::Executed || Target == nullptr) return;
 
 
+	const FHitResult* HitResult = Parameters.EffectContext.GetHitResult();
+
 	AR1Character* OwnerCharacter = Cast<AR1Character>(Target);
 	if (OwnerCharacter == nullptr) return;
 
-	OwnerCharacter->HitReact(Parameters.EffectContext.GetHitResult(), R1Tags::State_Action_HitReact_Base) ;
+	OwnerCharacter->HitReact(HitResult, R1Tags::State_Action_HitReact_Base) ;
 
 }
 

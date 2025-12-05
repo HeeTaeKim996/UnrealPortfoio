@@ -24,6 +24,7 @@ class PORTFOLIO_API UR1AttributeSet : public UAttributeSet
 public:
 	UR1AttributeSet();
 
+	
 public:
 	ATTRIBUTE_ACCESSORS(ThisClass, Health);
 	ATTRIBUTE_ACCESSORS(ThisClass, MaxHealth);
@@ -32,22 +33,22 @@ public:
 	ATTRIBUTE_ACCESSORS(ThisClass, BaseDamage);
 	ATTRIBUTE_ACCESSORS(ThisClass, BaseDefense);
 
-private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true")) // AllpwPrivateACcess : even if private, allow BP access
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData Health;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxHealth;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData Stamina;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxStamina;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData BaseDamage;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData BaseDefense;
 };

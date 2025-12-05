@@ -17,7 +17,6 @@ public:
 	UGC_HitReaction();
 
 public:
-
 	virtual void HandleGameplayCue(AActor* MyTarget, EGameplayCueEvent::Type EventType, 
 		const FGameplayCueParameters& Parameters) override;
 };

@@ -51,7 +51,7 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(State_HitState, "State.HitState");
 	UE_DEFINE_GAMEPLAY_TAG(State_HitState_Invincible, "State.HitState.Invincible");
 
-	/// Action
+	/* Attack */
 	UE_DEFINE_GAMEPLAY_TAG(State_Action, "State.Action");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack, "State.Action.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Base, "State.Action.Attack.Base");
@@ -74,10 +74,9 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Aiming, "State.Mode.Aiming");
 	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Sneaking, "State.Mode.Sneaking");
 
-	// Monster
-	UE_DEFINE_GAMEPLAY_TAG(State_Monster_Attack, "State.Monster.Attack");
-
-
+	/* Die */
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Die, TEXT("State.Action.Die"));
+	UE_DEFINE_GAMEPLAY_TAG(State_Action_Die_Normal, TEXT("State.Action.Die.Normal"));
 
 
 	/*-------------------
@@ -85,6 +84,7 @@ namespace R1Tags
 	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Test, "GameplayCue.Test");
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitReact_HitReaction, "GameplayCue.HitReact.HitReaction");
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Die, TEXT("GameplayCue.Die"));
 }
 
 

@@ -53,6 +53,6 @@ bool UMonsterAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 UMonsterAttackAbility::UMonsterAttackAbility()
 	: Super()
 {
-	StateTag = R1Tags::State_Monster_Attack;
+	StateTag = R1Tags::State_Action_Attack;
 
 }

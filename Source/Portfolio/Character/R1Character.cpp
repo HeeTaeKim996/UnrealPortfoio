@@ -26,10 +26,16 @@ void AR1Character::BeginPlay()
 
 	
 
-	AddCharacterAbilities();
+	InitializeCharacterAbilities();
 
-	AttributeSet->InitHealth(100);
-	AttributeSet->InitMaxHealth(100);
+	{ // TEMP
+		AttributeSet->InitHealth(100);
+		AttributeSet->InitMaxHealth(100);
+
+		AttributeSet->InitBaseDamage(50);
+	}
+
+	
 
 
 	RefreshHpBarRatio();
@@ -131,23 +137,28 @@ void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
 	
 	if (Cos > COS_45)
 	{
-		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Bwd);
+		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Fwd);
 	}
 	else if (Cos > -COS_45)
 	{
 		if (Sin > 0)
 		{
-			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Left);
+			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Right);
 		}
 		else
 		{
-			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Right);
+			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Left);
 		}
 	}
 	else
 	{
-		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Fwd);
+		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Bwd);
 	}
+}
+
+void AR1Character::Die(const FHitResult* HitResult, FGameplayTag ReactDieTag)
+{
+	DebugMessage(TEXT("DieCheck"));
 }
 
 
@@ -202,12 +213,30 @@ void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 
 
 
-void AR1Character::AddCharacterAbilities()
+void AR1Character::InitializeCharacterAbilities()
 {
 	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(CharacterASC);
 	if (ASC == nullptr) return;
 
 	ASC->AddCharacterAbilities(StartupAbilities);
+
+	if (BaseAbilities.HitReact_Fwd != nullptr)
+	{
+		ASC->AddCharacterAbility(BaseAbilities.HitReact_Fwd);
+	}
+	if (BaseAbilities.HitReact_Right != nullptr)
+	{
+		ASC->AddCharacterAbility(BaseAbilities.HitReact_Right);
+	}
+	if (BaseAbilities.HitReact_Left != nullptr)
+	{
+		ASC->AddCharacterAbility(BaseAbilities.HitReact_Left);
+	}
+	if (BaseAbilities.HitReact_Bwd != nullptr)
+	{
+		ASC->AddCharacterAbility(BaseAbilities.HitReact_Bwd);
+	}
+
 }
 
 

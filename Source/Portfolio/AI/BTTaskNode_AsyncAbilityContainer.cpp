@@ -42,9 +42,9 @@ void UBTTaskNode_AsyncAbilityContainer::OnTaskFinished(UBehaviorTreeComponent& O
 
 void UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	for (FGameplayTag AbilityCancelTag : CancelInfo.AbilityCancelTags)
+	for (FGameplayTag AbilityCancelTag : CancelInfo.StateCancelTags)
 	{
-		if (AbilityCancelTag.MatchesTag(AbilityTag))
+		if (StateTag.MatchesTag(AbilityCancelTag))
 		{
 			if (WeakOwnerComp.IsValid())
 			{
