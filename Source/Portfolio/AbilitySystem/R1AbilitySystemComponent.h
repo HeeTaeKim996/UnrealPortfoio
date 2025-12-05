@@ -16,6 +16,9 @@ UCLASS()
 class PORTFOLIO_API UR1AbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
+
+public:
+	UR1AbilitySystemComponent();
 	
 public:
 	void AddCharacterAbilities(TArray<TSubclassOf<UR1GameplayAbility>>& StartupAbilities);
@@ -31,10 +34,13 @@ public:
 
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 	
+private:
+	void OnGEApplied(UAbilitySystemComponent* ASC, 
+		const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle ActiveHandle);
+
 
 public:
 	FOnTagUpdated Delegate_OnTagUpdated;
-
 
 protected:
 	TArray<FGameplayAbilitySpecHandle> SpecHandles;

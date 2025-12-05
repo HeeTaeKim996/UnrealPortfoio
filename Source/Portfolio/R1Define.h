@@ -3,7 +3,7 @@
 #pragma once
 
 
-#define DebugMessage(x) if(GEngine){ GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, x); }
+#define DebugMessage(x) if(GEngine){ GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, x); }
 
 #define COS_45 0.70710678f
 #define COS_30 0.8660254f

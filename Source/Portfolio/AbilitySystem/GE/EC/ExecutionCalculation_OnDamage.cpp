@@ -22,5 +22,23 @@ void UExecutionCalculation_OnDamage::Execute_Implementation
 (const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
+	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+
+	FAggregatorEvaluateParameters EvalParams;
+	EvalParams.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
+	EvalParams.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
+
+	float Health = 0.f;
+	float BaseDamage = 0.f;
+
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthDef, EvalParams, Health);
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvalParams, BaseDamage);
+
+
+	// TODO : Modify Final Damage ?
+	const float FinalDamage = BaseDamage;
+
+	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(HealthProperty, EGameplayModOp::Additive, -FinalDamage));
+
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("Execution Check"));
 }

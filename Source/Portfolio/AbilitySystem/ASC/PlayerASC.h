@@ -15,8 +15,7 @@ class PORTFOLIO_API UPlayerASC : public UCharacterASC
 {
 	GENERATED_BODY()
 public:
-	UPlayerASC(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
+	UPlayerASC();
 public:
 	void Action(FGameplayTag InStateTag);
 

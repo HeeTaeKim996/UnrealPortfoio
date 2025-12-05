@@ -4,8 +4,10 @@
 #include "AbilitySystem/ASC/PlayerASC.h"
 
 
-UPlayerASC::UPlayerASC(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+
+
+UPlayerASC::UPlayerASC()
+	: Super()
 {
 	InputToAbilityMap.Add(R1Tags::State_Action_Attack_Base, R1Tags::Ability_Attack_Test);
 	InputToAbilityMap.Add(R1Tags::State_Mode_Blocking, R1Tags::Ability_Mode_Blocking);

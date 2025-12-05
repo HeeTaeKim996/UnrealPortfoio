@@ -5,6 +5,14 @@
 #include "AbilitySystem/Abilities/CharacterAbility.h"
 
 
+UR1AbilitySystemComponent::UR1AbilitySystemComponent()
+	: Super()
+{
+	OnGameplayEffectAppliedDelegateToSelf.AddUObject(
+		this,
+		&UR1AbilitySystemComponent::OnGEApplied);
+}
+
 void UR1AbilitySystemComponent::AddCharacterAbilities(
 	TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
 {
@@ -123,5 +131,11 @@ void UR1AbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagEx
 {
 	Super::OnTagUpdated(Tag, TagExists);
 	Delegate_OnTagUpdated.Execute(Tag, TagExists);
+}
+
+void UR1AbilitySystemComponent::OnGEApplied(UAbilitySystemComponent* ASC, const FGameplayEffectSpec& Spec, 
+	FActiveGameplayEffectHandle ActiveHandle)
+{
+	DebugMessage(TEXT("R1ASC : Check"));
 }
 
