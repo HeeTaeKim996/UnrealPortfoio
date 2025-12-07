@@ -17,7 +17,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UR1GameplayAbility;
 class UCharacterAbility;
-
+struct FGameplayAbilitySpecHandle;
+class UR1AbilitySystemComponent;
 
 USTRUCT(BlueprintType)
 struct FBaseAbilities
@@ -116,8 +117,9 @@ protected:
 	/* GAS */
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UR1AbilitySystemComponent* GetR1AbilitySystemComponent();
 	virtual void InitAbilitySystem();
-	bool ActivateAbility(FGameplayTag AbilityTag);
+	FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void InitializeCharacterAbilities();
 	void AbilityCancel(FAbilityCancelInfo CancelInfo);
@@ -127,7 +129,7 @@ public:
 	bool IsInState(FGameplayTag StateTag) const;
 	bool IsInAnyState(const FGameplayTagContainer& StateTags);
 	bool IsInAllStates(const FGameplayTagContainer& StateTags);
-	void Invoke_AbilitySucceed(FAbilitySucceedInfo SucceedInfo);
+
 
 protected:
 	UFUNCTION()
@@ -144,11 +146,6 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackParried,
 		FMeleeHitInfo, MeleeHitInfo);
 	FGAS_OnAttackParried GAS_OnAttackParried;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySucceed,
-		FAbilitySucceedInfo, SucceedInfo);
-	FGAS_OnAbilitySucceed GAS_OnAbilitySucceed;
-
 
 	
 protected:

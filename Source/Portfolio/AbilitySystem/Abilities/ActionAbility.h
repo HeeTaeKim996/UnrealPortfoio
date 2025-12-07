@@ -36,11 +36,15 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+protected:
+	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
+
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UAnimMontage> PlayingMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName SectionName = NAME_None;
+	FName InSectionName = NAME_None;
 };

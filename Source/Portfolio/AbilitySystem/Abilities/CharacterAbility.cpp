@@ -60,12 +60,17 @@ void UCharacterAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	if (bWasCancelled == false)
 	{
+#if 0 // Obsolate
 		AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor);
 		if (R1Character)
 		{
-			FAbilitySucceedInfo SuccessInfo;			
+
+			FAbilitySucceedInfo SuccessInfo;
 			SuccessInfo.AbilitySucceedTags = AbilityTags;
+
 			R1Character->Invoke_AbilitySucceed(SuccessInfo);
 		}
+#endif
+		
 	}
 }

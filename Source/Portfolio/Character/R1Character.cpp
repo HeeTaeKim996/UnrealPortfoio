@@ -160,12 +160,17 @@ UAbilitySystemComponent* AR1Character::GetAbilitySystemComponent() const
 	return CharacterASC;
 }
 
+UR1AbilitySystemComponent* AR1Character::GetR1AbilitySystemComponent()
+{
+	return CharacterASC;
+}
+
 void AR1Character::InitAbilitySystem()
 {
 
 }
 
-bool AR1Character::ActivateAbility(FGameplayTag AbilityTag)
+FGameplayAbilitySpecHandle AR1Character::ActivateAbility(FGameplayTag AbilityTag)
 {
 	return CharacterASC->ActivateAbility(AbilityTag);
 }
@@ -262,10 +267,7 @@ bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
 	return CharacterASC->HasAllMatchingGameplayTags(StateTags);
 }
 
-void AR1Character::Invoke_AbilitySucceed(FAbilitySucceedInfo SucceedInfo)
-{
-	GAS_OnAbilitySucceed.Broadcast(SucceedInfo);
-}
+
 
 void AR1Character::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 {

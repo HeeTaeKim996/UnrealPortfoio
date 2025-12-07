@@ -11,6 +11,30 @@ UR1AbilitySystemComponent::UR1AbilitySystemComponent()
 
 }
 
+
+
+
+void UR1AbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
+{
+	Super::OnTagUpdated(Tag, TagExists);
+	Delegate_OnTagUpdated.Execute(Tag, TagExists);
+}
+
+void UR1AbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, 
+	bool bWasCancelled)
+{
+	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
+
+	Delegate_OnNotifyAbilityEnded.Broadcast(Handle, Ability, bWasCancelled);
+}
+
+
+
+
+
+
+
+
 void UR1AbilitySystemComponent::AddCharacterAbilities(
 	TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
 {
@@ -56,7 +80,7 @@ void UR1AbilitySystemComponent::RemoveAbilityByTag(FGameplayTag InTag)
 
 
 
-bool UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
+FGameplayAbilitySpecHandle UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 {
 	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
 	{
@@ -65,15 +89,21 @@ bool UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 			if (Spec.IsActive())
 			{
 				ensureAlwaysMsgf(false, TEXT("Ability is already active"));
-				return false;
+				return FGameplayAbilitySpecHandle(); // return InvalidHandle
 			}
 
-			TryActivateAbility(Spec.Handle);
-			return true;
+			if (TryActivateAbility(Spec.Handle) == true)
+			{
+				return Spec.Handle;
+			}
+			else
+			{
+				return FGameplayAbilitySpecHandle();
+			}
 		}
 	}
 
-	return false;
+	return FGameplayAbilitySpecHandle();
 }
 
 void UR1AbilitySystemComponent::CancelAbilityByTag(FGameplayTag InTag)
@@ -93,10 +123,5 @@ void UR1AbilitySystemComponent::CancelAbilityByTag(FGameplayTag InTag)
 
 
 
-void UR1AbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
-{
-	Super::OnTagUpdated(Tag, TagExists);
-	Delegate_OnTagUpdated.Execute(Tag, TagExists);
-}
 
 

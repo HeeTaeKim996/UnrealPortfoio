@@ -52,10 +52,4 @@ public:
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
-
-
-protected:
-	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
-
-	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 };

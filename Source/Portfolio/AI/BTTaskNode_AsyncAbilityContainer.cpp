@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 
+
 UBTTaskNode_AsyncAbilityContainer::UBTTaskNode_AsyncAbilityContainer()
 	: Super()
 {
@@ -23,14 +24,15 @@ EBTNodeResult::Type UBTTaskNode_AsyncAbilityContainer::ExecuteTask(UBehaviorTree
 
 	if (R1Character)
 	{
-		if (R1Character->ActivateAbility(AbilityTag) == false)
+		SpecHandle = R1Character->ActivateAbility(AbilityTag);
+		if (SpecHandle.IsValid() == false)
 		{
 			return EBTNodeResult::Failed;
 		}
 
 
-		R1Character->GAS_OnAbilitySucceed.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
-
+		R1Character->GetR1AbilitySystemComponent()->Delegate_OnNotifyAbilityEnded
+			.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnNotifyAbilityEnded);
 		
 
 		return EBTNodeResult::InProgress;
@@ -41,45 +43,37 @@ EBTNodeResult::Type UBTTaskNode_AsyncAbilityContainer::ExecuteTask(UBehaviorTree
 	}
 }
 
-void UBTTaskNode_AsyncAbilityContainer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+void UBTTaskNode_AsyncAbilityContainer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
+	EBTNodeResult::Type TaskResult)
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 
 	CleanUpDelegate();
 }
 
-
-void UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
+void UBTTaskNode_AsyncAbilityContainer::OnNotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, 
+	bool bWasCancelled)
 {
-	for (FGameplayTag AbilityCancelTag : CancelInfo.AbilityCancelTags)
+	if (Handle != SpecHandle) return;
+
+	if (WeakOwnerComp.IsValid())
 	{
-		if (AbilityTag.MatchesTag(AbilityCancelTag))
+		CleanUpDelegate();
+
+		if (bWasCancelled)
 		{
-			if (WeakOwnerComp.IsValid())
-			{
-				CleanUpDelegate();
-				FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Failed);
-			}
-			return;
+			FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Failed);
 		}
+		else
+		{
+			FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Succeeded);
+		}
+
+		
 	}
 }
 
-void UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed(FAbilitySucceedInfo SucceedInfo)
-{
-	for (FGameplayTag AbilityCancelTag : SucceedInfo.AbilitySucceedTags)
-	{
-		if (AbilityCancelTag.MatchesTag(AbilityTag))
-		{
-			if (WeakOwnerComp.IsValid())
-			{
-				CleanUpDelegate();
-				FinishLatentTask(*WeakOwnerComp.Get(), EBTNodeResult::Succeeded);
-			}
-			return;
-		}
-	}
-}
+
 
 void UBTTaskNode_AsyncAbilityContainer::CleanUpDelegate()
 {
@@ -90,5 +84,6 @@ void UBTTaskNode_AsyncAbilityContainer::CleanUpDelegate()
 	AR1Character* R1Character = Cast<AR1Character>(OwnerComp->GetAIOwner()->GetPawn());
 	if (R1Character == nullptr) return;
 
-	R1Character->GAS_OnAbilitySucceed.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
+	R1Character->GetR1AbilitySystemComponent()->Delegate_OnNotifyAbilityEnded
+		.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnNotifyAbilityEnded);
 }

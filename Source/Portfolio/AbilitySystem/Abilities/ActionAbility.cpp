@@ -40,7 +40,7 @@ void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 	UR1AbilitySystemComponent* R1ASC = Cast<UR1AbilitySystemComponent>(ActorInfo->AbilitySystemComponent);
 	if (R1ASC)
 	{
-		PlayMontage(R1ASC, PlayingMontage, SectionName);
+		PlayMontage(R1ASC, PlayingMontage, InSectionName);
 	}
 	
 }
@@ -52,4 +52,42 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	
 
+}
+
+void UActionAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName)
+{
+	if (R1ASC == nullptr || Montage == nullptr)
+	{
+		EndAbilityCancel();
+		return;
+	}
+
+	float duration = R1ASC->PlayMontage(this, GetCurrentActivationInfo(), Montage, 1.f, SectionName, 0.f);
+	if (duration < 0.f)
+	{
+		EndAbilityCancel();
+		return;
+	}
+
+
+	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
+	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
+	if (!MontageInstance)
+	{
+		EndAbilityCancel();
+		return;
+	}
+
+	MontageInstance->OnMontageEnded.Unbind();
+
+	MontageInstance->OnMontageEnded.BindUObject(this, &UActionAbility::OnMontageEnded);
+}
+
+void UActionAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
+{
+	if(bInterruped == false)
+	{
+		EndAbilitySuccess();
+	}
+	// ※ if bInterruppted == true -> Taht should be ASC Call Cancel This Ability
 }

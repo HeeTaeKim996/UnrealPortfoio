@@ -6,8 +6,8 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "AbilitySystem/AbilityCommonStruct.h"
 #include "GameplayTagContainer.h"
+#include "GameplayAbilitySpec.h"
 #include "BTTaskNode_AsyncAbilityContainer.generated.h"
-
 
 /**
  * 
@@ -24,10 +24,7 @@ public:
 
 private:
 	UFUNCTION()
-	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
-
-	UFUNCTION()
-	void OnAbilitySucceed(FAbilitySucceedInfo SucceedInfo);
+	void OnNotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled);
 
 private:
 	void CleanUpDelegate();
@@ -38,4 +35,6 @@ protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<UBehaviorTreeComponent> WeakOwnerComp;
+
+	FGameplayAbilitySpecHandle SpecHandle;
 };
