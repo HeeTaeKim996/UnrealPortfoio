@@ -204,10 +204,7 @@ void AR1Player::Input_Action(FGameplayTag InActionState)
 {
 	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.AbilityCancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
-	CancelInfo.Cause = CancelCause::OnActionInvoked;
-	AbilityCancel(CancelInfo);
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
 
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
@@ -219,10 +216,7 @@ void AR1Player::Input_Block()
 	if (IsInState(R1Tags::Ability_Mode_Blocking)) return;
 	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
 
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.AbilityCancelTags = UTagContainersManager::Get(this)->OnActionCall_CancelingTags();
-	CancelInfo.Cause = CancelCause::OnActionInvoked;
-	AbilityCancel(CancelInfo);
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	PlayerASC->Action(R1Tags::Input_Action_Block);
@@ -255,10 +249,7 @@ void AR1Player::Input_Block()
 
 void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 {
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.AbilityCancelTags = InCancelStates;
-	CancelInfo.Cause = CancelCause::CancelMode;
-	AbilityCancel(CancelInfo);
+	AbilityCancel(InCancelStates);
 }
 
 

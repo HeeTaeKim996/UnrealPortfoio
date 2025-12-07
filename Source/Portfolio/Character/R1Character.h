@@ -122,7 +122,7 @@ public:
 	FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void InitializeCharacterAbilities();
-	void AbilityCancel(FAbilityCancelInfo CancelInfo);
+	void AbilityCancel(FGameplayTagContainer CancelTags);
 
 public:
 	void AddState(FGameplayTag NewState);

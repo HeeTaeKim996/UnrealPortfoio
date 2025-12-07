@@ -115,11 +115,7 @@ void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 
 void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
 {
-	FAbilityCancelInfo CancelInfo;
-	CancelInfo.Cause = CancelCause::HitReact;
-	CancelInfo.AbilityCancelTags = UTagContainersManager::Get(this)->OnHitReact_CancelTags();
-
-	AbilityCancel(CancelInfo);
+	AbilityCancel(UTagContainersManager::Get(this)->OnHitReact_CancelTags());
 
 	FVector ReactDir = HitResult->Location - GetActorLocation();
 	ReactDir.Z = 0;
@@ -237,12 +233,15 @@ void AR1Character::InitializeCharacterAbilities()
 
 }
 
-
-
-void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
+void AR1Character::AbilityCancel(FGameplayTagContainer CancelTags)
 {
+	CharacterASC->CancelAbilities(&CancelTags, nullptr, nullptr); 
 
+	//CharacterASC->CancelAbilityByTag(CancelTags.First());
 }
+
+
+
 
 
 
