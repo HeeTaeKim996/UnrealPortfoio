@@ -26,11 +26,8 @@ public:
 	
 	void RemoveAbilityByTag(FGameplayTag InStateTag);
 
-
-
 	bool ActivateAbility(FGameplayTag InTag);
-	
-	void ClearRoot(const FGameplayTag& RootTag);
+	void CancelAbilityByTag(FGameplayTag InTag);
 
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 	

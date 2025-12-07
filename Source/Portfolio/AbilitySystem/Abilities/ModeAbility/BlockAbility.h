@@ -14,10 +14,10 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
-
-protected:
-	virtual bool AbilityCancel(FAbilityCancelInfo CancelInfo) override;
 };
+
+
+
 
 UCLASS()
 class PORTFOLIO_API UBlockAbility : public UModeAbility

@@ -60,7 +60,7 @@ public:
 
 	virtual void OnDead(TObjectPtr<AR1Character> From);
 
-	virtual void ToLoco();
+
 
 	virtual void HandleGameplayTagEvent(FGameplayTag EventTag);
 
@@ -145,9 +145,6 @@ public:
 		FMeleeHitInfo, MeleeHitInfo);
 	FGAS_OnAttackParried GAS_OnAttackParried;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilityCancel,
-		FAbilityCancelInfo, CancelInfo);
-	FGAS_OnAbilityCancel GAS_OnAbilityCancel;
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAbilitySucceed,
 		FAbilitySucceedInfo, SucceedInfo);
 	FGAS_OnAbilitySucceed GAS_OnAbilitySucceed;

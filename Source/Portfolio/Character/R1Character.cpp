@@ -104,13 +104,6 @@ void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 	CharacterASC->AddLooseGameplayTag(R1Tags::Ability_Dead); // ※ Will Be Replace by Invoking Ability
 }
 
-void AR1Character::ToLoco()
-{
-	bUseDesiredVec = true;
-
-	// ※ Player can override to play reserved Action
-}
-
 
 void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 {
@@ -243,7 +236,7 @@ void AR1Character::InitializeCharacterAbilities()
 
 void AR1Character::AbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	GAS_OnAbilityCancel.Broadcast(CancelInfo);
+
 }
 
 

@@ -19,13 +19,6 @@ void UBlockAbilityTask::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UBlockAbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
-{
-	Super::AbilityCancel(CancelInfo);
-
-	return true;
-}
-
 
 
 

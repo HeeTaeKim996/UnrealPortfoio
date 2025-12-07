@@ -14,8 +14,6 @@ UR1AbilitySystemComponent::UR1AbilitySystemComponent()
 void UR1AbilitySystemComponent::AddCharacterAbilities(
 	TArray<TSubclassOf<class UR1GameplayAbility>>& StartupAbilities)
 {
-	ABILITYLIST_SCOPE_LOCK();
-
 	for (TSubclassOf<UR1GameplayAbility>& AbilityClass : StartupAbilities)
 	{
 		AddCharacterAbility(AbilityClass);
@@ -30,7 +28,7 @@ void UR1AbilitySystemComponent::AddCharacterAbility(TSubclassOf<UR1GameplayAbili
 		if (Spec.Ability && Spec.Ability->AbilityTags.First().MatchesTag(COD->AbilityTags.First()))
 			// Prelude First Tag Represents Ability
 		{
-			//ensureAlwaysMsgf(false, TEXT("ASC Alreday Has that ability"));
+			ensureAlwaysMsgf(false, TEXT("ASC Alreday Has that ability"));
 			return;
 		}
 	}
@@ -78,20 +76,21 @@ bool UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 	return false;
 }
 
-
-void UR1AbilitySystemComponent::ClearRoot(const FGameplayTag& RootTag)
+void UR1AbilitySystemComponent::CancelAbilityByTag(FGameplayTag InTag)
 {
-	FGameplayTagContainer OwnedTags;
-	GetOwnedGameplayTags(OwnedTags);
+	ABILITYLIST_SCOPE_LOCK();
 
-	for (const FGameplayTag& Tag : OwnedTags)
+	for (FGameplayAbilitySpec& Spec : GetActivatableAbilities())
 	{
-		if (Tag.MatchesTag(RootTag))
+		if (Spec.IsActive() == false || Spec.Ability == nullptr) continue;
+
+		if (Spec.Ability->AbilityTags.HasTag(InTag))
 		{
-			RemoveLooseGameplayTag(Tag);
+			CancelAbilitySpec(Spec, nullptr);
 		}
 	}
 }
+
 
 
 void UR1AbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)

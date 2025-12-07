@@ -22,14 +22,6 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 	
-
-private:
-	UFUNCTION(meta = (AllowPrviateAccess = "true"))
-	void OnAbilityCancel(FAbilityCancelInfo CancelInfo);
-
-protected:
-	virtual bool AbilityCancel(FAbilityCancelInfo CancelInfo);
-
 protected:
 	FGameplayTag AbilityTag;
 };

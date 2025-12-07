@@ -29,7 +29,6 @@ EBTNodeResult::Type UBTTaskNode_AsyncAbilityContainer::ExecuteTask(UBehaviorTree
 		}
 
 
-		R1Character->GAS_OnAbilityCancel.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel);
 		R1Character->GAS_OnAbilitySucceed.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
 
 		
@@ -91,6 +90,5 @@ void UBTTaskNode_AsyncAbilityContainer::CleanUpDelegate()
 	AR1Character* R1Character = Cast<AR1Character>(OwnerComp->GetAIOwner()->GetPawn());
 	if (R1Character == nullptr) return;
 
-	R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel);
 	R1Character->GAS_OnAbilitySucceed.RemoveDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
 }

@@ -12,10 +12,7 @@ void UCharacterAbilityTask::Activate()
 	AbilityTag = Ability->AbilityTags.First();
 
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
-	if (R1Character)
-	{
-		R1Character->GAS_OnAbilityCancel.AddDynamic(this, &UCharacterAbilityTask::OnAbilityCancel);
-	}
+
 }
 
 void UCharacterAbilityTask::TickTask(float DeltaTime)
@@ -29,39 +26,11 @@ void UCharacterAbilityTask::OnDestroy(bool bInOwnerFinished)
 
 
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
-	if (R1Character)
-	{
-		R1Character->GAS_OnAbilityCancel.RemoveDynamic(this, &UCharacterAbilityTask::OnAbilityCancel);
-	}
 }
 
 
 
-void UCharacterAbilityTask::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
-{
-	AbilityCancel(MoveTemp(CancelInfo));
-}
 
-bool UCharacterAbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
-{
-	if (CancelInfo.Cause == CancelCause::ShutDownAll)
-	{
-		CancelAbility();
-		return false;
-	}
-	
-	
-	for (const FGameplayTag& Tag : CancelInfo.AbilityCancelTags)
-	{
-		if (Ability->AbilityTags.HasTag(Tag))
-		{
-			CancelAbility();
-			return true;
-		}
-	}
-
-	return false;
-}
 
 UCharacterAbility::UCharacterAbility(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

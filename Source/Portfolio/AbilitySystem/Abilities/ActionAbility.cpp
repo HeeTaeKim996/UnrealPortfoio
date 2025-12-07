@@ -50,13 +50,6 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
-	if (ActorInfo)
-	{
-		AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor);
-		if (R1Character)
-		{
-			R1Character->ToLoco();
-		}
-	}
+	
 
 }
