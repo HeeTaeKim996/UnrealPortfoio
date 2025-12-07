@@ -15,6 +15,9 @@ AR1Monster::AR1Monster()
 	MeleeTrace->SetTraceChannel(ECC_GameTraceChannel14);
 
 	CharacterASC = CreateDefaultSubobject<UMonsterASC>("AbilitySystemComponent");
+	CharacterASC->SetIsReplicated(false); // Singple Play
+	CharacterASC->SetReplicationMode(EGameplayEffectReplicationMode::Full); // SinglePlay
+
 	AttributeSet = CreateDefaultSubobject<UR1MonsterSet>("MonsterSet");
 }
 	

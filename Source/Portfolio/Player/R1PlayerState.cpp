@@ -9,6 +9,9 @@ AR1PlayerState::AR1PlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	AbilitySystemComponent = CreateDefaultSubobject<UPlayerASC>("AbilitySystemComponent");
+	AbilitySystemComponent->SetIsReplicated(false); // Singple Play
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full); // SinglePlay
+
 	PlayerSet = CreateDefaultSubobject<UR1PlayerSet>("PlayerSet");
 }
 

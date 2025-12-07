@@ -8,7 +8,6 @@
 UR1AbilitySystemComponent::UR1AbilitySystemComponent()
 	: Super()
 {
-
 }
 
 
