@@ -24,7 +24,16 @@ class PORTFOLIO_API UR1AttributeSet : public UAttributeSet
 public:
 	UR1AttributeSet();
 
+
+
+public:
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+
 	
+
+
+
+
 public:
 	ATTRIBUTE_ACCESSORS(ThisClass, Health);
 	ATTRIBUTE_ACCESSORS(ThisClass, MaxHealth);

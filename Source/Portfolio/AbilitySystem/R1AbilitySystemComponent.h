@@ -24,8 +24,8 @@ public:
 	void AddCharacterAbilities(TArray<TSubclassOf<UR1GameplayAbility>>& StartupAbilities);
 	void AddCharacterAbility(TSubclassOf<UR1GameplayAbility>& AddAbility);
 	
-	void RemoveAbilityByStateTag(FGameplayTag InStateTag);
-	void RemoveAbilityByAbilityTag(FGameplayTag InAbilityTag);
+	void RemoveAbilityByTag(FGameplayTag InStateTag);
+
 
 
 	void ActivateAbility(FGameplayTag InTag);
@@ -34,14 +34,7 @@ public:
 
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 	
-private:
-	void OnGEApplied(UAbilitySystemComponent* ASC, 
-		const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle ActiveHandle);
-
 
 public:
 	FOnTagUpdated Delegate_OnTagUpdated;
-
-protected:
-	TArray<FGameplayAbilitySpecHandle> SpecHandles;
 };

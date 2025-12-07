@@ -38,7 +38,9 @@ void UExecutionCalculation_OnDamage::Execute_Implementation
 	// TODO : Modify Final Damage ?
 	const float FinalDamage = BaseDamage;
 
+
+
 	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(HealthProperty, EGameplayModOp::Additive, -FinalDamage));
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("Execution Check"));
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, TEXT("ExecutionCalculation_OnDamage Check"));
 }

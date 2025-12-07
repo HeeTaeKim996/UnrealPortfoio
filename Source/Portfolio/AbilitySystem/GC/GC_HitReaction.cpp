@@ -25,5 +25,7 @@ void UGC_HitReaction::HandleGameplayCue(AActor* Target, EGameplayCueEvent::Type 
 
 	OwnerCharacter->HitReact(HitResult, R1Tags::State_Action_HitReact_Base) ;
 
+	DebugMessage(TEXT("GC_HitReaction : Check"));
+
 }
 
