@@ -44,7 +44,7 @@ bool UBlockAbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
 UBlockAbility::UBlockAbility(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	StateTag = R1Tags::State_Mode_Blocking;
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
 }
 
 

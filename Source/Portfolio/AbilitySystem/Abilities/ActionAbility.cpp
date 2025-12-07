@@ -26,9 +26,6 @@ void UActionAbilityTask::OnDestroy(bool bInOwnerFinished)
 
 
 
-
-
-
 UActionAbility::UActionAbility(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -55,10 +52,6 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	if (ActorInfo)
 	{
-		UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(ActorInfo->AbilitySystemComponent);
-		ASC->ClearRoot(R1Tags::State_Action);
-
-
 		AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor);
 		if (R1Character)
 		{

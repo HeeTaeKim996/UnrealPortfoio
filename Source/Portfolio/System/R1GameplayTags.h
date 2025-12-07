@@ -8,11 +8,9 @@
 namespace R1Tags
 {
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Move);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_LeftMouse);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_BaseAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Wheel);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_RightMouse);
-
-
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Block);
 
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
@@ -30,62 +28,50 @@ namespace R1Tags
 	/*-------------------
 			Ability
 	--------------------*/
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Test2);
+	/* Dead */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Dead);
 
+	/* Action */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action);
+
+	// Attack
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack_TestAttack);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster_FieldMonster_Kronos_Sweep);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster_FieldMonster_Kronos_JumpAttack);
+
+	// HitReact
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Fwd);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Right);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Left);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Bwd);
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Knockdown);
 
-
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Blocking);
-
-
-
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_Sweep);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Monster_FieldMonster_Kronos_JumpAttack);
-
-	/*-------------------
-		    State
-	--------------------*/
-	/* Dead */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Dead);
-
-	/* HitState */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_HitState_Invincible);
-
-	/* Attack */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Base);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Attack_Skill);
-
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_UsingItem);
-
-	// HitReact
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact_Base);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_HitReact_Knockdown);
-
-
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Parry);
+	// Parry
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Parry);
 
 	/* Mode */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Blocking);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_UsingItem);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Aiming);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Mode_Sneaking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Blocking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_UsingItem);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Aiming);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mode_Sneaking);
+	
+	/* HitState */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState_Invincible);
 
 
-	/* Die */
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Die);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Action_Die_Normal);
 
+
+	
 
 	/*-------------------
 		  GameplayCue

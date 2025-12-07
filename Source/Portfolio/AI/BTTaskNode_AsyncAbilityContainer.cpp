@@ -42,7 +42,7 @@ void UBTTaskNode_AsyncAbilityContainer::OnTaskFinished(UBehaviorTreeComponent& O
 
 void UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel(FAbilityCancelInfo CancelInfo)
 {
-	for (FGameplayTag AbilityCancelTag : CancelInfo.StateCancelTags)
+	for (FGameplayTag AbilityCancelTag : CancelInfo.AbilityCancelTags)
 	{
 		if (StateTag.MatchesTag(AbilityCancelTag))
 		{

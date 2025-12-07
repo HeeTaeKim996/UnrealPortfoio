@@ -50,18 +50,12 @@ bool UCharacterAbilityTask::AbilityCancel(FAbilityCancelInfo CancelInfo)
 		return false;
 	}
 	
-	UCharacterAbility* CharacterAbility = Cast<UCharacterAbility>(Ability);
-	ensureAlwaysMsgf(CharacterAbility != nullptr, TEXT("CharacterAbility is invalid"));
-
-	const FGameplayTag& StateTag = CharacterAbility->GetStateTag();
 	
-
-	for (const FGameplayTag& Tag : CancelInfo.StateCancelTags)
+	for (const FGameplayTag& Tag : CancelInfo.AbilityCancelTags)
 	{
-		if (StateTag.MatchesTag(Tag))
+		if (Ability->AbilityTags.HasTag(Tag))
 		{
 			CancelAbility();
-
 			return true;
 		}
 	}
@@ -88,9 +82,6 @@ void UCharacterAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UCharacterASC* CharacterASC = Cast<UCharacterASC>(ActorInfo->AbilitySystemComponent);
-	ensureAlwaysMsgf(StateTag != FGameplayTag::EmptyTag, TEXT("StateTag is Not defined"));
-	CharacterASC->AddLooseGameplayTag(StateTag);
 }
 
 void UCharacterAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
@@ -105,11 +96,7 @@ void UCharacterAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 		{
 			FAbilitySucceedInfo SuccessInfo;			
 			SuccessInfo.AbilitySucceedTags = AbilityTags;
-			SuccessInfo.StateSucceedTag = StateTag;
 			R1Character->Invoke_AbilitySucceed(SuccessInfo);
 		}
 	}
-
-	UCharacterASC* CharacterASC = Cast<UCharacterASC>(ActorInfo->AbilitySystemComponent);
-	CharacterASC->RemoveLooseGameplayTag(StateTag);
 }

@@ -32,7 +32,7 @@ void UHitReactAbilityTask::OnDestroy(bool bInOwnerFinished)
 UHitReactAbility::UHitReactAbility()
 	: Super()
 {
-	StateTag = R1Tags::State_Action_HitReact;
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_HitReact);
 }
 
 bool UHitReactAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const

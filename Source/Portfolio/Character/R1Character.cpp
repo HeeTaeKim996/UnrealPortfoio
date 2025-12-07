@@ -99,9 +99,9 @@ void AR1Character::OnDamage(int Damage, TObjectPtr<AR1Character> From)
 
 void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 {
-	if (CharacterASC->HasMatchingGameplayTag(R1Tags::State_Dead)) return;
+	if (CharacterASC->HasMatchingGameplayTag(R1Tags::Ability_Dead)) return;
 
-	CharacterASC->AddLooseGameplayTag(R1Tags::State_Dead);
+	CharacterASC->AddLooseGameplayTag(R1Tags::Ability_Dead); // ※ Will Be Replace by Invoking Ability
 }
 
 void AR1Character::ToLoco()
@@ -124,7 +124,7 @@ void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
 {
 	FAbilityCancelInfo CancelInfo;
 	CancelInfo.Cause = CancelCause::HitReact;
-	CancelInfo.StateCancelTags = UTagContainersManager::Get(this)->OnHitReact_CancelTags();
+	CancelInfo.AbilityCancelTags = UTagContainersManager::Get(this)->OnHitReact_CancelTags();
 
 	AbilityCancel(CancelInfo);
 

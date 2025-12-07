@@ -30,7 +30,7 @@ void UR1AbilitySystemComponent::AddCharacterAbility(TSubclassOf<UR1GameplayAbili
 		if (Spec.Ability && Spec.Ability->AbilityTags.First().MatchesTag(COD->AbilityTags.First()))
 			// Prelude First Tag Represents Ability
 		{
-			ensureAlwaysMsgf(false, TEXT("ASC Alreday Has that ability"));
+			//ensureAlwaysMsgf(false, TEXT("ASC Alreday Has that ability"));
 			return;
 		}
 	}
@@ -66,17 +66,8 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 		{
 			if (Spec.IsActive())
 			{
-				UCharacterAbility* R1Ability = Cast<UCharacterAbility>(Spec.Ability);
-				if (R1Ability && R1Ability->GetStateTag().MatchesTag(R1Tags::State_Action_HitReact))
-				{
-					R1Ability->CancelAbility(Spec.Handle, R1Ability->GetCurrentActorInfo(),
-						R1Ability->GetCurrentActivationInfo(), true);
-				}
-				else
-				{
-					ensureAlwaysMsgf(false, TEXT("Ability is already active"));
-					return;
-				}
+				ensureAlwaysMsgf(false, TEXT("Ability is already active"));
+				return;
 			}
 
 			TryActivateAbility(Spec.Handle);

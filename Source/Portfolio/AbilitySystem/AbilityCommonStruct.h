@@ -20,10 +20,6 @@ struct PORTFOLIO_API FAbilityCancelInfo
 	CancelCause Cause;
 
 	UPROPERTY()
-	FGameplayTagContainer StateCancelTags;
-
-
-	UPROPERTY()
 	FGameplayTagContainer AbilityCancelTags;
 };
 
@@ -32,9 +28,6 @@ struct PORTFOLIO_API FAbilitySucceedInfo
 {
 	GENERATED_BODY()
 	
-	UPROPERTY()
-	FGameplayTag StateSucceedTag;
-
 	UPROPERTY()
 	FGameplayTagContainer AbilitySucceedTags;
 };

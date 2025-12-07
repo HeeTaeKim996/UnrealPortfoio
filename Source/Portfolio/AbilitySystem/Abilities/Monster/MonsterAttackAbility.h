@@ -20,6 +20,11 @@ protected:
 	TWeakObjectPtr<class AR1Character> WeakTarget;
 };
 
+
+
+
+
+
 UCLASS()
 class PORTFOLIO_API UMonsterAttackAbility : public UAttackAbility
 {

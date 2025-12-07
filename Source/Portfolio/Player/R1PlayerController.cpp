@@ -102,13 +102,13 @@ void AR1PlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Completed, this, &ThisClass::OnWheelReleased);
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Canceled, this, &ThisClass::OnWheelReleased);
 
-		const UInputAction* LeftMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_LeftMouse);
+		const UInputAction* LeftMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_BaseAttack);
 		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Started, this, &ThisClass::OnLeftMouseStarted);
 		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Triggered, this, &ThisClass::OnLeftMouseTriggered);
 		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Completed, this, &ThisClass::OnLeftMouseReleased);
 		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Canceled, this, &ThisClass::OnLeftMouseReleased);
 
-		const UInputAction* RightMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_RightMouse);
+		const UInputAction* RightMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Block);
 		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Started, this, &ThisClass::OnRightMouseStarted);
 		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Triggered, this, &ThisClass::OnRightMouseTriggered);
 		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Completed, this, &ThisClass::OnRightMouseReleased);
@@ -325,14 +325,14 @@ void AR1PlayerController::OnLeftMouseStarted()
 
 void AR1PlayerController::OnLeftMouseTriggered()
 {
-
+	int i = 0;
 
 }
 
 void AR1PlayerController::OnLeftMouseReleased()
 {
 	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
-	R1Player->Input_Action(R1Tags::State_Action_Attack_Base);
+	R1Player->Input_Action(R1Tags::Input_Action_BaseAttack);
 
 }
 
@@ -350,8 +350,8 @@ void AR1PlayerController::OnRightMouseReleased()
 {
 	FAbilityCancelInfo CancelInfo;
 	FGameplayTagContainer TagContainer;
-	TagContainer.AddTagFast(R1Tags::State_Mode_Blocking);
-	CancelInfo.StateCancelTags = TagContainer;
+	TagContainer.AddTagFast(R1Tags::Ability_Mode_Blocking);
+	CancelInfo.AbilityCancelTags = TagContainer;
 	CancelInfo.Cause = CancelCause::CancelMode;
 
 	R1Player->AbilityCancel(CancelInfo);

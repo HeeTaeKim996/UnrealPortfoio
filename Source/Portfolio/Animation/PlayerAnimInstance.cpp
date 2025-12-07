@@ -80,7 +80,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			//DebugMessage(TEXT("PlayerAnimInstance : Backward"));
 		}
 
-		if (R1Player->IsInState(R1Tags::State_Mode_Blocking))
+		if (R1Player->IsInState(R1Tags::Ability_Mode_Blocking))
 		{
 			UpperBodyState = EUpperBodyState::Blocking;
 			//DebugMessage(TEXT("PlayerAnimInstance : Blocking"));

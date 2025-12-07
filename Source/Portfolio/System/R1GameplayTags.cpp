@@ -4,9 +4,9 @@
 namespace R1Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Move, "Input.Action.Move");
-	UE_DEFINE_GAMEPLAY_TAG(Input_Action_LeftMouse, "Input.Action.LeftMouse");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Action_BaseAttack, "Input.Action.BaseAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Wheel, "Input.Action.Wheel");
-	UE_DEFINE_GAMEPLAY_TAG(Input_Action_RightMouse, "Input.Action.RightMouse");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Block, "Input.Action.Block");
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
@@ -20,63 +20,50 @@ namespace R1Tags
 
 
 
-
 	/*-------------------
-		  Ability
+			Ability
 	--------------------*/
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test, "Ability.Attack.Test");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Test2, "Ability.Attack.Test2");
 
+	/* Dead */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Dead, "Ability.Dead");
+
+	/* Action */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action, "Ability.Action");
+
+	// Attack
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack, "Ability.Action.Attack");
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack, "Ability.Action.Attack.BaseAttack");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack_TestAttack, "Ability.Action.Attack.BaseAttack.TestAttack");
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster, "Ability.Action.Attack.Monster");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster_FieldMonster_Kronos_Sweep, "Ability.Action.Attack.Monster.FieldMonster.Kronos.Sweep");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster_FieldMonster_Kronos_JumpAttack, "Ability.Action.Attack.Monster.FieldMonster.Kronos.JumpAttack");
+
+	// HitReact
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base, "Ability.Action.HitReact.Base");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Fwd, "Ability.Action.HitReact.Base.Fwd");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Right, "Ability.Action.HitReact.Base.Right");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Left, "Ability.Action.HitReact.Base.Left");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Bwd, "Ability.Action.HitReact.Base.Bwd");
 
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Knockdown, "Ability.Action.HitReact.Knockdown");
 
+	// Parry
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Parry, "Ability.Action.Parry");
 
-
+	/* Mode */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode, "Ability.Mode");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Blocking, "Ability.Mode.Blocking");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_UsingItem, "Ability.Mode.UsingItem");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Aiming, "Ability.Mode.Aiming");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Sneaking, "Ability.Mode.Sneaking");
 
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Monster_FieldMonster_Kronos_Sweep, "Ability.Monster.FieldMonster.Kronos.Sweep");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Monster_FieldMonster_Kronos_JumpAttack, "Ability.Monster.FieldMonster.Kronos.JumpAttack");
+	/* HitState */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState, "Ability.HitState");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState_Invincible, "Ability.HitState.Invincible");
 
-	/*-------------------
-			State
-	--------------------*/
-	/// Dead
-	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
-
-	/// HitState
-	UE_DEFINE_GAMEPLAY_TAG(State_HitState, "State.HitState");
-	UE_DEFINE_GAMEPLAY_TAG(State_HitState_Invincible, "State.HitState.Invincible");
-
-	/* Attack */
-	UE_DEFINE_GAMEPLAY_TAG(State_Action, "State.Action");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack, "State.Action.Attack");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Base, "State.Action.Attack.Base");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Attack_Skill, "State.Action.Attack.Skill");
-
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_UsingItem, "State.Action.UsingItem");
-
-	// HitReact
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact, "State.Action.HitReact");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact_Base, "State.Action.HitReact.Base");
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_HitReact_Knockdown, "State.Action.HitReact.Knockdown");
-
-
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Parry, "State.Action.Parry");
-
-	/// Mode
-	UE_DEFINE_GAMEPLAY_TAG(State_Mode, "State.Mode");
-	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Blocking, "State.Mode.Blocking");
-	UE_DEFINE_GAMEPLAY_TAG(State_Mode_UsingItem, "State.Mode.UsingItem");
-	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Aiming, "State.Mode.Aiming");
-	UE_DEFINE_GAMEPLAY_TAG(State_Mode_Sneaking, "State.Mode.Sneaking");
-
-	/* Die */
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Die, TEXT("State.Action.Die"));
-	UE_DEFINE_GAMEPLAY_TAG(State_Action_Die_Normal, TEXT("State.Action.Die.Normal"));
 
 
 

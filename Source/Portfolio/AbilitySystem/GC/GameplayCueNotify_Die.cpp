@@ -23,5 +23,5 @@ void UGameplayCueNotify_Die::HandleGameplayCue(AActor* MyTarget, EGameplayCueEve
 	AR1Character* OwnerCharacter = Cast<AR1Character>(MyTarget);
 	if (OwnerCharacter == nullptr) return;
 
-	OwnerCharacter->Die(HitResult, R1Tags::State_Action_Die_Normal); // TODO : Split Category ?
+	OwnerCharacter->Die(HitResult, R1Tags::Ability_Dead); // TODO : Split Category ?
 }
