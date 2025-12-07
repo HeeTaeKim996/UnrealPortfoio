@@ -172,9 +172,9 @@ void AR1Character::InitAbilitySystem()
 
 }
 
-void AR1Character::ActivateAbility(FGameplayTag AbilityTag)
+bool AR1Character::ActivateAbility(FGameplayTag AbilityTag)
 {
-	CharacterASC->ActivateAbility(AbilityTag);
+	return CharacterASC->ActivateAbility(AbilityTag);
 }
 
 

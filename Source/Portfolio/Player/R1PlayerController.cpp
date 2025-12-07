@@ -319,13 +319,11 @@ void AR1PlayerController::OnWheelReleased()
 
 void AR1PlayerController::OnLeftMouseStarted()
 {
-
 	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Cyan, TEXT("LeftMouseStart"));
 }
 
 void AR1PlayerController::OnLeftMouseTriggered()
 {
-	int i = 0;
 
 }
 
@@ -333,7 +331,6 @@ void AR1PlayerController::OnLeftMouseReleased()
 {
 	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
 	R1Player->Input_Action(R1Tags::Input_Action_BaseAttack);
-
 }
 
 void AR1PlayerController::OnRightMouseStarted()

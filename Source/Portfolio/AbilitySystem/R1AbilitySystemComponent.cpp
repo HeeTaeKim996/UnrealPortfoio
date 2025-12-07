@@ -58,7 +58,7 @@ void UR1AbilitySystemComponent::RemoveAbilityByTag(FGameplayTag InTag)
 
 
 
-void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
+bool UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 {
 	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
 	{
@@ -67,13 +67,15 @@ void UR1AbilitySystemComponent::ActivateAbility(FGameplayTag InTag)
 			if (Spec.IsActive())
 			{
 				ensureAlwaysMsgf(false, TEXT("Ability is already active"));
-				return;
+				return false;
 			}
 
 			TryActivateAbility(Spec.Handle);
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 

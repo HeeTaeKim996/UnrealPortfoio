@@ -117,7 +117,7 @@ protected:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void InitAbilitySystem();
-	void ActivateAbility(FGameplayTag AbilityTag);
+	bool ActivateAbility(FGameplayTag AbilityTag);
 
 	virtual void InitializeCharacterAbilities();
 	void AbilityCancel(FAbilityCancelInfo CancelInfo);

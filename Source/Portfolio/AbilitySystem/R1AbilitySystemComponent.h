@@ -28,7 +28,7 @@ public:
 
 
 
-	void ActivateAbility(FGameplayTag InTag);
+	bool ActivateAbility(FGameplayTag InTag);
 	
 	void ClearRoot(const FGameplayTag& RootTag);
 

@@ -4,6 +4,7 @@
 #include "AI/BTTaskNode_AsyncAbilityContainer.h"
 #include "Character/R1Character.h"
 #include "AIController.h"
+#include "AbilitySystem/R1AbilitySystemComponent.h"
 
 UBTTaskNode_AsyncAbilityContainer::UBTTaskNode_AsyncAbilityContainer()
 	: Super()
@@ -17,12 +18,21 @@ EBTNodeResult::Type UBTTaskNode_AsyncAbilityContainer::ExecuteTask(UBehaviorTree
 
 	WeakOwnerComp = &OwnerComp;
 	AR1Character* R1Character = Cast<AR1Character>(OwnerComp.GetAIOwner()->GetPawn());
+
+
+
 	if (R1Character)
 	{
+		if (R1Character->ActivateAbility(AbilityTag) == false)
+		{
+			return EBTNodeResult::Failed;
+		}
+
+
 		R1Character->GAS_OnAbilityCancel.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel);
 		R1Character->GAS_OnAbilitySucceed.AddDynamic(this, &UBTTaskNode_AsyncAbilityContainer::OnAbilitySucceed);
 
-		R1Character->ActivateAbility(AbilityTag);
+		
 
 		return EBTNodeResult::InProgress;
 	}
@@ -44,7 +54,7 @@ void UBTTaskNode_AsyncAbilityContainer::OnAbilityCancel(FAbilityCancelInfo Cance
 {
 	for (FGameplayTag AbilityCancelTag : CancelInfo.AbilityCancelTags)
 	{
-		if (StateTag.MatchesTag(AbilityCancelTag))
+		if (AbilityTag.MatchesTag(AbilityCancelTag))
 		{
 			if (WeakOwnerComp.IsValid())
 			{
