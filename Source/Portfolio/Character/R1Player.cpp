@@ -12,7 +12,7 @@
 #include "Player/R1PlayerController.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "Player/R1PlayerState.h"
-#include "AbilitySystem/Attributes/R1PlayerSet.h"
+#include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "AbilitySystem/ASC/PlayerASC.h"
 #include "System/Subsystem/TagContainersManager.h"
 
@@ -79,19 +79,8 @@ void AR1Player::BeginPlay()
 	DummyInfo.ParrySuccedableTime = 0;
 	DeflectInfos.Add(DummyInfo);
 
-	// TEMP
-#if 0
-	if (TestEffect && AbilitySystemComponent)
-	{
-		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
-		EffectContext.AddSourceObject(this);
-
-		// Handle
-		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(TestEffect, 1, EffectContext);
-
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-	}
-#endif
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Mode_Blocking, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AR1Player::OnBlockTagChanged);
 }
 
 void AR1Player::PossessedBy(AController* NewController)
@@ -170,17 +159,17 @@ void AR1Player::HandleTraceHit(FMeleeHitInfo HitInfo)
 	GAS_OnAttackSucceed.Broadcast(HitInfo);
 }
 
-void AR1Player::RefreshHpBarRatio()
+void AR1Player::RefreshHpBarRatio(float NewHealth)
 {
-	float Hp = AttributeSet->GetHealth();
 	float MaxHp = AttributeSet->GetMaxHealth();
 
-	float Ratio = Hp / MaxHp;
+	float Ratio = NewHealth / MaxHp;
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerHealthBar(Ratio);
 }
 
 void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 {
+#if 0 // Obsolate
 	if (Tag.MatchesTag(R1Tags::Ability_Mode_Blocking))
 	{
 		if (TagExists == true)
@@ -198,6 +187,7 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 			}
 		}
 	}
+#endif
 }
 
 void AR1Player::Input_Action(FGameplayTag InActionState)
@@ -250,6 +240,24 @@ void AR1Player::Input_Block()
 void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 {
 	AbilityCancel(InCancelStates);
+}
+
+void AR1Player::OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount >= 1)
+	{
+		bUpperLowerSplit = true;
+		SurplusAlertTime = -1.f;
+	}
+	else
+	{
+		SurplusAlertTime = 5.f;
+
+		if (DeflectInfos.Num() > 1)
+		{
+			DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
+		}
+	}
 }
 
 

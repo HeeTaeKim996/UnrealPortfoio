@@ -24,21 +24,24 @@ void AR1Character::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+
 
 	InitializeCharacterAbilities();
 
 	{ // TEMP
+		this;
+
 		AttributeSet->InitHealth(100);
 		AttributeSet->InitMaxHealth(100);
 
 		AttributeSet->InitBaseDamage(50);
+
 	}
 
-	
 
 
-	RefreshHpBarRatio();
+
+	RefreshHpBarRatio(AttributeSet->GetHealth());
 
 
 	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);
@@ -46,7 +49,8 @@ void AR1Character::BeginPlay()
 	MeleeTrace->OnTraceHit.AddDynamic(this, &ThisClass::HandleTraceHit);
 
 	CharacterASC->Delegate_OnTagUpdated.BindUObject(this, &AR1Character::OnTagUpdated);
-
+	CharacterASC->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute())
+		.AddUObject(this, &AR1Character::OnHealthChanged);
 }
 
 void AR1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -81,21 +85,7 @@ void AR1Character::UnHighlight()
 	bHighlighted = false;
 }
 
-void AR1Character::OnDamage(int Damage, TObjectPtr<AR1Character> From)
-{
-	float Hp = AttributeSet->GetHealth();
-	float MaxHp = AttributeSet->GetMaxHealth();
 
-	Hp = FMath::Clamp(Hp - Damage, 0, MaxHp);
-	AttributeSet->SetHealth(Hp);
-	if (Hp == 0)
-	{
-		OnDead(From);
-	}
-
-	RefreshHpBarRatio();
-	//DebugMessage(FString::Printf(TEXT("HP : %d"), Hp))
-}
 
 void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 {
@@ -107,7 +97,7 @@ void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 
 void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 {
-	if(EventTag.MatchesTag(R1Tags::Event_Montage_End))
+	if (EventTag.MatchesTag(R1Tags::Event_Montage_End))
 	{
 
 	}
@@ -123,7 +113,7 @@ void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
 
 	float Cos = DesiredVec.Dot(ReactDir);
 	float Sin = DesiredVec.Cross(ReactDir).Z; // Prelude Two Vectors are span of x,y
-	
+
 	if (Cos > COS_45)
 	{
 		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Fwd);
@@ -148,6 +138,11 @@ void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
 void AR1Character::Die(const FHitResult* HitResult, FGameplayTag ReactDieTag)
 {
 	DebugMessage(TEXT("DieCheck"));
+}
+
+void AR1Character::OnHealthChanged(const FOnAttributeChangeData& Data)
+{
+	RefreshHpBarRatio(Data.NewValue);
 }
 
 
@@ -177,7 +172,7 @@ void AR1Character::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMele
 
 }
 
-void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, 
+void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 	FMeleeTraceInstanceHandle TraceHandle)
 {
 
@@ -186,8 +181,8 @@ void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 H
 void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
 {
 #if 0
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, 
-		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString() ));
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
+		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString()));
 #endif
 
 	//GAS_OnAttackSucceed.Broadcast(HitInfo);
@@ -235,7 +230,7 @@ void AR1Character::InitializeCharacterAbilities()
 
 void AR1Character::AbilityCancel(FGameplayTagContainer CancelTags)
 {
-	CharacterASC->CancelAbilities(&CancelTags, nullptr, nullptr); 
+	CharacterASC->CancelAbilities(&CancelTags, nullptr, nullptr);
 
 	//CharacterASC->CancelAbilityByTag(CancelTags.First());
 }

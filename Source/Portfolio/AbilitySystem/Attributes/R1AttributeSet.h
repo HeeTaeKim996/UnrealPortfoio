@@ -41,6 +41,8 @@ public:
 	ATTRIBUTE_ACCESSORS(ThisClass, MaxStamina);
 	ATTRIBUTE_ACCESSORS(ThisClass, BaseDamage);
 	ATTRIBUTE_ACCESSORS(ThisClass, BaseDefense);
+	ATTRIBUTE_ACCESSORS(ThisClass, Impacted);
+
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
@@ -60,4 +62,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData BaseDefense;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Impacted;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Impact;
 };

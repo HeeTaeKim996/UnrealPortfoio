@@ -18,7 +18,7 @@ public:
 
 
 protected:
-	virtual void RefreshHpBarRatio() override;
+	virtual void RefreshHpBarRatio(float NewHealth) override;
 
 
 protected:

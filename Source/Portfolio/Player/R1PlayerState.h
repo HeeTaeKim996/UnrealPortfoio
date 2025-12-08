@@ -9,7 +9,7 @@
 
 class UR1AbilitySystemComponent;
 class UPlayerASC;
-class UR1PlayerSet;
+class UR1AttributeSet;
 
 /**
  * 
@@ -26,12 +26,12 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 	UR1AbilitySystemComponent* GetR1AbilitySystemComponent() const;
-	UR1PlayerSet* GetR1PlayerSet() const;
+	UR1AttributeSet* GetR1PlayerSet() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPlayerASC> AbilitySystemComponent;
 
 	UPROPERTY()
-	TObjectPtr<UR1PlayerSet> PlayerSet;
+	TObjectPtr<UR1AttributeSet> PlayerSet;
 };

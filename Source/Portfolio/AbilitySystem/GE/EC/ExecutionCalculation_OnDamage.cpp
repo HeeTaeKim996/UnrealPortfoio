@@ -13,9 +13,14 @@ UExecutionCalculation_OnDamage::UExecutionCalculation_OnDamage()
 		- (3) : GE's Invoker(Source) / Target. (4) : bUse Snapshot ( at GE Applying Point. NOT this GEEC Invoke point )
 	*/
 	DEFINE_ATTRIBUTE_CAPTUREDEF(UR1AttributeSet, BaseDamage, Source, true);
+	DEFINE_ATTRIBUTE_CAPTUREDEF(UR1AttributeSet, Impacted, Target, false);
+	DEFINE_ATTRIBUTE_CAPTUREDEF(UR1AttributeSet, Impact, Source, false);
+
 
 	RelevantAttributesToCapture.Add(HealthDef); // Declare this GEEC Require ~Def
 	RelevantAttributesToCapture.Add(BaseDamageDef);
+	RelevantAttributesToCapture.Add(ImpactedDef);
+	RelevantAttributesToCapture.Add(ImpactDef);
 }
 
 void UExecutionCalculation_OnDamage::Execute_Implementation
@@ -30,17 +35,22 @@ void UExecutionCalculation_OnDamage::Execute_Implementation
 
 	float Health = 0.f;
 	float BaseDamage = 0.f;
-
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthDef, EvalParams, Health);
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvalParams, BaseDamage);
-
 
 	// TODO : Modify Final Damage ?
 	const float FinalDamage = BaseDamage;
 
+	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(HealthProperty, EGameplayModOp::Additive, 
+		-FinalDamage));
+
+	
+	float Impact = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(ImpactDef, EvalParams, Impact);
+	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(ImpactedProperty,
+		EGameplayModOp::Override, Impact));
 
 
-	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(HealthProperty, EGameplayModOp::Additive, -FinalDamage));
-
+	
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, TEXT("ExecutionCalculation_OnDamage Check"));
 }

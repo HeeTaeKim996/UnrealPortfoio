@@ -70,7 +70,6 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 
 		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 
-		HItCharacter->RefreshHpBarRatio();
 	}
 
 

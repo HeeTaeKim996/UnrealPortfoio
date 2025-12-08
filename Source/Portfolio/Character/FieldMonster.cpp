@@ -4,7 +4,7 @@
 #include "Character/FieldMonster.h"
 #include "Components/WidgetComponent.h"
 #include "UI/UserWidget_FieldHPBar.h"
-#include "AbilitySystem/Attributes/R1MonsterSet.h"
+#include "AbilitySystem/Attributes/R1AttributeSet.h"
 
 AFieldMonster::AFieldMonster()
 	: Super()
@@ -29,16 +29,16 @@ AFieldMonster::AFieldMonster()
 
 }
 
-void AFieldMonster::RefreshHpBarRatio()
+void AFieldMonster::RefreshHpBarRatio(float NewHealth)
 {
-	Super::RefreshHpBarRatio();
+	Super::RefreshHpBarRatio(NewHealth);
+
 	if (!HpBarComponent) return;
 
 	UUserWidget_FieldHPBar* HpBar = Cast<UUserWidget_FieldHPBar>(HpBarComponent->GetUserWidgetObject());
 	
-	float Hp = AttributeSet->GetHealth();
 	float MaxHp = AttributeSet->GetMaxHealth();
 
-	float Ratio = static_cast<float>(Hp) / MaxHp;
+	float Ratio = NewHealth / MaxHp;
 	HpBar->SetHpRatio(Ratio);
 }

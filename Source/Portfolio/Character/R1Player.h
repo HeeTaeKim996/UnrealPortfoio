@@ -55,7 +55,7 @@ protected:
 	virtual void HandleTraceHit(FMeleeHitInfo HitInfo) override;
 
 protected:
-	virtual void RefreshHpBarRatio() override;
+	virtual void RefreshHpBarRatio(float NewHealth) override;
 
 protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
@@ -71,6 +71,9 @@ public:
 	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
 	const TArray<FDeflectInfo>& GetDeflectInfos() { return DeflectInfos; }
 
+
+private:
+	void OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
 protected:
 	TArray<FDeflectInfo> DeflectInfos;

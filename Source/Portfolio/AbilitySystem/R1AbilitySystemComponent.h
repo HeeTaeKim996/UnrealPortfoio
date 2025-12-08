@@ -25,6 +25,7 @@ public:
 	
 public:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
+	
 	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability,
 		bool bWasCancelled) override;
 
@@ -37,7 +38,7 @@ public:
 	FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag InTag);
 	void CancelAbilityByTag(FGameplayTag InTag);
 
-	
+
 public:
 	FOnTagUpdated Delegate_OnTagUpdated;
 	FOnNotifyAbilityEnded Delegate_OnNotifyAbilityEnded;

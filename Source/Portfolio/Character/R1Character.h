@@ -19,6 +19,7 @@ class UR1GameplayAbility;
 class UCharacterAbility;
 struct FGameplayAbilitySpecHandle;
 class UR1AbilitySystemComponent;
+struct FOnAttributeChangeData;
 
 USTRUCT(BlueprintType)
 struct FBaseAbilities
@@ -57,7 +58,6 @@ public:
 	virtual void UnHighlight() override;
 
 
-	virtual void OnDamage(int Damage, TObjectPtr<AR1Character> From);
 
 	virtual void OnDead(TObjectPtr<AR1Character> From);
 
@@ -69,8 +69,9 @@ public:
 	void HitReact(const FHitResult* HitResult, FGameplayTag ReactTag);
 	void Die(const FHitResult* HitResult, FGameplayTag ReactTag);
 
-public:
-	virtual void RefreshHpBarRatio() {}
+protected:
+	virtual void OnHealthChanged(const FOnAttributeChangeData& Data);
+	virtual void RefreshHpBarRatio(float NewHealth) {}
 
 	
 

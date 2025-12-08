@@ -4,8 +4,7 @@
 #include "Character/R1Monster.h"
 #include "Character/R1Player.h"
 #include "AbilitySystem/ASC/MonsterASC.h"
-#include "AbilitySystem/Attributes/R1MonsterSet.h"
-
+#include "AbilitySystem/Attributes/R1AttributeSet.h"
 
 AR1Monster::AR1Monster()
 	: Super()
@@ -18,7 +17,7 @@ AR1Monster::AR1Monster()
 	CharacterASC->SetIsReplicated(false); // Singple Play
 	CharacterASC->SetReplicationMode(EGameplayEffectReplicationMode::Full); // SinglePlay
 
-	AttributeSet = CreateDefaultSubobject<UR1MonsterSet>("MonsterSet");
+	AttributeSet = CreateDefaultSubobject<UR1AttributeSet>("MonsterSet");
 }
 	
 
