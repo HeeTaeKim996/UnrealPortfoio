@@ -23,7 +23,7 @@ void UGC_HitReaction::HandleGameplayCue(AActor* Target, EGameplayCueEvent::Type 
 	AR1Character* OwnerCharacter = Cast<AR1Character>(Target);
 	if (OwnerCharacter == nullptr) return;
 
-	OwnerCharacter->HitReact(HitResult, R1Tags::Ability_Action_HitReact);
+	//OwnerCharacter->HitReact(HitResult, R1Tags::Ability_Action_HitReact);
 
 	DebugMessage(TEXT("GC_HitReaction : Check"));
 

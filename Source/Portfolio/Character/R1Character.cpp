@@ -29,12 +29,10 @@ void AR1Character::BeginPlay()
 	InitializeCharacterAbilities();
 
 	{ // TEMP
-		this;
-
 		AttributeSet->InitHealth(100);
 		AttributeSet->InitMaxHealth(100);
 
-		AttributeSet->InitBaseDamage(50);
+		AttributeSet->InitAttackPower(50);
 
 	}
 
@@ -103,42 +101,9 @@ void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 	}
 }
 
-void AR1Character::HitReact(const FHitResult* HitResult, FGameplayTag ReactTag)
-{
-	AbilityCancel(UTagContainersManager::Get(this)->OnHitReact_CancelTags());
 
-	FVector ReactDir = HitResult->Location - GetActorLocation();
-	ReactDir.Z = 0;
-	ReactDir.Normalize();
 
-	float Cos = DesiredVec.Dot(ReactDir);
-	float Sin = DesiredVec.Cross(ReactDir).Z; // Prelude Two Vectors are span of x,y
 
-	if (Cos > COS_45)
-	{
-		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Fwd);
-	}
-	else if (Cos > -COS_45)
-	{
-		if (Sin > 0)
-		{
-			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Right);
-		}
-		else
-		{
-			ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Left);
-		}
-	}
-	else
-	{
-		ActivateAbility(R1Tags::Ability_Action_HitReact_Base_Bwd);
-	}
-}
-
-void AR1Character::Die(const FHitResult* HitResult, FGameplayTag ReactDieTag)
-{
-	DebugMessage(TEXT("DieCheck"));
-}
 
 void AR1Character::OnHealthChanged(const FOnAttributeChangeData& Data)
 {
@@ -209,21 +174,13 @@ void AR1Character::InitializeCharacterAbilities()
 
 	ASC->AddCharacterAbilities(StartupAbilities);
 
-	if (BaseAbilities.HitReact_Fwd != nullptr)
+	if (BaseAbilities.HitReact != nullptr)
 	{
-		ASC->AddCharacterAbility(BaseAbilities.HitReact_Fwd);
+		ASC->AddCharacterAbility(BaseAbilities.HitReact);
 	}
-	if (BaseAbilities.HitReact_Right != nullptr)
+	if (BaseAbilities.Dead != nullptr)
 	{
-		ASC->AddCharacterAbility(BaseAbilities.HitReact_Right);
-	}
-	if (BaseAbilities.HitReact_Left != nullptr)
-	{
-		ASC->AddCharacterAbility(BaseAbilities.HitReact_Left);
-	}
-	if (BaseAbilities.HitReact_Bwd != nullptr)
-	{
-		ASC->AddCharacterAbility(BaseAbilities.HitReact_Bwd);
+		ASC->AddCharacterAbility(BaseAbilities.Dead);
 	}
 
 }
@@ -265,4 +222,14 @@ bool AR1Character::IsInAllStates(const FGameplayTagContainer& StateTags)
 
 void AR1Character::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 {
+
+
+	if (Tag == R1Tags::Ability_Action_HitReact && TagExists == false)
+	{
+		int i = 0;
+	}
+	if (Tag == R1Tags::Ability_Action_HitReact && TagExists == true)
+	{
+		int i = 0;
+	}
 }

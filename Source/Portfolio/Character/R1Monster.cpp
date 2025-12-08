@@ -37,6 +37,20 @@ void AR1Monster::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AR1Monster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+#if 0
+	{
+		FGameplayTagContainer TempTags;
+		CharacterASC->GetOwnedGameplayTags(TempTags);
+
+		for (FGameplayTag Tag : TempTags)
+		{
+			DebugMessage(Tag.ToString());
+		}
+
+		DebugMessage(TEXT(" "));
+	}
+#endif
 }
 
 void AR1Monster::Highlight()

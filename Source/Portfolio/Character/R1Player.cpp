@@ -117,7 +117,7 @@ void AR1Player::Tick(float DeltaTime)
 	{
 		SurplusAlertTime -= DeltaTime;
 		if (SurplusAlertTime < 0) bUpperLowerSplit = false;
-	}
+	}	
 }
 
 void AR1Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

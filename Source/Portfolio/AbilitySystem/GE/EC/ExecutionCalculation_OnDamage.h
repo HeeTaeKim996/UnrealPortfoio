@@ -20,10 +20,10 @@ public:
 		FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
 private:
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Health); 
 	/*	- Making '~Def' && '~Property' Member Macro
 		- ~Def : To Load Captured Data. ~Property : To Apply Revised Data */
-	DECLARE_ATTRIBUTE_CAPTUREDEF(BaseDamage);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Impacted);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Impact);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(AttackPower);
+
+	DECLARE_ATTRIBUTE_CAPTUREDEF(MetaDamage);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(MetaImpact);
 };

@@ -43,11 +43,6 @@ namespace R1Tags
 	// HitReact
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base, "Ability.Action.HitReact.Base");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Fwd, "Ability.Action.HitReact.Base.Fwd");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Right, "Ability.Action.HitReact.Base.Right");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Left, "Ability.Action.HitReact.Base.Left");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base_Bwd, "Ability.Action.HitReact.Base.Bwd");
-
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Knockdown, "Ability.Action.HitReact.Knockdown");
 
 	// Parry

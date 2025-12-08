@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/ActionAbility.h"
-#include "HitReactAbility.generated.h"
+#include "AbilitySystem/Abilities/CharacterAbility.h"
+#include "DeathAbility.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UHitReactAbilityTask : public UActionAbilityTask
+class PORTFOLIO_API UDeathAbilityTask : public UCharacterAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -17,13 +17,12 @@ public:
 };
 
 
-
 UCLASS()
-class PORTFOLIO_API UHitReactAbility : public UActionAbility
+class PORTFOLIO_API UDeathAbility : public UCharacterAbility
 {
 	GENERATED_BODY()
 public:
-	UHitReactAbility();
+	UDeathAbility();
 
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -33,8 +32,20 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-
-
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+
+protected:
+	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
+
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
+
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<UAnimMontage> PlayingMontage;
+
+	UPROPERTY()
+	FName InSectionName = NAME_None;
 };

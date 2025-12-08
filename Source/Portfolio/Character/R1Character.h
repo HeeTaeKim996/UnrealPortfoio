@@ -27,16 +27,10 @@ struct FBaseAbilities
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> HitReact_Fwd;
+	TSubclassOf<UR1GameplayAbility> HitReact;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> HitReact_Right;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> HitReact_Left;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> HitReact_Bwd;
+	TSubclassOf<UR1GameplayAbility> Dead;
 };
 
 UCLASS()
@@ -65,9 +59,7 @@ public:
 
 	virtual void HandleGameplayTagEvent(FGameplayTag EventTag);
 
-public:
-	void HitReact(const FHitResult* HitResult, FGameplayTag ReactTag);
-	void Die(const FHitResult* HitResult, FGameplayTag ReactTag);
+
 
 protected:
 	virtual void OnHealthChanged(const FOnAttributeChangeData& Data);

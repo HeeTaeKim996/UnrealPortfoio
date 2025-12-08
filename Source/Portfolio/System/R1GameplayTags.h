@@ -47,11 +47,6 @@ namespace R1Tags
 	// HitReact
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Fwd);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Right);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Left);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base_Bwd);
-
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Knockdown);
 
 	// Parry
