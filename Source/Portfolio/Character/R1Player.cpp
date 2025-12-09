@@ -15,7 +15,8 @@
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "AbilitySystem/ASC/PlayerASC.h"
 #include "System/Subsystem/TagContainersManager.h"
-
+#include "System/R1AssetManager.h"
+#include "Data/GE/DataAsset_GE.h"
 
 AR1Player::AR1Player() : Super()
 {
@@ -81,6 +82,16 @@ void AR1Player::BeginPlay()
 
 	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Mode_Blocking, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AR1Player::OnBlockTagChanged);
+	CharacterASC->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetStaminaAttribute())
+		.AddUObject(this, &AR1Player::RefreshStaminaBarRatio);
+
+	const UDataAsset_GE* GEData = UR1AssetManager::GetAssetByName<UDataAsset_GE>
+		(R1Tags::Asset_GE_InitializePlayerSet);
+	ensureAlwaysMsgf(GEData, TEXT("GEData is Null"));
+
+	FGameplayEffectContextHandle Context = CharacterASC->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GEData->GE, 1.f, Context);
+	CharacterASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 void AR1Player::PossessedBy(AController* NewController)
@@ -165,6 +176,13 @@ void AR1Player::RefreshHpBarRatio(float NewHealth)
 
 	float Ratio = NewHealth / MaxHp;
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerHealthBar(Ratio);
+}
+
+void AR1Player::RefreshStaminaBarRatio(const FOnAttributeChangeData& Data)
+{
+	float Ratio = Data.NewValue / AttributeSet->GetMaxHealth();
+
+	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerStaminaBar(Ratio);
 }
 
 void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)

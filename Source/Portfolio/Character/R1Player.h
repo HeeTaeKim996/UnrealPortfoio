@@ -9,6 +9,7 @@
 
 class UPlayerAnimInstance;
 class UAnimMontage;
+class UGameplayEffect;
 
 USTRUCT()
 struct PORTFOLIO_API FDeflectInfo
@@ -56,6 +57,7 @@ protected:
 
 protected:
 	virtual void RefreshHpBarRatio(float NewHealth) override;
+	void RefreshStaminaBarRatio(const FOnAttributeChangeData& Data);
 
 protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
@@ -99,9 +101,4 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> CharMovement;
-
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UGameplayEffect> TestEffect;
 };

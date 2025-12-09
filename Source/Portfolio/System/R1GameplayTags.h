@@ -16,12 +16,18 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_End);
 
+
+	/*-------------------
+		    Asset
+	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_IMC_Base);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_UserWidget_MainUserWidget);
-	//UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_ETC_GameplayTagContainers);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Label_Preload);
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_InitializePlayerSet);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_InitializeMonsterSet);
 
 
 

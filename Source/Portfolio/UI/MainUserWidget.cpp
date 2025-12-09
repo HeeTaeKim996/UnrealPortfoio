@@ -25,3 +25,8 @@ void UMainUserWidget::UpdatePlayerHealthBar(float Ratio)
 {
 	PlayerHpBar->SetPercent(Ratio);
 }
+
+void UMainUserWidget::UpdatePlayerStaminaBar(float Ratio)
+{
+	PlayerStaminaBar->SetPercent(Ratio);
+}

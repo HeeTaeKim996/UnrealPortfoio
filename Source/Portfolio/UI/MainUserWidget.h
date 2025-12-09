@@ -7,6 +7,7 @@
 #include "MainUserWidget.generated.h"
 
 class UButton;
+class UProgressBar;
 
 /**
  * 
@@ -24,11 +25,15 @@ protected:
 
 public:
 	void UpdatePlayerHealthBar(float Ratio);
+	void UpdatePlayerStaminaBar(float Ratio);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> TestButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UProgressBar> PlayerHpBar;
+	TObjectPtr<UProgressBar> PlayerHpBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> PlayerStaminaBar;
 };

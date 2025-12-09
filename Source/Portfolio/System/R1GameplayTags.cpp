@@ -11,12 +11,18 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
 
+
+	/*-------------------
+			Asset
+	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Asset_IMC_Base, "Asset.IMC.Base");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_UserWidget_MainUserWidget, "Asset.UserWidget.MainUserWidget");
-	//UE_DEFINE_GAMEPLAY_TAG(Asset_ETC_GameplayTagContainers, "Asset.ETC.GameplayTagContainers");
-
+	
 	UE_DEFINE_GAMEPLAY_TAG(Asset_Label_Preload, "Asset.Label.Preload");
 
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE, "Asset.GE");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_InitializePlayerSet, "Asset.GE.InitializePlayerSet");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_InitializeMonsterSet, "Asset.GE.InitializeMonsterSet");
 
 
 

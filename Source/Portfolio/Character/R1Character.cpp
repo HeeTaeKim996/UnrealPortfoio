@@ -28,19 +28,7 @@ void AR1Character::BeginPlay()
 
 	InitializeCharacterAbilities();
 
-	{ // TEMP
-		AttributeSet->InitHealth(100);
-		AttributeSet->InitMaxHealth(100);
-		AttributeSet->InitStamina(100);
 
-		AttributeSet->InitAttackPower(50);
-
-	}
-
-
-
-
-	RefreshHpBarRatio(AttributeSet->GetHealth());
 
 
 	MeleeTrace->OnTraceStart.AddDynamic(this, &ThisClass::HandleTraceStarted);

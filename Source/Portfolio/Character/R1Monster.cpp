@@ -5,6 +5,8 @@
 #include "Character/R1Player.h"
 #include "AbilitySystem/ASC/MonsterASC.h"
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
+#include "System/R1AssetManager.h"
+#include "Data/GE/DataAsset_GE.h"
 
 AR1Monster::AR1Monster()
 	: Super()
@@ -27,6 +29,14 @@ void AR1Monster::BeginPlay()
 
 
 	InitAbilitySystem();
+
+	const UDataAsset_GE* GEData = UR1AssetManager::GetAssetByName<UDataAsset_GE>
+		(R1Tags::Asset_GE_InitializeMonsterSet);
+	ensureAlwaysMsgf(GEData, TEXT("GEData is Null"));
+
+	FGameplayEffectContextHandle Context = CharacterASC->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GEData->GE, 1.f, Context);
+	CharacterASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 void AR1Monster::EndPlay(const EEndPlayReason::Type EndPlayReason)
