@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/MontageAbility.h"
+#include "AbilitySystem/Abilities/ActionAbility.h"
 #include "KnockDownAbility.generated.h"
 
+class UAnimMontage;
+
 UCLASS()
-class PORTFOLIO_API UKncokDownAbilityTask : public UMontageAbilityTask
+class PORTFOLIO_API UKncokDownAbilityTask : public UActionAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -17,7 +19,7 @@ public:
 };
 
 UCLASS()
-class PORTFOLIO_API UKnockDownAbility : public UMontageAbility
+class PORTFOLIO_API UKnockDownAbility : public UActionAbility
 {
 	GENERATED_BODY()
 public:
@@ -34,7 +36,7 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-
 protected:
-	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
 };

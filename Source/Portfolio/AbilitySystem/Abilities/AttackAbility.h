@@ -6,9 +6,26 @@
 #include "AbilitySystem/Abilities/ActionAbility.h"
 #include "AttackAbility.generated.h"
 
-
-
 struct FMeleeHitInfo;
+class UGameplayEffect;
+
+USTRUCT(BlueprintType)
+struct PORTFOLIO_API FAttackInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> GE;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float AttackCoefficient;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Impact;
+};
+
+
+
 
 UCLASS()
 class PORTFOLIO_API UAttackAbilityTask : public UActionAbilityTask
@@ -37,5 +54,6 @@ class PORTFOLIO_API UAttackAbility : public UActionAbility
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TMap<uint8, TSubclassOf<class UGameplayEffect>> AttackGEMap;
+	TMap<uint8, FAttackInfo> AttackInfos;
+
 };

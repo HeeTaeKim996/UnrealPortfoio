@@ -6,6 +6,8 @@
 #include "AbilitySystem/Abilities/CharacterAbility.h"
 #include "MontageAbility.generated.h"
 
+struct FAnimMontageInstance;
+
 
 UCLASS()
 class PORTFOLIO_API UMontageAbilityTask : public UCharacterAbilityTask
@@ -49,4 +51,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FName InSectionName = NAME_None;
+
+	FAnimMontageInstance* MontageInstance;
 };

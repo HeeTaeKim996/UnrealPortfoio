@@ -57,7 +57,9 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 
 	UR1AbilitySystemComponent* TargetASC
 		= Cast<UR1AbilitySystemComponent>(HItCharacter->GetAbilitySystemComponent());
-	TSubclassOf<UGameplayEffect> GE = Cast<UAttackAbility>(Ability)->AttackGEMap[MeleeHitInfo.Protocol];
+	UAttackAbility* AttackAbility = Cast<UAttackAbility>(Ability);
+
+	TSubclassOf<UGameplayEffect> GE = AttackAbility->AttackInfos[MeleeHitInfo.Protocol].GE;
 	if (TargetASC && GE && SourceASC)
 	{
 		FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
@@ -67,6 +69,12 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 
 		FGameplayEffectSpecHandle SpecHandle =
 			SourceASC->MakeOutgoingSpec(GE, 1, EffectContext);
+		
+		FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
+		Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_AttackCoefficient,
+			AttackAbility->AttackInfos[MeleeHitInfo.Protocol].AttackCoefficient);
+		Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_Impact,
+			AttackAbility->AttackInfos[MeleeHitInfo.Protocol].Impact);
 
 		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 

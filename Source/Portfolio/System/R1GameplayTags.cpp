@@ -70,6 +70,14 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Test, "GameplayCue.Test");
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitReact_HitReaction, "GameplayCue.HitReact.HitReaction");
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Die, TEXT("GameplayCue.Die"));
+
+
+
+	/*-------------------
+		    Data
+	--------------------*/
+	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_AttackCoefficient, "Data.GESpec.AttackCoefficient");
+	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_Impact, "Data.GESpec.Impact");
 }
 
 

@@ -33,15 +33,15 @@ void UExecutionCalculation_OnDamage::Execute_Implementation
 	float AttackPower = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(AttackPowerDef, EvalParams, AttackPower);
 
+	float AttackCoefficient = Spec.GetSetByCallerMagnitude(R1Tags::Data_GESpec_AttackCoefficient,
+		false, 0.f);
 
-	float Impact = 80.f;
+	const float FinalDamage = AttackPower * AttackCoefficient;
+
+
+	float Impact = Spec.GetSetByCallerMagnitude(R1Tags::Data_GESpec_Impact, false, 0.f);
 	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(MetaImpactProperty,
 		EGameplayModOp::Override, Impact));
-
-
-	
-	// TODO : Modify Final Damage ?
-	const float FinalDamage = AttackPower;
 
 
 

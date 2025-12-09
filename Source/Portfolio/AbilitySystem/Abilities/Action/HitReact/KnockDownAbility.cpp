@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/Action/HitReact/KnockDownAbility.h"
 #include "Structures/FNameContainer.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/R1AbilitySystemComponent.h"
 
 void UKncokDownAbilityTask::Activate()
 {
@@ -31,7 +32,6 @@ UKnockDownAbility::UKnockDownAbility()
 	: Super()
 {
 	AbilityTags.AddTagFast(R1Tags::Ability_Action_HitReact_Knockdown);
-	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_HitReact_Knockdown);
 
 	FAbilityTriggerData TriggerData;
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
@@ -54,29 +54,25 @@ void UKnockDownAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+	ASC->AddLooseGameplayTag(R1Tags::Ability_Action_HitReact_Knockdown);
+
+	FOnMontageBlendingOutStarted& OnBlendingOut = MontageInstance->OnMontageBlendingOutStarted;
+	OnBlendingOut.Unbind();
+	OnBlendingOut.BindUObject(this, &UKnockDownAbility::OnMontageBlendingOut);
 }
 
 void UKnockDownAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+	ASC->RemoveLooseGameplayTag(R1Tags::Ability_Action_HitReact_Getup);
 }
 
-void UKnockDownAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
+void UKnockDownAbility::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
-	Super::OnMontageEnded(Montage, bInterruped);
-
-	if (bInterruped == false)
-	{
-		EndAbilitySuccess();
-
-
-		UFNameContainer* FNameContainer = NewObject<UFNameContainer>();
-		FString Tmp = InSectionName.ToString() + TEXT("_Getup");
-		FNameContainer->Name = FName(*Tmp);
-		FGameplayEventData EventData;
-		EventData.OptionalObject = FNameContainer;
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActorFromActorInfo(),
-			R1Tags::Ability_Action_HitReact_Getup, EventData);
-	}
+	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+	ASC->RemoveLooseGameplayTag(R1Tags::Ability_Action_HitReact_Knockdown);
+	ASC->AddLooseGameplayTag(R1Tags::Ability_Action_HitReact_Getup);
 }
+

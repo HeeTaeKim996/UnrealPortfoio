@@ -33,10 +33,6 @@ struct FBaseAbilities
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UR1GameplayAbility> Kncodown;
 
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> Getup;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UR1GameplayAbility> Dead;
 

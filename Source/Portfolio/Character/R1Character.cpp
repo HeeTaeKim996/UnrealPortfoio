@@ -182,10 +182,6 @@ void AR1Character::InitializeCharacterAbilities()
 	{
 		ASC->AddCharacterAbility(BaseAbilities.Kncodown);
 	}
-	if (BaseAbilities.Getup != nullptr)
-	{
-		ASC->AddCharacterAbility(BaseAbilities.Getup);
-	}
 	if (BaseAbilities.Dead != nullptr)
 	{
 		ASC->AddCharacterAbility(BaseAbilities.Dead);

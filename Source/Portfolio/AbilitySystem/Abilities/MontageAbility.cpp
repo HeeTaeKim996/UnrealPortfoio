@@ -77,7 +77,7 @@ void UMontageAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage
 
 
 	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
-	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
+	MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
 	if (!MontageInstance)
 	{
 		EndAbilityCancel();

@@ -63,10 +63,6 @@ namespace R1Tags
 	/* HitState */
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState_Invincible);
-
-
-
-
 	
 
 	/*-------------------
@@ -75,4 +71,11 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_HitReact_HitReaction);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Die);
+
+
+	/*-------------------
+	        Data
+	--------------------*/
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_AttackCoefficient);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_Impact);
 }
