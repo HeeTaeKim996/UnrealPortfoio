@@ -163,8 +163,6 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 			EventData.OptionalObject = FNameContainer;
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ASC->GetAvatarActor(),
 				R1Tags::Ability_Action_HitReact_Knockdown, EventData);
-		}
-
-		
+		}		
 	}
 }

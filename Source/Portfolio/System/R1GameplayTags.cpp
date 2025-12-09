@@ -67,10 +67,8 @@ namespace R1Tags
 	/*-------------------
 	      GameplayCue
 	--------------------*/
-	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Test, "GameplayCue.Test");
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitReact_HitReaction, "GameplayCue.HitReact.HitReaction");
-	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Die, TEXT("GameplayCue.Die"));
-
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitReact_HitImpact, "GameplayCue.HitReact.HitImpact");
 
 
 	/*-------------------

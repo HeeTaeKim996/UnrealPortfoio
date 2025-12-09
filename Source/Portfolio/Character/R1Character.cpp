@@ -174,17 +174,17 @@ void AR1Character::InitializeCharacterAbilities()
 
 	ASC->AddCharacterAbilities(StartupAbilities);
 
-	if (BaseAbilities.HitReact != nullptr)
+	if (BaseSettings.HitReactAbility != nullptr)
 	{
-		ASC->AddCharacterAbility(BaseAbilities.HitReact);
+		ASC->AddCharacterAbility(BaseSettings.HitReactAbility);
 	}
-	if (BaseAbilities.Kncodown != nullptr)
+	if (BaseSettings.KnockdownAbility != nullptr)
 	{
-		ASC->AddCharacterAbility(BaseAbilities.Kncodown);
+		ASC->AddCharacterAbility(BaseSettings.KnockdownAbility);
 	}
-	if (BaseAbilities.Dead != nullptr)
+	if (BaseSettings.DeadAbility != nullptr)
 	{
-		ASC->AddCharacterAbility(BaseAbilities.Dead);
+		ASC->AddCharacterAbility(BaseSettings.DeadAbility);
 	}
 	
 

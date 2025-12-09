@@ -20,22 +20,26 @@ class UCharacterAbility;
 struct FGameplayAbilitySpecHandle;
 class UR1AbilitySystemComponent;
 struct FOnAttributeChangeData;
+class UNiagaraSystem;
+
 
 USTRUCT(BlueprintType)
-struct FBaseAbilities
+struct FBaseSetting
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> HitReact;
+	TSubclassOf<UR1GameplayAbility> HitReactAbility;
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> Kncodown;
+	TSubclassOf<UR1GameplayAbility> KnockdownAbility;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UR1GameplayAbility> Dead;
+	TSubclassOf<UR1GameplayAbility> DeadAbility;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UNiagaraSystem> HitFx;
 };
 
 UCLASS()
@@ -75,7 +79,9 @@ protected:
 public:
 	void SetDesiredVec(FVector InVec) { DesiredVec = InVec; }
 	FVector GetDesiredVec() { return DesiredVec;  }
-	
+	UNiagaraSystem* GetHitFx() { return BaseSettings.HitFx; }
+
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bHighlighted = false;
@@ -83,7 +89,9 @@ protected:
 	FVector DesiredVec = FVector(1, 0, 0);
 	bool bUseDesiredVec = true;
 
-
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	FBaseSetting BaseSettings;
 
 
 
@@ -150,8 +158,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
 	TArray<TSubclassOf<UR1GameplayAbility>> StartupAbilities;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
-	FBaseAbilities BaseAbilities;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

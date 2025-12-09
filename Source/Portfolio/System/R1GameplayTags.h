@@ -68,10 +68,8 @@ namespace R1Tags
 	/*-------------------
 		  GameplayCue
 	--------------------*/
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Test);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_HitReact_HitReaction);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Die);
-
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_HitReact_HitImpact);
 
 	/*-------------------
 	        Data
