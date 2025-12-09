@@ -113,30 +113,45 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 
 	}
 	else
-	{ 
-		if (Cos > COS_45)
+	{
+		if (Impact < 30)
 		{
-			FNameContainer->Name = "Hit_Fwd";
+
+
 		}
-		else if (Cos > -COS_45)
+		else if (Impact < 70)
 		{
-			if (Sin > 0)
+			if (Cos > COS_45)
 			{
-				FNameContainer->Name = "Hit_Right";
+				FNameContainer->Name = "Hit_Fwd";
+			}
+			else if (Cos > -COS_45)
+			{
+				if (Sin > 0)
+				{
+					FNameContainer->Name = "Hit_Right";
+				}
+				else
+				{
+					FNameContainer->Name = "Hit_Left";
+				}
 			}
 			else
 			{
-				FNameContainer->Name = "Hit_Left";
+				FNameContainer->Name = "Hit_Bwd";
 			}
+
+			FGameplayEventData EventData;
+			EventData.OptionalObject = FNameContainer;
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ASC->GetAvatarActor(),
+				R1Tags::Ability_Action_HitReact_Base, EventData);
 		}
 		else
 		{
-			FNameContainer->Name = "Hit_Bwd";
+
+			
 		}
 
-		FGameplayEventData EventData;
-		EventData.OptionalObject = FNameContainer;
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ASC->GetAvatarActor(),
-			R1Tags::Ability_Action_HitReact_Base, EventData);
+		
 	}
 }

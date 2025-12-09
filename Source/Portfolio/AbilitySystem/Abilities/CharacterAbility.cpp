@@ -11,8 +11,6 @@ void UCharacterAbilityTask::Activate()
 	Super::Activate();
 	AbilityTag = Ability->AbilityTags.First();
 
-	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
-
 }
 
 void UCharacterAbilityTask::TickTask(float DeltaTime)
@@ -24,8 +22,6 @@ void UCharacterAbilityTask::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
 
-
-	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
 }
 
 
@@ -57,20 +53,4 @@ void UCharacterAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-
-	if (bWasCancelled == false)
-	{
-#if 0 // Obsolate
-		AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor);
-		if (R1Character)
-		{
-
-			FAbilitySucceedInfo SuccessInfo;
-			SuccessInfo.AbilitySucceedTags = AbilityTags;
-
-			R1Character->Invoke_AbilitySucceed(SuccessInfo);
-		}
-#endif
-		
-	}
 }
