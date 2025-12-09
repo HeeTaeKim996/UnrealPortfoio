@@ -66,7 +66,6 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 		EffectContext.AddHitResult(MeleeHitInfo.HitResult);
 		EffectContext.AddInstigator(SourceActor, SourceActor);
 
-
 		FGameplayEffectSpecHandle SpecHandle =
 			SourceASC->MakeOutgoingSpec(GE, 1, EffectContext);
 		
@@ -83,4 +82,10 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 
 
 	return true;
+}
+
+UAttackAbility::UAttackAbility()
+	: Super()
+{
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_Attack);
 }

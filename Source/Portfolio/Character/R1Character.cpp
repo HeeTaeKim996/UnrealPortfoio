@@ -31,6 +31,7 @@ void AR1Character::BeginPlay()
 	{ // TEMP
 		AttributeSet->InitHealth(100);
 		AttributeSet->InitMaxHealth(100);
+		AttributeSet->InitStamina(100);
 
 		AttributeSet->InitAttackPower(50);
 

@@ -21,5 +21,5 @@ class PORTFOLIO_API UBaseAttackAbility : public UAttackAbility
 public:
 	UBaseAttackAbility();
 
-
+	
 };

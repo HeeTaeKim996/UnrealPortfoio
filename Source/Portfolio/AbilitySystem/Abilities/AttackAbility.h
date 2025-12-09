@@ -50,7 +50,8 @@ UCLASS()
 class PORTFOLIO_API UAttackAbility : public UActionAbility
 {
 	GENERATED_BODY()
-	
+public:
+	UAttackAbility();
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
