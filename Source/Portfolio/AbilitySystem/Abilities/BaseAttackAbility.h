@@ -19,7 +19,7 @@ class PORTFOLIO_API UBaseAttackAbility : public UAttackAbility
 {
 	GENERATED_BODY()
 public:
-	UBaseAttackAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UBaseAttackAbility();
 
 
 };

@@ -57,9 +57,6 @@ void UDeathAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	// ※ Before Activate ActionAbility, Set SectionName
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(ActorInfo->AbilitySystemComponent);
-	PlayMontage(ASC, PlayingMontage, InSectionName);
 }
 
 void UDeathAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, 
@@ -69,36 +66,11 @@ void UDeathAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UDeathAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName)
-{
-	if (R1ASC == nullptr || Montage == nullptr)
-	{
-		EndAbilityCancel();
-		return;
-	}
 
-	float duration = R1ASC->PlayMontage(this, GetCurrentActivationInfo(), Montage, 1.f, SectionName, 0.f);
-	if (duration < 0.f)
-	{
-		EndAbilityCancel();
-		return;
-	}
-
-
-	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
-	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
-	if (!MontageInstance)
-	{
-		EndAbilityCancel();
-		return;
-	}
-
-	MontageInstance->OnMontageEnded.Unbind();
-
-	MontageInstance->OnMontageEnded.BindUObject(this, &UDeathAbility::OnMontageEnded);
-}
 
 void UDeathAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
 {
+	Super::OnMontageEnded(Montage, bInterruped);
+
 	DebugMessage("DeathAbility.cpp : Temp Montage End Check");
 }

@@ -26,8 +26,8 @@ void UActionAbilityTask::OnDestroy(bool bInOwnerFinished)
 
 
 
-UActionAbility::UActionAbility(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UActionAbility::UActionAbility()
+	: Super()
 {
 
 }
@@ -35,14 +35,7 @@ UActionAbility::UActionAbility(const FObjectInitializer& ObjectInitializer)
 void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
 	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	UR1AbilitySystemComponent* R1ASC = Cast<UR1AbilitySystemComponent>(ActorInfo->AbilitySystemComponent);
-	if (R1ASC)
-	{
-		PlayMontage(R1ASC, PlayingMontage, InSectionName);
-	}
-	
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);	
 }
 
 void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
@@ -54,37 +47,12 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 }
 
-void UActionAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName)
-{
-	if (R1ASC == nullptr || Montage == nullptr)
-	{
-		EndAbilityCancel();
-		return;
-	}
 
-	float duration = R1ASC->PlayMontage(this, GetCurrentActivationInfo(), Montage, 1.f, SectionName, 0.f);
-	if (duration < 0.f)
-	{
-		EndAbilityCancel();
-		return;
-	}
-
-
-	UAnimInstance* AnimInstance = GetActorInfo().GetAnimInstance();
-	FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(Montage);
-	if (!MontageInstance)
-	{
-		EndAbilityCancel();
-		return;
-	}
-
-	MontageInstance->OnMontageEnded.Unbind();
-
-	MontageInstance->OnMontageEnded.BindUObject(this, &UActionAbility::OnMontageEnded);
-}
 
 void UActionAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
 {
+	Super::OnMontageEnded(Montage, bInterruped);
+
 	if(bInterruped == false)
 	{
 		EndAbilitySuccess();

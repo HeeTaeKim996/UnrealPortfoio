@@ -6,8 +6,8 @@
 
 
 
-UBaseAttackAbility::UBaseAttackAbility(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UBaseAttackAbility::UBaseAttackAbility()
+	: Super()
 {
 	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_Attack_BaseAttack);
 }

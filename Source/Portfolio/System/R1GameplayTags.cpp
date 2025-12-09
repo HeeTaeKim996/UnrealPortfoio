@@ -44,6 +44,8 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base, "Ability.Action.HitReact.Base");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Knockdown, "Ability.Action.HitReact.Knockdown");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Getup, "Ability.Action.HitReact.Getup");
+
 
 	// Parry
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Parry, "Ability.Action.Parry");

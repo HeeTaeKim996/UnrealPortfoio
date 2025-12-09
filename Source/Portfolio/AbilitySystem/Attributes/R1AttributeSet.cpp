@@ -148,8 +148,21 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 		}
 		else
 		{
-
+			if (Cos > 0)
+			{
+				FNameContainer->Name = "KD_Fwd";
+				OwnerCharacter->SetDesiredVec(ReactDir);
+			}
+			else
+			{
+				FNameContainer->Name = "KD_Fwd";
+				OwnerCharacter->SetDesiredVec(ReactDir);
+			}
 			
+			FGameplayEventData EventData;
+			EventData.OptionalObject = FNameContainer;
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ASC->GetAvatarActor(),
+				R1Tags::Ability_Action_HitReact_Knockdown, EventData);
 		}
 
 		

@@ -25,7 +25,7 @@ class PORTFOLIO_API UAttackAbility_Test : public UBaseAttackAbility
 {
 	GENERATED_BODY()
 public:
-	UAttackAbility_Test(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UAttackAbility_Test();
 
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

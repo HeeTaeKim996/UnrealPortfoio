@@ -39,7 +39,6 @@ UHitReactAbility::UHitReactAbility()
 	FAbilityTriggerData TriggerData;
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
 	TriggerData.TriggerTag = R1Tags::Ability_Action_HitReact_Base;
-
 	AbilityTriggers.Add(TriggerData);
 }
 

@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/MontageAbility.h"
-#include "DeathAbility.generated.h"
+#include "KnockDownAbility.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UDeathAbilityTask : public UMontageAbilityTask
+class PORTFOLIO_API UKncokDownAbilityTask : public UMontageAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -16,13 +16,12 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 };
 
-
 UCLASS()
-class PORTFOLIO_API UDeathAbility : public UMontageAbility
+class PORTFOLIO_API UKnockDownAbility : public UMontageAbility
 {
 	GENERATED_BODY()
 public:
-	UDeathAbility();
+	UKnockDownAbility();
 
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -38,6 +37,4 @@ protected:
 
 protected:
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
-
-
 };

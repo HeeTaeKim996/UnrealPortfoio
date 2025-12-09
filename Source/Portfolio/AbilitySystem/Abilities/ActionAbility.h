@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/CharacterAbility.h"
+#include "AbilitySystem/Abilities/MontageAbility.h"
 #include "ActionAbility.generated.h"
 
 
 UCLASS()
-class PORTFOLIO_API UActionAbilityTask : public UCharacterAbilityTask
+class PORTFOLIO_API UActionAbilityTask : public UMontageAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -21,12 +21,12 @@ public:
 
 
 UCLASS()
-class PORTFOLIO_API UActionAbility : public UCharacterAbility
+class PORTFOLIO_API UActionAbility : public UMontageAbility
 {
 	GENERATED_BODY()
 
 public:
-	UActionAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UActionAbility();
 
 
 protected:
@@ -37,14 +37,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 protected:
-	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
+	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
 
-	void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TObjectPtr<UAnimMontage> PlayingMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName InSectionName = NAME_None;
 };

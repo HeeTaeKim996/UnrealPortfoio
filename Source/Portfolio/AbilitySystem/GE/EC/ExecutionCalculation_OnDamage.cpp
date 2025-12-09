@@ -34,7 +34,7 @@ void UExecutionCalculation_OnDamage::Execute_Implementation
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(AttackPowerDef, EvalParams, AttackPower);
 
 
-	float Impact = 40.f;
+	float Impact = 80.f;
 	OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(MetaImpactProperty,
 		EGameplayModOp::Override, Impact));
 

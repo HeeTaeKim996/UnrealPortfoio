@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/MontageAbility.h"
-#include "DeathAbility.generated.h"
+#include "AbilitySystem/Abilities/ActionAbility.h"
+#include "GetupAbility.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UDeathAbilityTask : public UMontageAbilityTask
+class PORTFOLIO_API UGetupAbilityTask : public UActionAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -18,11 +18,11 @@ public:
 
 
 UCLASS()
-class PORTFOLIO_API UDeathAbility : public UMontageAbility
+class PORTFOLIO_API UGetupAbility : public UActionAbility
 {
 	GENERATED_BODY()
 public:
-	UDeathAbility();
+	UGetupAbility();
 
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -32,12 +32,9 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+
+
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
-
-protected:
-	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
-
-
+	
 };

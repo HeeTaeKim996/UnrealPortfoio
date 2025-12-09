@@ -58,8 +58,8 @@ bool UAttacAbilityTask_Test::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 
 
 
-UAttackAbility_Test::UAttackAbility_Test(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UAttackAbility_Test::UAttackAbility_Test()
+	: Super()
 {
 
 }
