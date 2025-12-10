@@ -18,4 +18,4 @@ float UMMC_CostAttack::CalculateBaseMagnitude_Implementation(const FGameplayEffe
 	DebugMessage(FString::Printf(TEXT("MMC_CostAttack : [%f]"), StaminaCost));
 
 	return StaminaCost;
-}
+}	

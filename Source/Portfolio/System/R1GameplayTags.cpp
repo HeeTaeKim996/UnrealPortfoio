@@ -5,6 +5,7 @@ namespace R1Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Move, "Input.Action.Move");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_BaseAttack, "Input.Action.BaseAttack");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Skill_1, "Input.Action.Skill.1");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Wheel, "Input.Action.Wheel");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Block, "Input.Action.Block");
 
@@ -41,10 +42,14 @@ namespace R1Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack, "Ability.Action.Attack.BaseAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack_TestAttack, "Ability.Action.Attack.BaseAttack.TestAttack");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_CooldownAttack, "Ability.Action.Attack.CooldownAttack");
+
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster, "Ability.Action.Attack.Monster");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster_FieldMonster_Kronos_Sweep, "Ability.Action.Attack.Monster.FieldMonster.Kronos.Sweep");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster_FieldMonster_Kronos_JumpAttack, "Ability.Action.Attack.Monster.FieldMonster.Kronos.JumpAttack");
+
+
 
 	// HitReact
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
@@ -67,7 +72,8 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState, "Ability.HitState");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState_Invincible, "Ability.HitState.Invincible");
 
-
+	/* Cooldown */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_CooldownAttack, "Ability.Cooldown.CooldownAttack");
 
 
 	/*-------------------
@@ -82,6 +88,7 @@ namespace R1Tags
 	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_AttackCoefficient, "Data.GESpec.AttackCoefficient");
 	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_Impact, "Data.GESpec.Impact");
+	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_Cooldown, "Data.SetByCaller.Cooldown");
 }
 
 

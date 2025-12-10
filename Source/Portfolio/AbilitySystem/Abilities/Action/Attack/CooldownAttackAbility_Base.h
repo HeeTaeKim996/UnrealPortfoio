@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/CostAttackAbility.h"
-#include "AttackAbility_Test.generated.h"
+#include "AbilitySystem/Abilities/CooldownAttackAbility.h"
+#include "CooldownAttackAbility_Base.generated.h"
 
 UCLASS()
-class PORTFOLIO_API UAttacAbilityTask_Test : public UCostAttackAbilityTask
+class PORTFOLIO_API UCooldownAttackAbilityTask_Base : public UCooldownAttackAbilityTask
 {
 	GENERATED_BODY()
+
 public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
@@ -20,13 +21,14 @@ protected:
 
 };
 
+
+
 UCLASS()
-class PORTFOLIO_API UAttackAbility_Test : public UCostAttackAbility
+class PORTFOLIO_API UCooldownAttackAbility_Base : public UCooldownAttackAbility
 {
 	GENERATED_BODY()
 public:
-	UAttackAbility_Test();
-
+	UCooldownAttackAbility_Base();
 protected:
 	bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr,
@@ -37,4 +39,5 @@ protected:
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
 };

@@ -257,6 +257,7 @@ void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
 	bMovePressed = false;
 }
 
+#if 0 // Obsolate
 void AR1PlayerController::OnWheelStarted()
 {
 	bWheelPressed = true;
@@ -316,6 +317,24 @@ void AR1PlayerController::OnWheelReleased()
 	}
 	cursorPushedTime = 0.f;
 }
+#endif
+
+
+void AR1PlayerController::OnWheelStarted()
+{
+
+}
+void AR1PlayerController::OnWheelTriggered()
+{
+
+}
+void AR1PlayerController::OnWheelReleased()
+{
+	R1Player->Input_Action(R1Tags::Input_Action_Skill_1);
+}
+
+
+
 
 void AR1PlayerController::OnLeftMouseStarted()
 {

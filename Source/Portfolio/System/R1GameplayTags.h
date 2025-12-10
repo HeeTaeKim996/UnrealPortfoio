@@ -9,6 +9,7 @@ namespace R1Tags
 {
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Move);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_BaseAttack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Skill_1);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Wheel);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Block);
 
@@ -45,6 +46,7 @@ namespace R1Tags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack_TestAttack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_CooldownAttack);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster_FieldMonster_Kronos_Sweep);
@@ -70,6 +72,8 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState_Invincible);
 	
+	/* Cooldown */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_CooldownAttack);
 
 	/*-------------------
 		  GameplayCue
@@ -82,4 +86,5 @@ namespace R1Tags
 	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_AttackCoefficient);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_Impact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_Cooldown);
 }
