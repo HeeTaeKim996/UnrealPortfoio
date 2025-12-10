@@ -131,7 +131,7 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 	TickCursorTrace();
 	ChaseTargetAndAttack();
 
-	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())
+	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())
 		&& R1Player->GetPlayerMotionState() == EPlayerMotionState::Split_Angle)
 	{
 		FVector LookDirection = CursorPos - R1Player->GetActorLocation();
@@ -228,7 +228,7 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
 	bMovePressed = true;
 
 
@@ -380,13 +380,11 @@ void AR1PlayerController::OnBlockKeyReleased()
 
 void AR1PlayerController::OnDodgeKeyStarted()
 {
-	DebugMessage(TEXT("Dodge Start"));
 	DodgePushedTime = 0.f;
 }
 
 void AR1PlayerController::OnDodgeKeyTriggered()
 {
-	DebugMessage("Dodge Triggered");
 
 	DodgePushedTime += GetWorld()->GetDeltaSeconds();
 
@@ -401,7 +399,6 @@ void AR1PlayerController::OnDodgeKeyTriggered()
 
 void AR1PlayerController::OnDodgeKeyReleased()
 {
-	DebugMessage("Dodge End");
 	if (R1Player->IsInState(R1Tags::Ability_Mode_Sprint) == true)
 	{
 		FGameplayTagContainer TagContainer;

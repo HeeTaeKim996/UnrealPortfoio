@@ -7,14 +7,15 @@
 UDataAsset_GameplayTagContainers::UDataAsset_GameplayTagContainers()
 	: Super()
 {
-	CantBaseActableTags.AddTagFast(R1Tags::Ability_Dead);
-	CantBaseActableTags.AddTagFast(R1Tags::Ability_Action);
-	CantBaseActableTags.AddTagFast(R1Tags::Ability_Mode_UsingItem);
+	BaseAbilityBlockTgs.AddTagFast(R1Tags::Ability_Dead);
+	BaseAbilityBlockTgs.AddTagFast(R1Tags::Ability_Action);
+	BaseAbilityBlockTgs.AddTagFast(R1Tags::Ability_Mode_UsingItem);
+	BaseAbilityBlockTgs.AddTagFast(R1Tags::Ability_Mode_Aiming);
 
 
-	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
-	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Sneaking);
-	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Sprint);
+	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
+	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Sneaking);
+	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Sprint);
 
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Action);
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Mode);

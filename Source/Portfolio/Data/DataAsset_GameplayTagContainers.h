@@ -19,10 +19,10 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
-	FGameplayTagContainer CantBaseActableTags;
+	FGameplayTagContainer BaseAbilityBlockTgs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
-	FGameplayTagContainer OnActionCall_CancelingTags;
+	FGameplayTagContainer OnActionCall_BaseCancelingTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
 	FGameplayTagContainer OnHitReact_CancelTags;

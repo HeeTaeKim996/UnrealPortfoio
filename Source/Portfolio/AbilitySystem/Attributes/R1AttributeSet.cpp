@@ -81,7 +81,7 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 		Cos, Sin));
 #endif
 
-	ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnActionCall_CancelingTags(), nullptr, nullptr);
+	ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnHitReact_CancelTags(), nullptr, nullptr);
 	UFNameContainer* FNameContainer = NewObject<UFNameContainer>();
 
 	if (HealthValue == 0)

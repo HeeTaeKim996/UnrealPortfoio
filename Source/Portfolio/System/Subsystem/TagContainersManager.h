@@ -22,10 +22,10 @@ public:
 	static UTagContainersManager* Get(const UObject* WorldContextObject);
 
 public:
-	const FGameplayTagContainer& CantBaseActableTags() const { return TagContainersData->CantBaseActableTags; }
-	FORCEINLINE const FGameplayTagContainer& OnActionCall_CancelingTags() const
+	const FGameplayTagContainer& BaseAbilityBlockTgs() const { return TagContainersData->BaseAbilityBlockTgs; }
+	FORCEINLINE const FGameplayTagContainer& OnActionCall_BaseCancelingTags() const
 	{
-		return TagContainersData->OnActionCall_CancelingTags;
+		return TagContainersData->OnActionCall_BaseCancelingTags;
 	}
 
 	FORCEINLINE const FGameplayTagContainer& OnHitReact_CancelTags() const

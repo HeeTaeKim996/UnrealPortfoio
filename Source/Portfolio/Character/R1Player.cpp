@@ -227,8 +227,8 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 
 void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 {
-	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
+	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	if (PlayerASC->ActivateAbilityByInputMap(InActionState).IsValid())
@@ -239,8 +239,8 @@ void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 
 void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 {
-	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
+	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	if (PlayerASC->ActivateAbility(AbilityTag).IsValid())
@@ -252,9 +252,9 @@ void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 void AR1Player::Input_Block()
 {
 	if (IsInState(R1Tags::Ability_Mode_Blocking)) return;
-	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
 
-	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
 	FGameplayAbilitySpecHandle SpecHandle = PlayerASC->ActivateAbility(R1Tags::Ability_Mode_Blocking);
