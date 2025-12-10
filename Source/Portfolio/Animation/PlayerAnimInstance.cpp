@@ -91,6 +91,11 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			//DebugMessage(TEXT("PlayerAnimInstance : Idle"));
 		}
 	}
+
+	if(bIsSprint)
+	{
+		R1Player->IsSprint();
+	}
 }
 
 

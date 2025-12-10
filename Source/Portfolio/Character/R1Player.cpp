@@ -84,6 +84,7 @@ void AR1Player::BeginPlay()
 		.AddUObject(this, &AR1Player::OnBlockTagChanged);
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetStaminaAttribute())
 		.AddUObject(this, &AR1Player::RefreshStaminaBarRatio);
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Mode_Sprint, EGameplayTagEventType::NewOrRemoved);
 
 	AR1PlayerController* R1PC = Cast<AR1PlayerController>(GetController());
 	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Cooldown_AssignLocation_First,
@@ -279,6 +280,20 @@ void AR1Player::OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount)
 		{
 			DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
 		}
+	}
+}
+
+void AR1Player::OnSprintTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount >= 1)
+	{
+		bIsSprint = true;
+		bUpperLowerSplit = false;
+		SurplusAlertTime = 0.1f;
+	}
+	else
+	{
+		bIsSprint = false;
 	}
 }
 

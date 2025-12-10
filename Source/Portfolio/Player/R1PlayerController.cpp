@@ -92,10 +92,10 @@ void AR1PlayerController::SetupInputComponent()
 	{
 		auto* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 
-		const UInputAction* Action1 = InputData->FindInputActionByTag(R1Tags::Input_Action_Move);
-		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
-		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Canceled, this, &ThisClass::OnMoveReleased);
-		EnhancedInputComponent->BindAction(Action1, ETriggerEvent::Completed, this, &ThisClass::OnMoveReleased);
+		const UInputAction* MoveAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &ThisClass::OnMoveReleased);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ThisClass::OnMoveReleased);
 
 		const UInputAction* WheelAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Wheel);
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Started, this, &ThisClass::OnWheelStarted);
@@ -103,17 +103,23 @@ void AR1PlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Completed, this, &ThisClass::OnWheelReleased);
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Canceled, this, &ThisClass::OnWheelReleased);
 
-		const UInputAction* LeftMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_BaseAttack);
-		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Started, this, &ThisClass::OnLeftMouseStarted);
-		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Triggered, this, &ThisClass::OnLeftMouseTriggered);
-		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Completed, this, &ThisClass::OnLeftMouseReleased);
-		EnhancedInputComponent->BindAction(LeftMouseAction, ETriggerEvent::Canceled, this, &ThisClass::OnLeftMouseReleased);
+		const UInputAction* BaseAttackAction = InputData->FindInputActionByTag(R1Tags::Input_Action_BaseAttack);
+		EnhancedInputComponent->BindAction(BaseAttackAction, ETriggerEvent::Started, this, &ThisClass::OnBaseAttackKeyStarted);
+		EnhancedInputComponent->BindAction(BaseAttackAction, ETriggerEvent::Triggered, this, &ThisClass::OnBaseAttackKeyTriggered);
+		EnhancedInputComponent->BindAction(BaseAttackAction, ETriggerEvent::Completed, this, &ThisClass::OnBaseAttackKeyReleased);
+		EnhancedInputComponent->BindAction(BaseAttackAction, ETriggerEvent::Canceled, this, &ThisClass::OnBaseAttackKeyReleased);
 
-		const UInputAction* RightMouseAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Block);
-		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Started, this, &ThisClass::OnRightMouseStarted);
-		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Triggered, this, &ThisClass::OnRightMouseTriggered);
-		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Completed, this, &ThisClass::OnRightMouseReleased);
-		EnhancedInputComponent->BindAction(RightMouseAction, ETriggerEvent::Canceled, this, &ThisClass::OnRightMouseReleased);
+		const UInputAction* BlockAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Block);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Started, this, &ThisClass::OnBlockKeyStarted);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &ThisClass::OnBlockKeyTriggered);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Completed, this, &ThisClass::OnBlockKeyReleased);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Canceled, this, &ThisClass::OnBlockKeyReleased);
+
+		const UInputAction* DodgeAction = InputData->FindInputActionByTag(R1Tags::Input_Action_Dodge);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ThisClass::OnDodgeKeyStarted);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ThisClass::OnDodgeKeyTriggered);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Completed, this, &ThisClass::OnDodgeKeyReleased);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Canceled, this, &ThisClass::OnDodgeKeyReleased);
 	}
 }
 
@@ -227,42 +233,26 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 
 	FVector2D MovementVector = InputValue.Get<FVector2D>();
 	MovementVector.Normalize();
-	GetPawn()->AddMovementInput(FVector::ForwardVector, MovementVector.X);
-	GetPawn()->AddMovementInput(FVector::RightVector, MovementVector.Y);
+	if (R1Player->IsSprint() == false)
+	{
+		GetPawn()->AddMovementInput(FVector::ForwardVector, MovementVector.X);
+		GetPawn()->AddMovementInput(FVector::RightVector, MovementVector.Y);
+	}
+	else
+	{
+		float MulRatio = 1.3f;
+		GetPawn()->AddMovementInput(FVector::ForwardVector, MovementVector.X * MulRatio);
+		GetPawn()->AddMovementInput(FVector::RightVector, MovementVector.Y * MulRatio);
+	}
 
 	if (R1Player->IsUpperLowerSplit() == false)
 	{
 		R1Player->SetDesiredVec(FVector(MovementVector.X, MovementVector.Y, 0));
 	}
 
-#if 0 // Obsolate
-	if (MovementVector.X != 0)
-	{
-#if 0 // Obsolate
-		FVector Direction = FVector::ForwardVector * MovementVector.X;
-		GetPawn()->AddActorWorldOffset(Direction * 50.f);
-#endif
-#if 0 // Obsolate
-		FRotator Rotator = GetControlRotation();
-		FVector Direction = UKismetMathLibrary::GetForwardVector(FRotator(0, Rotator.Yaw, 0));
-		GetPawn()->AddMovementInput(Direction, MovementVector.X);
-#endif
 
-	}
-	if (MovementVector.Y != 0)
-	{
-#if 0 // Obsolate
-		FVector Direction = FVector::RightVector * MovementVector.Y;
-		GetPawn()->AddActorWorldOffset(Direction * 50.f);
-#endif
-#if 0 // Obsolate
-		FRotator Rotator = GetControlRotation();
-		FVector Direction = UKismetMathLibrary::GetRightVector(FRotator(0, Rotator.Yaw, 0));
-		GetPawn()->AddMovementInput(Direction, MovementVector.Y);
-#endif
 
-	}
-#endif
+	
 }
 
 void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
@@ -270,6 +260,7 @@ void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
 	bMovePressed = false;
 }
 
+/*
 #if 0 // Obsolate
 void AR1PlayerController::OnWheelStarted()
 {
@@ -331,7 +322,7 @@ void AR1PlayerController::OnWheelReleased()
 	cursorPushedTime = 0.f;
 }
 #endif
-
+*/
 
 void AR1PlayerController::OnWheelStarted()
 {
@@ -352,38 +343,53 @@ void AR1PlayerController::OnWheelReleased()
 
 
 
-void AR1PlayerController::OnLeftMouseStarted()
+void AR1PlayerController::OnBaseAttackKeyStarted()
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Cyan, TEXT("LeftMouseStart"));
 }
 
-void AR1PlayerController::OnLeftMouseTriggered()
+void AR1PlayerController::OnBaseAttackKeyTriggered()
 {
 
 }
 
-void AR1PlayerController::OnLeftMouseReleased()
+void AR1PlayerController::OnBaseAttackKeyReleased()
 {
 	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
 	R1Player->Input_Action(R1Tags::Input_Action_BaseAttack);
 }
 
-void AR1PlayerController::OnRightMouseStarted()
+void AR1PlayerController::OnBlockKeyStarted()
 {
 	R1Player->Input_Block();
 }
 
-void AR1PlayerController::OnRightMouseTriggered()
+void AR1PlayerController::OnBlockKeyTriggered()
 {
 	R1Player->Input_Block();
 }
 
-void AR1PlayerController::OnRightMouseReleased()
+void AR1PlayerController::OnBlockKeyReleased()
 {
 	FGameplayTagContainer TagContainer;
 	TagContainer.AddTagFast(R1Tags::Ability_Mode_Blocking);
 	
 	R1Player->AbilityCancel(TagContainer);
+}
+
+void AR1PlayerController::OnDodgeKeyStarted()
+{
+	DebugMessage(TEXT("Dodge Start"));
+}
+
+void AR1PlayerController::OnDodgeKeyTriggered()
+{
+	DebugMessage("Dodge Triggered");
+}
+
+void AR1PlayerController::OnDodgeKeyReleased()
+{
+	DebugMessage("Dodge End");
 }
 
 void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount)

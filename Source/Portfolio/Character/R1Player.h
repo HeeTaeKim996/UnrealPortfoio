@@ -72,10 +72,12 @@ public:
 public:
 	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
 	const TArray<FDeflectInfo>& GetDeflectInfos() { return DeflectInfos; }
+	bool IsSprint() { return bIsSprint; }
 
 
 private:
 	void OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount);
+	void OnSprintTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
 protected:
 	TArray<FDeflectInfo> DeflectInfos;
@@ -85,6 +87,8 @@ protected:
 private:
 	bool bUpperLowerSplit = false;
 	float SurplusAlertTime;
+
+	bool bIsSprint = false;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

@@ -8,6 +8,8 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Skill_1, "Input.Action.Skill.1");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Wheel, "Input.Action.Wheel");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Block, "Input.Action.Block");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Dodge, "Input.Action.Dodge");
+
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
@@ -67,6 +69,7 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_UsingItem, "Ability.Mode.UsingItem");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Aiming, "Ability.Mode.Aiming");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Sneaking, "Ability.Mode.Sneaking");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mode_Sprint, "Ability.Mode.Sprint");
 
 	/* HitState */
 	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState, "Ability.HitState");

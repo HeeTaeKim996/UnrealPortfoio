@@ -46,13 +46,17 @@ private:
 	void OnWheelTriggered();
 	void OnWheelReleased();
 
-	void OnLeftMouseStarted();
-	void OnLeftMouseTriggered();
-	void OnLeftMouseReleased();
+	void OnBaseAttackKeyStarted();
+	void OnBaseAttackKeyTriggered();
+	void OnBaseAttackKeyReleased();
 
-	void OnRightMouseStarted();
-	void OnRightMouseTriggered();
-	void OnRightMouseReleased();
+	void OnBlockKeyStarted();
+	void OnBlockKeyTriggered();
+	void OnBlockKeyReleased();
+
+	void OnDodgeKeyStarted();
+	void OnDodgeKeyTriggered();
+	void OnDodgeKeyReleased();
 
 public:
 	void OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount);

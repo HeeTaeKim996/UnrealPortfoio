@@ -55,15 +55,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimSequenceBase> BackwardAnimation;
 
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UAnimSequenceBase> BlockingAnimation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<UAnimSequenceBase> SprintAnimation;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsUpperLowerSplit = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsSprint = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRotator UnderRotation;
