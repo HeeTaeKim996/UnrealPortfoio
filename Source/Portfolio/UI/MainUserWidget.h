@@ -26,6 +26,7 @@ protected:
 public:
 	void UpdatePlayerHealthBar(float Ratio);
 	void UpdatePlayerStaminaBar(float Ratio);
+	void UpdateFirstSkillCooldownBar(float Ratio);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -36,4 +37,8 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> PlayerStaminaBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> FirstSkiallCooldownBar;
 };
+

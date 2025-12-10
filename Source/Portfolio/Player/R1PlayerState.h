@@ -10,6 +10,7 @@
 class UR1AbilitySystemComponent;
 class UPlayerASC;
 class UR1AttributeSet;
+struct FGameplayTagContainer;
 
 /**
  * 
@@ -28,9 +29,13 @@ public:
 	UR1AbilitySystemComponent* GetR1AbilitySystemComponent() const;
 	UR1AttributeSet* GetR1PlayerSet() const;
 
+
+public:
+	bool GetCooldownRemainingForTags(FGameplayTagContainer CooldownTags, float& TimeRemaining, float& CooldownDuration);
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UPlayerASC> AbilitySystemComponent;
+	TObjectPtr<UPlayerASC> ASC;
 
 	UPROPERTY()
 	TObjectPtr<UR1AttributeSet> PlayerSet;

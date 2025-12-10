@@ -30,3 +30,8 @@ void UMainUserWidget::UpdatePlayerStaminaBar(float Ratio)
 {
 	PlayerStaminaBar->SetPercent(Ratio);
 }
+
+void UMainUserWidget::UpdateFirstSkillCooldownBar(float Ratio)
+{
+	FirstSkiallCooldownBar->SetPercent(Ratio);
+}

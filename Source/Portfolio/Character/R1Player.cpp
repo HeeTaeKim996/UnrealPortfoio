@@ -85,6 +85,10 @@ void AR1Player::BeginPlay()
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetStaminaAttribute())
 		.AddUObject(this, &AR1Player::RefreshStaminaBarRatio);
 
+	AR1PlayerController* R1PC = Cast<AR1PlayerController>(GetController());
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Cooldown_AssignLocation_First,
+		EGameplayTagEventType::NewOrRemoved).AddUObject(R1PC, &AR1PlayerController::OnFirstSkillTagChanged);
+
 	const UDataAsset_GE* GEData = UR1AssetManager::GetAssetByName<UDataAsset_GE>
 		(R1Tags::Asset_GE_InitializePlayerSet);
 	ensureAlwaysMsgf(GEData, TEXT("GEData is Null"));

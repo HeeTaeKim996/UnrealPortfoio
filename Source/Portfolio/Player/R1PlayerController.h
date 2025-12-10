@@ -17,7 +17,7 @@ class AR1Character;
 class IR1HighlightInterface;
 class AR1Monster;
 class UMainUserWidget;
-
+struct FGameplayTag;
 /**
  * 
  */
@@ -54,6 +54,8 @@ private:
 	void OnRightMouseTriggered();
 	void OnRightMouseReleased();
 
+public:
+	void OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
 public:
 	FVector GetCursorPos() { return CursorPos; }
@@ -92,4 +94,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMainUserWidget> MainUI;
 
+protected:
+	bool bIsFirstSkillable = true;
 };

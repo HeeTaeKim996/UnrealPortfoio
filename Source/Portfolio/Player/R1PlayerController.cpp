@@ -23,6 +23,7 @@
 #include "Data/Data_MainUserWidget.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "System/Subsystem/TagContainersManager.h"
+#include "Player/R1PlayerState.h"
 
 AR1PlayerController::AR1PlayerController(const FObjectInitializer& objectInitializer)
 	: Super(objectInitializer)
@@ -130,6 +131,18 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 		LookDirection.Z = 0;
 		LookDirection.Normalize();
 		R1Player->SetDesiredVec(LookDirection);
+	}
+
+	if (bIsFirstSkillable == false)
+	{
+		float Remaining;
+		float Duration;
+		FGameplayTagContainer CooldownTags;
+		CooldownTags.AddTagFast(R1Tags::Ability_Cooldown_AssignLocation_First);
+		if (GetPlayerState<AR1PlayerState>()->GetCooldownRemainingForTags(CooldownTags, Remaining, Duration) == true)
+		{
+			MainUI->UpdateFirstSkillCooldownBar(Remaining / Duration);
+		}
 	}
 }
 
@@ -330,7 +343,10 @@ void AR1PlayerController::OnWheelTriggered()
 }
 void AR1PlayerController::OnWheelReleased()
 {
-	R1Player->Input_Action(R1Tags::Input_Action_Skill_1);
+	if (bIsFirstSkillable == true)
+	{
+		R1Player->Input_Action(R1Tags::Input_Action_Skill_1);
+	}
 }
 
 
@@ -368,5 +384,17 @@ void AR1PlayerController::OnRightMouseReleased()
 	TagContainer.AddTagFast(R1Tags::Ability_Mode_Blocking);
 	
 	R1Player->AbilityCancel(TagContainer);
+}
+
+void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount == 0)
+	{
+		bIsFirstSkillable = true;
+	}
+	else
+	{
+		bIsFirstSkillable = false;
+	}
 }
 

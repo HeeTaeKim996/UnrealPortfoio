@@ -73,6 +73,9 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_HitState_Invincible, "Ability.HitState.Invincible");
 
 	/* Cooldown */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_AssignLocation_First, "Ability.Cooldown.AssignLocation.First");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_AssignLocation_Second, "Ability.Cooldown.AssignLocation.Second");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_AssignLocation_Third, "Ability.Cooldown.AssignLocation.Third");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_CooldownAttack, "Ability.Cooldown.CooldownAttack");
 
 

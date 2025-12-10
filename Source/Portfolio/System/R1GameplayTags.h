@@ -73,6 +73,9 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_HitState_Invincible);
 	
 	/* Cooldown */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_AssignLocation_First);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_AssignLocation_Second);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_AssignLocation_Third);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_CooldownAttack);
 
 	/*-------------------
