@@ -15,7 +15,7 @@ UPlayerAnimInstance::UPlayerAnimInstance(const FObjectInitializer& ObjectInitial
 void UPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-	UpperBodyState = EUpperBodyState::Idle;
+	UpperBodyAnimation = EUpperBodyAnimation::Idle;
 }
 
 void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -25,77 +25,79 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	AR1Player* R1Player = Cast<AR1Player>(OwnerCharacter);
 	if (!R1Player) return;
 
-	bIsUpperLowerSplit = R1Player->IsUpperLowerSplit();
-	if (bIsUpperLowerSplit)
+	PlayerMotionState = R1Player->GetPlayerMotionState();
+	if (PlayerMotionState == EPlayerMotionState::Split || PlayerMotionState == EPlayerMotionState::Split_Angle)
 	{
-		FVector DesiredVec = R1Player->GetDesiredVec();
-		DesiredVec.Normalize();
-		FVector MoveVec = R1Player->GetCharacterMovement()->GetCurrentAcceleration();
-		MoveVec.Z = 0;
-		MoveVec.Normalize();
-
-		float Dot = DesiredVec.Dot(MoveVec);
-		float CrossZ = DesiredVec.Cross(MoveVec).Z;
-		float Angle = FMath::RadiansToDegrees(FMath::Atan2(CrossZ, Dot)); // ※ Possible Because two vectors are span of x,y
-
-		//DebugMessage(FString::Printf(TEXT("PlayerAnimInstance : [%f], [%f]"), Dot, Angle));
-
-		float Alpha = FMath::Clamp(DeltaSeconds * 180.f, 0.f, 360.f);
-		//float Alpha = 8.f;
-
-		if (Dot > COS_45)
+		if (PlayerMotionState == EPlayerMotionState::Split_Angle)
 		{
-			LowerBodyDir = ELowerBodyDir::Forward;
-			UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw,Angle, Alpha);
+			FVector DesiredVec = R1Player->GetDesiredVec();
+			DesiredVec.Normalize();
+			FVector MoveVec = R1Player->GetCharacterMovement()->GetCurrentAcceleration();
+			MoveVec.Z = 0;
+			MoveVec.Normalize();
 
-			//DebugMessage(TEXT("PlayerAnimInstance : Forward"));
-		}
-		else if (Dot > -COS_45)
-		{
-			if (CrossZ > 0.f)
+			float Dot = DesiredVec.Dot(MoveVec);
+			float CrossZ = DesiredVec.Cross(MoveVec).Z;
+			float Angle = FMath::RadiansToDegrees(FMath::Atan2(CrossZ, Dot)); // ※ Possible Because two vectors are span of x,y
+
+			//DebugMessage(FString::Printf(TEXT("PlayerAnimInstance : [%f], [%f]"), Dot, Angle));
+
+			float Alpha = FMath::Clamp(DeltaSeconds * 180.f, 0.f, 360.f);
+			//float Alpha = 8.f;
+
+			if (Dot > COS_45)
 			{
-				LowerBodyDir = ELowerBodyDir::Left;
-				//UnderRotation.Yaw = Angle - 90;
-				
-				UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw,  Angle - 90, Alpha);
+				LowerBodyDir = ELowerBodyDir::Forward;
+				UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw, Angle, Alpha);
 
-				//DebugMessage(TEXT("PlayerAnimInstance : Left"));
+				//DebugMessage(TEXT("PlayerAnimInstance : Forward"));
+			}
+			else if (Dot > -COS_45)
+			{
+				if (CrossZ > 0.f)
+				{
+					LowerBodyDir = ELowerBodyDir::Left;
+					//UnderRotation.Yaw = Angle - 90;
+
+					UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw, Angle - 90, Alpha);
+
+					//DebugMessage(TEXT("PlayerAnimInstance : Left"));
+				}
+				else
+				{
+					LowerBodyDir = ELowerBodyDir::Right;
+					//UnderRotation.Yaw = Angle + 90;
+					UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw, Angle + 90, Alpha);
+
+					//DebugMessage(TEXT("PlayerAnimInstance : Right"));
+				}
 			}
 			else
 			{
-				LowerBodyDir = ELowerBodyDir::Right;
-				//UnderRotation.Yaw = Angle + 90;
-				UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw,  Angle + 90, Alpha);
+				LowerBodyDir = ELowerBodyDir::Backward;
 
-				//DebugMessage(TEXT("PlayerAnimInstance : Right"));
+				//UnderRotation.Yaw = 180 + Angle;
+				UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw, 180 + Angle, Alpha);
+
+				//DebugMessage(TEXT("PlayerAnimInstance : Backward"));
 			}
 		}
-		else
-		{
-			LowerBodyDir = ELowerBodyDir::Backward;
-			
-			//UnderRotation.Yaw = 180 + Angle;
-			UnderRotation.Yaw = FMath::FixedTurn(UnderRotation.Yaw, 180 + Angle, Alpha);
-
-			//DebugMessage(TEXT("PlayerAnimInstance : Backward"));
-		}
+		
 
 		if (R1Player->IsInState(R1Tags::Ability_Mode_Blocking))
 		{
-			UpperBodyState = EUpperBodyState::Blocking;
+			UpperBodyAnimation = EUpperBodyAnimation::Blocking;
 			//DebugMessage(TEXT("PlayerAnimInstance : Blocking"));
 		}
 		else
 		{
-			UpperBodyState = EUpperBodyState::Idle;
+			UpperBodyAnimation = EUpperBodyAnimation::Idle;
 			//DebugMessage(TEXT("PlayerAnimInstance : Idle"));
 		}
 	}
 
-	if(bIsSprint)
-	{
-		R1Player->IsSprint();
-	}
+	bIsSprint =	R1Player->IsSprint();
+	
 }
 
 

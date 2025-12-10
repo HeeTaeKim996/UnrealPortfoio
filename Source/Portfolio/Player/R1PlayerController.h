@@ -77,6 +77,7 @@ private:
 	float cursorPushedTime;
 	bool bWheelPressed = false;
 	bool bMovePressed = false;
+	float DodgePushedTime;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

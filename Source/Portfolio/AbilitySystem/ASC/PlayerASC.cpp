@@ -15,9 +15,10 @@ UPlayerASC::UPlayerASC()
 	InputToAbilityMap.Add(R1Tags::Input_Action_Skill_1, R1Tags::Ability_Action_Attack_CooldownAttack);
 }
 
-void UPlayerASC::Action(FGameplayTag InStateTag)
+FGameplayAbilitySpecHandle UPlayerASC::ActivateAbilityByInputMap(FGameplayTag InStateTag)
 {
 	ensureAlwaysMsgf(InputToAbilityMap.Contains(InStateTag), TEXT("Not Assgiend StateTag"));
-	ActivateAbility(InputToAbilityMap[InStateTag]);
+	return ActivateAbility(InputToAbilityMap[InStateTag]);
 }
+
 

@@ -14,7 +14,7 @@ UDataAsset_GameplayTagContainers::UDataAsset_GameplayTagContainers()
 
 	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
 	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Sneaking);
-
+	OnActionCall_CancelingTags.AddTagFast(R1Tags::Ability_Mode_Sprint);
 
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Action);
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Mode);

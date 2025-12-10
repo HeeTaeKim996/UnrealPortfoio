@@ -84,7 +84,14 @@ void AR1Player::BeginPlay()
 		.AddUObject(this, &AR1Player::OnBlockTagChanged);
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetStaminaAttribute())
 		.AddUObject(this, &AR1Player::RefreshStaminaBarRatio);
-	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Mode_Sprint, EGameplayTagEventType::NewOrRemoved);
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Mode_Sprint, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AR1Player::OnSprintTagChanged);
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_MotionState_UpperSplit, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AR1Player::OnUpperSplitTagChanged);
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_MotionState_UpperAngleSplit,
+		EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AR1Player::OnUpperAngleSplitTagChanged);
+	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_MotionState_None, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AR1Player::OnMotionNoneTagChanged);
 
 	AR1PlayerController* R1PC = Cast<AR1PlayerController>(GetController());
 	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Cooldown_AssignLocation_First,
@@ -129,11 +136,16 @@ void AR1Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bUpperLowerSplit && SurplusAlertTime > 0)
+	if (bIsMotionStateAlert)
 	{
-		SurplusAlertTime -= DeltaTime;
-		if (SurplusAlertTime < 0) bUpperLowerSplit = false;
-	}	
+		MotionAlertTime -= DeltaTime;
+		if (MotionAlertTime <= 0)
+		{
+			bIsMotionStateAlert = false;
+			MotionAlertTime = 0;
+			MotionState = EPlayerMotionState::None;
+		}
+	}
 }
 
 void AR1Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -213,15 +225,28 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 #endif
 }
 
-void AR1Player::Input_Action(FGameplayTag InActionState)
+void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 {
 	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
 
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
+	if (PlayerASC->ActivateAbilityByInputMap(InActionState).IsValid())
+	{
+
+	}
+}
+
+void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
+{
+	if (IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
+	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
-	PlayerASC->Action(InActionState);
+	if (PlayerASC->ActivateAbility(AbilityTag).IsValid())
+	{
+
+	}
 }
 
 void AR1Player::Input_Block()
@@ -232,32 +257,36 @@ void AR1Player::Input_Block()
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_CancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
-	PlayerASC->Action(R1Tags::Input_Action_Block);
+	FGameplayAbilitySpecHandle SpecHandle = PlayerASC->ActivateAbility(R1Tags::Ability_Mode_Blocking);
 
-
-
-	if (DeflectInfos.Num() == DeflectMax)
+	if (SpecHandle.IsValid())
 	{
-		DeflectInfos.RemoveAt(0);
-	}
-	FDeflectInfo DeflectInfo;
-	double Current = GetWorld()->TimeSeconds;
-	DeflectInfo.Start = Current;
-
-	int Cumulative = 0;
-	for (const FDeflectInfo& Defl : DeflectInfos)
-	{
-		if (Defl.Start > Current - 0.8)
+		if (DeflectInfos.Num() == DeflectMax)
 		{
-			Cumulative++;
+			DeflectInfos.RemoveAt(0);
 		}
-	}
-	double ParrySuccedableTime = 0.2 - Cumulative * 0.6;
-	if (ParrySuccedableTime < 0) ParrySuccedableTime = 0;
+		FDeflectInfo DeflectInfo;
+		double Current = GetWorld()->TimeSeconds;
+		DeflectInfo.Start = Current;
 
-	DeflectInfo.ParrySuccedableTime = ParrySuccedableTime;
-	DeflectInfos.Push(DeflectInfo);
+		int Cumulative = 0;
+		for (const FDeflectInfo& Defl : DeflectInfos)
+		{
+			if (Defl.Start > Current - 0.8)
+			{
+				Cumulative++;
+			}
+		}
+		double ParrySuccedableTime = 0.2 - Cumulative * 0.6;
+		if (ParrySuccedableTime < 0) ParrySuccedableTime = 0;
+
+		DeflectInfo.ParrySuccedableTime = ParrySuccedableTime;
+		DeflectInfos.Push(DeflectInfo);
+	}
 }
+
+
+
 
 
 void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
@@ -265,22 +294,21 @@ void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 	AbilityCancel(InCancelStates);
 }
 
+void AR1Player::FinishMotionAlert()
+{
+	bIsMotionStateAlert = false;
+	MotionAlertTime = 0;
+}
+
+void AR1Player::StartMotionAlert()
+{
+	bIsMotionStateAlert = true;
+	MotionAlertTime = 5.f;
+}
+
 void AR1Player::OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount)
 {
-	if (NewCount >= 1)
-	{
-		bUpperLowerSplit = true;
-		SurplusAlertTime = -1.f;
-	}
-	else
-	{
-		SurplusAlertTime = 5.f;
-
-		if (DeflectInfos.Num() > 1)
-		{
-			DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
-		}
-	}
+	DeflectInfos[DeflectInfos.Num() - 1].End = GetWorld()->TimeSeconds;
 }
 
 void AR1Player::OnSprintTagChanged(const FGameplayTag CallbackTag, int NewCount)
@@ -288,12 +316,59 @@ void AR1Player::OnSprintTagChanged(const FGameplayTag CallbackTag, int NewCount)
 	if (NewCount >= 1)
 	{
 		bIsSprint = true;
-		bUpperLowerSplit = false;
-		SurplusAlertTime = 0.1f;
+		if (bIsMotionStateAlert)
+		{
+			FinishMotionAlert();
+		}
+		MotionState = EPlayerMotionState::None;
 	}
 	else
 	{
 		bIsSprint = false;
+	}
+}
+
+void AR1Player::OnUpperSplitTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount >= 0)
+	{
+		if (bIsMotionStateAlert)
+		{
+			FinishMotionAlert();
+		}
+		MotionState = EPlayerMotionState::Split;
+	}
+	else
+	{
+		MotionState = EPlayerMotionState::None;
+	}
+}
+
+void AR1Player::OnUpperAngleSplitTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount >= 0)
+	{
+		if (bIsMotionStateAlert)
+		{
+			FinishMotionAlert();
+		}
+		MotionState = EPlayerMotionState::Split_Angle;
+	}
+	else
+	{
+		StartMotionAlert();
+	}
+}
+
+void AR1Player::OnMotionNoneTagChanged(const FGameplayTag CallbackTag, int NewCount)
+{
+	if (NewCount >= 0)
+	{
+		if (bIsMotionStateAlert)
+		{
+			FinishMotionAlert();
+		}
+		MotionState = EPlayerMotionState::None;
 	}
 }
 

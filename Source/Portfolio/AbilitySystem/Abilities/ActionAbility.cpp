@@ -32,7 +32,7 @@ void UActionAbilityTask::OnDestroy(bool bInOwnerFinished)
 UActionAbility::UActionAbility()
 	: Super()
 {
-
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_MotionState_None);
 }
 
 void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 

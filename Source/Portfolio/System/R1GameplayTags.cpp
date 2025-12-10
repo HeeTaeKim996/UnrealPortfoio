@@ -81,6 +81,10 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_AssignLocation_Third, "Ability.Cooldown.AssignLocation.Third");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Cooldown_CooldownAttack, "Ability.Cooldown.CooldownAttack");
 
+	/* MotionState */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_MotionState_None, "Ability.MotionState.None");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_MotionState_UpperSplit, "Ability.MotionState.UpperSplit");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_MotionState_UpperAngleSplit, "Ability.MotionState.UpperAngleSplit");
 
 	/*-------------------
 	      GameplayCue

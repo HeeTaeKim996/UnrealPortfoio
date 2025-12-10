@@ -38,6 +38,7 @@ UBlockAbility::UBlockAbility(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_MotionState_UpperAngleSplit);
 }
 
 

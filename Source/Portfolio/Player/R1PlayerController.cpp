@@ -24,6 +24,7 @@
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "System/Subsystem/TagContainersManager.h"
 #include "Player/R1PlayerState.h"
+#include "Structures/PlayerUpperBodyState.h"
 
 AR1PlayerController::AR1PlayerController(const FObjectInitializer& objectInitializer)
 	: Super(objectInitializer)
@@ -130,8 +131,8 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 	TickCursorTrace();
 	ChaseTargetAndAttack();
 
-	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags()) 
-		&& R1Player->IsUpperLowerSplit())
+	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())
+		&& R1Player->GetPlayerMotionState() == EPlayerMotionState::Split_Angle)
 	{
 		FVector LookDirection = CursorPos - R1Player->GetActorLocation();
 		LookDirection.Z = 0;
@@ -245,7 +246,7 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 		GetPawn()->AddMovementInput(FVector::RightVector, MovementVector.Y * MulRatio);
 	}
 
-	if (R1Player->IsUpperLowerSplit() == false)
+	if (R1Player->GetPlayerMotionState() != EPlayerMotionState::Split_Angle)
 	{
 		R1Player->SetDesiredVec(FVector(MovementVector.X, MovementVector.Y, 0));
 	}
@@ -336,7 +337,7 @@ void AR1PlayerController::OnWheelReleased()
 {
 	if (bIsFirstSkillable == true)
 	{
-		R1Player->Input_Action(R1Tags::Input_Action_Skill_1);
+		R1Player->Input_ActionByInputTag(R1Tags::Input_Action_Skill_1);
 	}
 }
 
@@ -356,7 +357,7 @@ void AR1PlayerController::OnBaseAttackKeyTriggered()
 void AR1PlayerController::OnBaseAttackKeyReleased()
 {
 	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
-	R1Player->Input_Action(R1Tags::Input_Action_BaseAttack);
+	R1Player->Input_ActionByInputTag(R1Tags::Input_Action_BaseAttack);
 }
 
 void AR1PlayerController::OnBlockKeyStarted()
@@ -380,16 +381,33 @@ void AR1PlayerController::OnBlockKeyReleased()
 void AR1PlayerController::OnDodgeKeyStarted()
 {
 	DebugMessage(TEXT("Dodge Start"));
+	DodgePushedTime = 0.f;
 }
 
 void AR1PlayerController::OnDodgeKeyTriggered()
 {
 	DebugMessage("Dodge Triggered");
+
+	DodgePushedTime += GetWorld()->GetDeltaSeconds();
+
+	if(DodgePushedTime > 0.5f)
+	{
+		if (R1Player->IsInState(R1Tags::Ability_Mode_Sprint) == false)
+		{
+			R1Player->Input_ActivateAbility(R1Tags::Ability_Mode_Sprint);
+		}
+	}
 }
 
 void AR1PlayerController::OnDodgeKeyReleased()
 {
 	DebugMessage("Dodge End");
+	if (R1Player->IsInState(R1Tags::Ability_Mode_Sprint) == true)
+	{
+		FGameplayTagContainer TagContainer;
+		TagContainer.AddTagFast(R1Tags::Ability_Mode_Sprint);
+		R1Player->AbilityCancel(TagContainer);
+	}
 }
 
 void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount)

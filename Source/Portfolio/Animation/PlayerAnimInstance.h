@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Animation/CharacterAnimInstance.h"
+#include "Structures/PlayerUpperBodyState.h"
 #include "PlayerAnimInstance.generated.h"
 
 class AR1Character;
 class UCharacterMovementComponent;
 
 UENUM(BlueprintType)
-enum class EUpperBodyState : uint8
+enum class EUpperBodyAnimation : uint8
 {
 	Idle,
 	Blocking,
@@ -63,15 +64,16 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bIsUpperLowerSplit = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsSprint = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EPlayerMotionState PlayerMotionState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FRotator UnderRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EUpperBodyState UpperBodyState = EUpperBodyState::Idle;
+	EUpperBodyAnimation UpperBodyAnimation = EUpperBodyAnimation::Idle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ELowerBodyDir LowerBodyDir = ELowerBodyDir::Forward;

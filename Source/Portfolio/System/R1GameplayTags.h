@@ -80,6 +80,11 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_AssignLocation_Third);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Cooldown_CooldownAttack);
 
+	/* MotionState */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_None);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperSplit);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperAngleSplit);
+
 	/*-------------------
 		  GameplayCue
 	--------------------*/

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/R1Character.h"
 #include "System/R1GameplayTags.h"
+#include "Structures/PlayerUpperBodyState.h"
 #include "R1Player.generated.h"
 
 class UPlayerAnimInstance;
@@ -63,21 +64,28 @@ protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 
 public:
-	void Input_Action(FGameplayTag InActionState);
+	void Input_ActionByInputTag(FGameplayTag InActionState);
+	void Input_ActivateAbility(FGameplayTag AbilityTag);
 	void Input_Block();
 	
 	void Input_Cancel(FGameplayTagContainer InCancelStates);
 	
 
 public:
-	bool IsUpperLowerSplit() { return bUpperLowerSplit; }
+	EPlayerMotionState GetPlayerMotionState() { return MotionState; }
 	const TArray<FDeflectInfo>& GetDeflectInfos() { return DeflectInfos; }
 	bool IsSprint() { return bIsSprint; }
 
+private:
+	void FinishMotionAlert();
+	void StartMotionAlert();
 
 private:
 	void OnBlockTagChanged(const FGameplayTag CallbackTag, int NewCount);
 	void OnSprintTagChanged(const FGameplayTag CallbackTag, int NewCount);
+	void OnUpperSplitTagChanged(const FGameplayTag CallbackTag, int NewCount);
+	void OnUpperAngleSplitTagChanged(const FGameplayTag CallbackTag, int NewCount);
+	void OnMotionNoneTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
 protected:
 	TArray<FDeflectInfo> DeflectInfos;
@@ -85,8 +93,9 @@ protected:
 
 
 private:
-	bool bUpperLowerSplit = false;
-	float SurplusAlertTime;
+	EPlayerMotionState MotionState = EPlayerMotionState::None;
+	bool bIsMotionStateAlert = false;
+	float MotionAlertTime;
 
 	bool bIsSprint = false;
 

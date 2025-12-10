@@ -7,9 +7,8 @@
 #include "System/R1GameplayTags.h"
 #include "PlayerASC.generated.h"
 
-/**
- * 
- */
+struct FGameplayAbilitySpecHandle;
+
 UCLASS()
 class PORTFOLIO_API UPlayerASC : public UCharacterASC
 {
@@ -17,7 +16,7 @@ class PORTFOLIO_API UPlayerASC : public UCharacterASC
 public:
 	UPlayerASC();
 public:
-	void Action(FGameplayTag InStateTag);
+	FGameplayAbilitySpecHandle ActivateAbilityByInputMap(FGameplayTag InStateTag);
 
 protected:
 	TMap<FGameplayTag, FGameplayTag> InputToAbilityMap;
