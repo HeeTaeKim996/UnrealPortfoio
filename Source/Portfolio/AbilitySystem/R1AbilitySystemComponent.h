@@ -35,7 +35,7 @@ public:
 	
 	void RemoveAbilityByTag(FGameplayTag InStateTag);
 
-	FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag InTag);
+	virtual FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag InTag);
 	void CancelAbilityByTag(FGameplayTag InTag);
 
 	void PrintOwnedTags();

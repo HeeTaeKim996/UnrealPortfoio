@@ -72,7 +72,7 @@ public:
 	void Input_Cancel(FGameplayTagContainer InCancelStates);
 	
 private:
-	bool IsAbilityActivatable();
+	bool IsAbilityActivatable(const FGameplayTag& InActionTag);
 public:
 	bool IsBaseAttackCancable;
 

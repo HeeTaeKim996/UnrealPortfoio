@@ -240,15 +240,17 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 #endif
 }
 
-void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
+void AR1Player::Input_ActionByInputTag(FGameplayTag InInputTag)
 {
-	if (IsAbilityActivatable() == false) return;
+
+
+	if (IsAbilityActivatable(InInputTag) == false) return;
 
 
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
-	if (PlayerASC->ActivateAbilityByInputMap(InActionState).IsValid())
+	if (PlayerASC->ActivateAbilityByInputMap(InInputTag).IsValid())
 	{
 
 	}
@@ -256,7 +258,7 @@ void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 
 void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 {
-	if (IsAbilityActivatable() == false) return;
+	if (IsAbilityActivatable(AbilityTag) == false) return;
 
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
@@ -270,7 +272,7 @@ void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 void AR1Player::Input_Block()
 {
 	if (IsInState(R1Tags::Ability_Mode_Blocking)) return;
-	if (IsAbilityActivatable() == false) return;
+	if (IsAbilityActivatable(R1Tags::Ability_Mode_Blocking) == false) return;
 
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
@@ -312,13 +314,19 @@ void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 	AbilityCancel(InCancelStates);
 }
 
-bool AR1Player::IsAbilityActivatable()
+bool AR1Player::IsAbilityActivatable(const FGameplayTag& InActionTag)
 {
 	bool IsInBaseAttack = IsInState(R1Tags::Ability_Action_Attack_BaseAttack);
 	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())
 		&& IsInBaseAttack == false) return false;
 	if (IsInBaseAttack)
 	{
+		if (InActionTag.MatchesTag(R1Tags::Ability_Action_Attack_BaseAttack))
+		{
+			return false;
+		}
+			
+
 		if (IsBaseAttackCancable == false)
 		{
 			DebugMessage(TEXT("False"));

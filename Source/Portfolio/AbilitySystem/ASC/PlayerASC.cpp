@@ -15,6 +15,20 @@ UPlayerASC::UPlayerASC()
 	InputToAbilityMap.Add(R1Tags::Input_Action_Skill_1, R1Tags::Ability_Action_Attack_Skill_CooldownAttack);
 }
 
+FGameplayAbilitySpecHandle UPlayerASC::ActivateAbility(FGameplayTag InTag)
+{
+	if (InTag.MatchesTag(R1Tags::Ability_Action_Attack_BaseAttack))
+	{
+		ComboCount++;
+	}
+	else
+	{
+		ComboCount = 0;
+	}
+
+	return Super::ActivateAbility(InTag);
+}
+
 FGameplayAbilitySpecHandle UPlayerASC::ActivateAbilityByInputMap(FGameplayTag InStateTag)
 {
 	ensureAlwaysMsgf(InputToAbilityMap.Contains(InStateTag), TEXT("Not Assgiend StateTag"));

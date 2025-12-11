@@ -3,7 +3,7 @@
 
 #include "AbilitySystem/Abilities/BaseAttackAbility.h"
 #include "Character/R1Player.h"
-
+#include "AbilitySystem/ASC/PlayerASC.h"
 
 void UBaseAttackAbilityTask::Activate()
 {
@@ -83,7 +83,24 @@ bool UBaseAttackAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Han
 
 void UBaseAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(ActorInfo->AbilitySystemComponent);
+	ensureAlwaysMsgf(PlayerASC, TEXT("BaseAttackAbility Must be used by PlayerASC"));
+
+	ComboIndex = (PlayerASC->GetComboCount() - 1) % MaxComboIndex;
+	InSectionName = FName(*FString::FromInt(ComboIndex));
+
+#if 1
+	{
+		FString Temp = FString::FromInt(ComboIndex);
+		DebugMessage(FString::Printf(TEXT("BaseAttackABility.cpp : [%s]"), *Temp));
+	}
+#endif
+
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+
+
+
 }
 
 void UBaseAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
