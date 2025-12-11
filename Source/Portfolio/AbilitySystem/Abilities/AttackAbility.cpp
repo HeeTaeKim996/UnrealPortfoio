@@ -80,7 +80,6 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 	}
 
 
-
 	return true;
 }
 

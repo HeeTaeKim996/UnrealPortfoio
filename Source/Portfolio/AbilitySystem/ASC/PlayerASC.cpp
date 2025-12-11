@@ -12,11 +12,26 @@ UPlayerASC::UPlayerASC()
 
 }
 
+void UPlayerASC::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LastComboTime = GetWorld()->TimeSeconds;
+}
+
 FGameplayAbilitySpecHandle UPlayerASC::ActivateAbility(FGameplayTag InTag)
 {
 	if (InTag.MatchesTag(R1Tags::Ability_Action_Attack_BaseAttack))
 	{
-		ComboCount++;
+		double CurrentTime = GetWorld()->TimeSeconds;
+		if (CurrentTime - LastComboTime < 0.3)
+		{
+			ComboCount++;
+		}
+		else
+		{
+			ComboCount = 1;
+		}
 	}
 	else
 	{

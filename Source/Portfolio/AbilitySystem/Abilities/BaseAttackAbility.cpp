@@ -107,5 +107,11 @@ void UBaseAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
+	UPlayerASC* PlayerASC = Cast<UPlayerASC>(ActorInfo->AbilitySystemComponent);
+	if (PlayerASC)
+	{
+		PlayerASC->SetLastComboTime(GetWorld()->TimeSeconds);
+	}
+		
 }
 
