@@ -81,7 +81,6 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 		Cos, Sin));
 #endif
 
-	ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnHitReact_CancelTags(), nullptr, nullptr);
 	UFNameContainer* FNameContainer = NewObject<UFNameContainer>();
 
 	if (HealthValue == 0)
@@ -105,6 +104,8 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 		{
 			FNameContainer->Name = "Death_Bwd";
 		}
+
+		ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnHitReact_CancelTags(), nullptr, nullptr);
 
 		FGameplayEventData EventData;
 		EventData.OptionalObject = FNameContainer;
@@ -140,6 +141,8 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 			{
 				FNameContainer->Name = "Hit_Bwd";
 			}
+			ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnHitReact_CancelTags(), nullptr, nullptr);
+
 
 			FGameplayEventData EventData;
 			EventData.OptionalObject = FNameContainer;
@@ -159,6 +162,8 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 				OwnerCharacter->SetDesiredVec(ReactDir);
 			}
 			
+			ASC->CancelAbilities(&UTagContainersManager::Get(this)->OnHitReact_CancelTags(), nullptr, nullptr);
+
 			FGameplayEventData EventData;
 			EventData.OptionalObject = FNameContainer;
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ASC->GetAvatarActor(),

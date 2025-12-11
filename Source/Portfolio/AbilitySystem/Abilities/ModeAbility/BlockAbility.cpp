@@ -37,6 +37,8 @@ void UBlockAbilityTask::OnDestroy(bool bInOwnerFinished)
 UBlockAbility::UBlockAbility(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	AbilityTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
+
 	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
 	ActivationOwnedTags.AddTagFast(R1Tags::Ability_MotionState_UpperAngleSplit);
 }

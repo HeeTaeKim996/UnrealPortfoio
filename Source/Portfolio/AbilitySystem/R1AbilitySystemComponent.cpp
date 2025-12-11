@@ -120,4 +120,15 @@ void UR1AbilitySystemComponent::CancelAbilityByTag(FGameplayTag InTag)
 	}
 }
 
+void UR1AbilitySystemComponent::PrintOwnedTags()
+{
+	FGameplayTagContainer Container;
+	GetOwnedGameplayTags(Container);
+	DebugMessage("----------");
+	for (const FGameplayTag& Tag : Container)
+	{
+		DebugMessage(FString::Printf(TEXT("[%s]"), *Tag.ToString()));
+	}
+}
+
 

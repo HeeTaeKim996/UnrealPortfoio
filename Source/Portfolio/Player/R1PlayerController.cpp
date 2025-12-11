@@ -228,7 +228,13 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs()))
+	{
+#if 1
+		R1Player->GetR1AbilitySystemComponent()->PrintOwnedTags();
+#endif
+		return;
+	}
 	bMovePressed = true;
 
 
@@ -372,10 +378,13 @@ void AR1PlayerController::OnBlockKeyTriggered()
 
 void AR1PlayerController::OnBlockKeyReleased()
 {
-	FGameplayTagContainer TagContainer;
-	TagContainer.AddTagFast(R1Tags::Ability_Mode_Blocking);
-	
-	R1Player->AbilityCancel(TagContainer);
+	if (R1Player->IsInState(R1Tags::Ability_Mode_Blocking))
+	{
+		FGameplayTagContainer TagContainer;
+		TagContainer.AddTagFast(R1Tags::Ability_Mode_Blocking);
+
+		R1Player->AbilityCancel(TagContainer);
+	}
 }
 
 void AR1PlayerController::OnDodgeKeyStarted()

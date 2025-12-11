@@ -38,6 +38,7 @@ public:
 	FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag InTag);
 	void CancelAbilityByTag(FGameplayTag InTag);
 
+	void PrintOwnedTags();
 
 public:
 	FOnTagUpdated Delegate_OnTagUpdated;

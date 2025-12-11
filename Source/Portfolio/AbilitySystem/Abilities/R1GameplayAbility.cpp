@@ -49,8 +49,12 @@ void UR1GameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, 
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	if (bWasCancelled == true)
+	{
+		MontageStop(1.f); // Stop Playing Montage if This Ability Invoked Montage. This must be prior to Super's EndAbility
+	}
 
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 
