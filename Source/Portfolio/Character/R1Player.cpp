@@ -190,7 +190,16 @@ void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitC
 void AR1Player::HandleTraceHit(FMeleeHitInfo HitInfo)
 {
 	Super::HandleTraceHit(HitInfo);
-	GAS_OnAttackSucceed.Broadcast(HitInfo);
+
+	AR1Monster* R1Monster = Cast<AR1Monster>(HitInfo.HitResult.GetActor());
+	if (R1Monster)
+	{
+		if (R1Monster->IsInState(R1Tags::Ability_Dead)) return;
+
+		GAS_OnAttackSucceed.Broadcast(HitInfo);
+
+	}
+	
 }
 
 void AR1Player::RefreshHpBarRatio(float NewHealth)

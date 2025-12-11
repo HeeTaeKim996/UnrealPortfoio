@@ -17,6 +17,7 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_BaseAttackOn, "Event.Player.BaseAttackOn");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_DeadStop, "Event.Montage.DeadStop");
 
 	/*-------------------
 			Asset

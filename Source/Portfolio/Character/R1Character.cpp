@@ -84,9 +84,9 @@ void AR1Character::OnDead(TObjectPtr<AR1Character> From)
 
 void AR1Character::HandleGameplayTagEvent(FGameplayTag EventTag)
 {
-	if (EventTag.MatchesTag(R1Tags::Event_Montage_End))
+	if (EventTag == R1Tags::Event_Montage_DeadStop)
 	{
-
+		Delegate_DeadStop.ExecuteIfBound();
 	}
 }
 

@@ -99,6 +99,8 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 	AActor* HitActor = HitInfo.HitResult.GetActor();
 	if (AR1Player* R1Player = Cast<AR1Player>(HitActor))
 	{
+		if (R1Player->IsInState(R1Tags::Ability_Dead)) return;
+
 		const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
 		for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
 		{

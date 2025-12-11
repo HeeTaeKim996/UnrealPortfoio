@@ -84,8 +84,15 @@ void UMontageAbility::PlayMontage(UR1AbilitySystemComponent* R1ASC, UAnimMontage
 	}
 
 	MontageInstance->OnMontageEnded.Unbind();
-
 	MontageInstance->OnMontageEnded.BindUObject(this, &UMontageAbility::OnMontageEnded);
+
+	MontageInstance->OnMontageBlendingOutStarted.Unbind();
+	MontageInstance->OnMontageBlendingOutStarted.BindUObject(this, &UMontageAbility::OnMontageBlendingOutStarted);
+}
+
+void UMontageAbility::OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+
 }
 
 void UMontageAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)

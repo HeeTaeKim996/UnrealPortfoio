@@ -165,5 +165,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UR1AttributeSet> AttributeSet;
+
+public:
+	DECLARE_DELEGATE(FDelegate_DeadStop);
+	FDelegate_DeadStop Delegate_DeadStop;
 };
 

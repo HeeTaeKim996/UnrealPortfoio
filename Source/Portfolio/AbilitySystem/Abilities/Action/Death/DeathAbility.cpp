@@ -4,10 +4,17 @@
 #include "AbilitySystem/Abilities/Action/Death/DeathAbility.h"
 #include "Structures/FNameContainer.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "Character/R1Character.h"
+
 
 void UDeathAbilityTask::Activate()
 {
 	Super::Activate();
+
+	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
+	R1Character->Delegate_DeadStop.Unbind();
+	R1Character->Delegate_DeadStop.BindUObject(this, &UDeathAbilityTask::OnDeadStop);
+	
 }
 
 void UDeathAbilityTask::TickTask(float DeltaTime)
@@ -18,6 +25,19 @@ void UDeathAbilityTask::TickTask(float DeltaTime)
 void UDeathAbilityTask::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
+	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
+	R1Character->Delegate_DeadStop.Unbind();
+}
+
+void UDeathAbilityTask::OnDeadStop()
+{
+	if (AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor()))
+	{
+		if (UAnimInstance* Anim = R1Character->GetMesh()->GetAnimInstance())
+		{
+			Anim->Montage_Pause(Anim->GetCurrentActiveMontage());
+		}
+	}
 }
 
 
@@ -57,6 +77,21 @@ void UDeathAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	// ※ Before Activate ActionAbility, Set SectionName
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	if (bUseDeathPause)
+	{
+		UDeathAbilityTask* Task = UAbilityTask::NewAbilityTask<UDeathAbilityTask>(this);
+		Task->ReadyForActivation();
+
+		if (AR1Character* R1Character = Cast<AR1Character>(ActorInfo->AvatarActor))
+		{
+			if (UAnimInstance* Anim = R1Character->GetMesh()->GetAnimInstance())
+			{
+				FAnimMontageInstance* Inst = Anim->GetActiveInstanceForMontage(PlayingMontage);
+				Inst->bEnableAutoBlendOut = false;
+			}
+		}
+	}
 }
 
 void UDeathAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, 
@@ -73,4 +108,16 @@ void UDeathAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
 	Super::OnMontageEnded(Montage, bInterruped);
 
 	DebugMessage("DeathAbility.cpp : Temp Montage End Check");
+	MontageStop();
+}
+
+void UDeathAbility::OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	Super::OnMontageEnded(AnimMontage, bInterrupted);
+
+	UAnimInstance* Anim = GetActorInfo().GetAnimInstance();
+	if (Anim)
+	{
+		Anim->Montage_Pause(AnimMontage);
+	}
 }

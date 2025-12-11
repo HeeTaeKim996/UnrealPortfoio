@@ -20,7 +20,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_End);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_BaseAttackOn);
-
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_DeadStop);
 
 	/*-------------------
 		    Asset

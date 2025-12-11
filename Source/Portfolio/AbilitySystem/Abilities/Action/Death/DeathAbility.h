@@ -14,6 +14,9 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
+
+private:
+	void OnDeadStop();
 };
 
 
@@ -38,6 +41,9 @@ protected:
 
 protected:
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
+	virtual void OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted);
 
-
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bUseDeathPause = true;
 };

@@ -43,6 +43,7 @@ protected:
 protected:
 	void PlayMontage(class UR1AbilitySystemComponent* R1ASC, UAnimMontage* Montage, FName SectionName);
 
+	virtual void OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted);
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped);
 
 protected:
