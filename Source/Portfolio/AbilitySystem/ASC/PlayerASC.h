@@ -20,11 +20,9 @@ public:
 	virtual FGameplayAbilitySpecHandle ActivateAbility(FGameplayTag InTag) override;
 
 public:
-	FGameplayAbilitySpecHandle ActivateAbilityByInputMap(FGameplayTag InStateTag);
 	int GetComboCount() { return ComboCount; }
 	
 
 private:
-	TMap<FGameplayTag, FGameplayTag> InputToAbilityMap;
 	int ComboCount = 0;
 };

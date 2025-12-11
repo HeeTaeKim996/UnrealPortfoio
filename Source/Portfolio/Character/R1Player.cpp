@@ -240,21 +240,6 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 #endif
 }
 
-void AR1Player::Input_ActionByInputTag(FGameplayTag InInputTag)
-{
-
-
-	if (IsAbilityActivatable(InInputTag) == false) return;
-
-
-	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
-
-	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
-	if (PlayerASC->ActivateAbilityByInputMap(InInputTag).IsValid())
-	{
-
-	}
-}
 
 void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 {

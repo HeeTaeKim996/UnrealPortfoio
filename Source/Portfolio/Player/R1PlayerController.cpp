@@ -33,6 +33,12 @@ AR1PlayerController::AR1PlayerController(const FObjectInitializer& objectInitial
 	DefaultMouseCursor = EMouseCursor::Default;
 	CursorPos = FVector::ZeroVector;
 	cursorPushedTime = 0.f;
+
+
+	InputToAbilityMap.Add(R1Tags::Input_Action_BaseAttack,
+		R1Tags::Ability_Action_Attack_BaseAttack_TestAttack);
+	InputToAbilityMap.Add(R1Tags::Input_Action_Block, R1Tags::Ability_Mode_Blocking);
+	InputToAbilityMap.Add(R1Tags::Input_Action_Skill_1, R1Tags::Ability_Action_Attack_Skill_CooldownAttack);
 }
 
 void AR1PlayerController::BeginPlay()
@@ -340,7 +346,7 @@ void AR1PlayerController::OnWheelReleased()
 {
 	if (bIsFirstSkillable == true)
 	{
-		R1Player->Input_ActionByInputTag(R1Tags::Input_Action_Skill_1);
+		R1Player->Input_ActivateAbility(InputToAbilityMap[R1Tags::Input_Action_Skill_1]);
 	}
 }
 
@@ -360,7 +366,7 @@ void AR1PlayerController::OnBaseAttackKeyTriggered()
 void AR1PlayerController::OnBaseAttackKeyReleased()
 {
 	//R1Player->ActivateAbility(R1Tags::Ability_Attack_Test);
-	R1Player->Input_ActionByInputTag(R1Tags::Input_Action_BaseAttack);
+	R1Player->Input_ActivateAbility(InputToAbilityMap[R1Tags::Input_Action_BaseAttack]);
 }
 
 void AR1PlayerController::OnBlockKeyStarted()

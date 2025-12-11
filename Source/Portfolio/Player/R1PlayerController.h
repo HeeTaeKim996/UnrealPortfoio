@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "R1Define.h"
+#include "GameplayTagContainer.h"
 #include "R1PlayerController.generated.h"
 
 class UInputMappingContext;
@@ -17,7 +18,7 @@ class AR1Character;
 class IR1HighlightInterface;
 class AR1Monster;
 class UMainUserWidget;
-struct FGameplayTag;
+
 /**
  * 
  */
@@ -101,4 +102,6 @@ protected:
 
 protected:
 	bool bIsFirstSkillable = true;
+
+	TMap<FGameplayTag, FGameplayTag> InputToAbilityMap;
 };

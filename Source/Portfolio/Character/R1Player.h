@@ -65,7 +65,6 @@ protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 
 public:
-	void Input_ActionByInputTag(FGameplayTag InActionState);
 	void Input_ActivateAbility(FGameplayTag AbilityTag);
 	void Input_Block();
 	

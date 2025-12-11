@@ -86,7 +86,7 @@ void UBaseAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(ActorInfo->AbilitySystemComponent);
 	ensureAlwaysMsgf(PlayerASC, TEXT("BaseAttackAbility Must be used by PlayerASC"));
 
-	ComboIndex = (PlayerASC->GetComboCount() - 1) % MaxComboIndex;
+	ComboIndex = (PlayerASC->GetComboCount() - 1) % MaxComboCount;
 	InSectionName = FName(*FString::FromInt(ComboIndex));
 
 #if 1

@@ -42,7 +42,7 @@ protected:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int MaxComboIndex = 3;
+	int MaxComboCount = 4;
 
 	int ComboIndex;
 };

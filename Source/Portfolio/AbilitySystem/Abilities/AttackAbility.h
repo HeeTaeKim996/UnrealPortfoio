@@ -55,6 +55,6 @@ public:
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TMap<uint8, FAttackInfo> AttackInfos;
+	TArray<FAttackInfo> AttackInfos;
 
 };
