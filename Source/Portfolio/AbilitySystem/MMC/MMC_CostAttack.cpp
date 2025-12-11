@@ -15,7 +15,7 @@ float UMMC_CostAttack::CalculateBaseMagnitude_Implementation(const FGameplayEffe
 
 	float StaminaCost = Ability->StaminaCost.GetValueAtLevel(Ability->GetAbilityLevel());
 
-	DebugMessage(FString::Printf(TEXT("MMC_CostAttack : [%f]"), StaminaCost));
+	//DebugMessage(FString::Printf(TEXT("MMC_CostAttack : [%f]"), StaminaCost));
 
 	return StaminaCost;
 }	

@@ -4,6 +4,34 @@
 #include "AbilitySystem/Abilities/CooldownAttackAbility.h"
 
 
+bool UCooldownAttackAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, 
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, 
+	const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags) == false)
+	{
+		if (CheckCooldown(Handle, ActorInfo, nullptr) == false)
+		{
+			DebugMessage(TEXT("CooldownAttackAbility.cpp : Need More Time"));
+		}
+
+		return false;
+	}
+	return true;
+}
+
+void UCooldownAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
+	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	if (CommitAbilityCooldown(Handle, ActorInfo, ActivationInfo, false, nullptr) == false)
+	{
+		EndAbilityCancel();
+		return;
+	}
+}
+
 const FGameplayTagContainer* UCooldownAttackAbility::GetCooldownTags() const
 {
 	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);

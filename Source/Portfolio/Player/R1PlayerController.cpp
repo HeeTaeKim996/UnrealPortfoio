@@ -230,9 +230,6 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
 	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs()))
 	{
-#if 1
-		R1Player->GetR1AbilitySystemComponent()->PrintOwnedTags();
-#endif
 		return;
 	}
 	bMovePressed = true;
