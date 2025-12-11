@@ -12,7 +12,7 @@ UPlayerASC::UPlayerASC()
 	InputToAbilityMap.Add(R1Tags::Input_Action_BaseAttack, 
 		R1Tags::Ability_Action_Attack_BaseAttack_TestAttack);
 	InputToAbilityMap.Add(R1Tags::Input_Action_Block, R1Tags::Ability_Mode_Blocking);
-	InputToAbilityMap.Add(R1Tags::Input_Action_Skill_1, R1Tags::Ability_Action_Attack_CooldownAttack);
+	InputToAbilityMap.Add(R1Tags::Input_Action_Skill_1, R1Tags::Ability_Action_Attack_Skill_CooldownAttack);
 }
 
 FGameplayAbilitySpecHandle UPlayerASC::ActivateAbilityByInputMap(FGameplayTag InStateTag)

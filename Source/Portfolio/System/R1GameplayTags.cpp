@@ -11,9 +11,12 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Dodge, "Input.Action.Dodge");
 
 
+	/*-------------------
+			Event
+	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
-
+	UE_DEFINE_GAMEPLAY_TAG(Event_Player_BaseAttackOn, "Event.Player.BaseAttackOn");
 
 	/*-------------------
 			Asset
@@ -44,7 +47,9 @@ namespace R1Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack, "Ability.Action.Attack.BaseAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_BaseAttack_TestAttack, "Ability.Action.Attack.BaseAttack.TestAttack");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_CooldownAttack, "Ability.Action.Attack.CooldownAttack");
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Skill, "Ability.Action.Attack.Skill");
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Skill_CooldownAttack, "Ability.Action.Attack.Skill.CooldownAttack");
 
 
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_Attack_Monster, "Ability.Action.Attack.Monster");

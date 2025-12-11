@@ -14,9 +14,12 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Block);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Dodge);
 
-
+	/*-------------------
+			Event
+	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_End);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_BaseAttackOn);
 
 
 	/*-------------------
@@ -47,7 +50,9 @@ namespace R1Tags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_BaseAttack_TestAttack);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_CooldownAttack);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Skill);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Skill_CooldownAttack);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Attack_Monster_FieldMonster_Kronos_Sweep);

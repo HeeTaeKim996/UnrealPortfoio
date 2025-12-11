@@ -183,7 +183,11 @@ void AR1Character::AbilityCancel(FGameplayTagContainer CancelTags)
 {
 	CharacterASC->CancelAbilities(&CancelTags, nullptr, nullptr);
 
-	//CharacterASC->CancelAbilityByTag(CancelTags.First());
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->StopAllMontages(0.1f);
+	}
 }
 
 

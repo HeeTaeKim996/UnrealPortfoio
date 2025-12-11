@@ -13,9 +13,11 @@ UDataAsset_GameplayTagContainers::UDataAsset_GameplayTagContainers()
 	BaseAbilityBlockTgs.AddTagFast(R1Tags::Ability_Mode_Aiming);
 
 
+	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Action);
 	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Blocking);
 	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Sneaking);
 	OnActionCall_BaseCancelingTags.AddTagFast(R1Tags::Ability_Mode_Sprint);
+
 
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Action);
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Mode);

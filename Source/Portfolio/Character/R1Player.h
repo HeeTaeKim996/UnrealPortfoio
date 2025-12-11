@@ -42,6 +42,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void HandleGameplayTagEvent(FGameplayTag EventTag) override;
+	void OnPlayerBaseAttackOn(FGameplayTag EventTag);
 
 private:
 	UFUNCTION() // ※ Require UFUNCTION To Use ( Using Delegate Func )
@@ -70,6 +71,10 @@ public:
 	
 	void Input_Cancel(FGameplayTagContainer InCancelStates);
 	
+private:
+	bool IsAbilityActivatable();
+public:
+	bool IsBaseAttackCancable;
 
 public:
 	EPlayerMotionState GetPlayerMotionState() { return MotionState; }
@@ -114,4 +119,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> CharMovement;
+
+public:
+	DECLARE_DELEGATE_OneParam(FDelegate_OnBaseAttackOn,
+		FGameplayTag AbilityTag);
+	FDelegate_OnBaseAttackOn Delegate_OnBaseAttackOn;
 };

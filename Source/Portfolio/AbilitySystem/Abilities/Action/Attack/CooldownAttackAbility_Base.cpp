@@ -51,6 +51,7 @@ bool UCooldownAttackAbilityTask_Base::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 UCooldownAttackAbility_Base::UCooldownAttackAbility_Base()
 	: Super()
 {
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_Attack_Skill); // TEMP 
 }
 
 bool UCooldownAttackAbility_Base::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, 

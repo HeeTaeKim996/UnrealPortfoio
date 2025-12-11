@@ -17,6 +17,7 @@
 #include "System/Subsystem/TagContainersManager.h"
 #include "System/R1AssetManager.h"
 #include "Data/GE/DataAsset_GE.h"
+#include "AbilitySystem/Abilities/BaseAttackAbility.h"
 
 AR1Player::AR1Player() : Super()
 {
@@ -162,6 +163,11 @@ void AR1Player::HandleGameplayTagEvent(FGameplayTag EventTag)
 	}
 }
 
+void AR1Player::OnPlayerBaseAttackOn(FGameplayTag EventTag)
+{
+	Delegate_OnBaseAttackOn.ExecuteIfBound(EventTag);
+}
+
 
 void AR1Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -227,7 +233,9 @@ void AR1Player::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
 
 void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 {
-	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	if (IsAbilityActivatable() == false) return;
+
+
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
@@ -239,7 +247,8 @@ void AR1Player::Input_ActionByInputTag(FGameplayTag InActionState)
 
 void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 {
-	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	if (IsAbilityActivatable() == false) return;
+
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
 	UPlayerASC* PlayerASC = Cast<UPlayerASC>(CharacterASC);
@@ -252,7 +261,7 @@ void AR1Player::Input_ActivateAbility(FGameplayTag AbilityTag)
 void AR1Player::Input_Block()
 {
 	if (IsInState(R1Tags::Ability_Mode_Blocking)) return;
-	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())) return;
+	if (IsAbilityActivatable() == false) return;
 
 	AbilityCancel(UTagContainersManager::Get(this)->OnActionCall_BaseCancelingTags());
 
@@ -292,6 +301,28 @@ void AR1Player::Input_Block()
 void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 {
 	AbilityCancel(InCancelStates);
+}
+
+bool AR1Player::IsAbilityActivatable()
+{
+	bool IsInBaseAttack = IsInState(R1Tags::Ability_Action_Attack_BaseAttack);
+	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())
+		&& IsInBaseAttack == false) return false;
+	if (IsInBaseAttack)
+	{
+		if (IsBaseAttackCancable == false)
+		{
+			DebugMessage(TEXT("False"));
+			return false;
+		}
+		else
+		{
+			DebugMessage(TEXT("True"));
+			return true;
+		}
+	}
+
+	return true;
 }
 
 void AR1Player::FinishMotionAlert()

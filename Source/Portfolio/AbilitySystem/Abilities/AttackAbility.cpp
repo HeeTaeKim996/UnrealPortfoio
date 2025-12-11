@@ -87,5 +87,5 @@ bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
 UAttackAbility::UAttackAbility()
 	: Super()
 {
-	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_Attack);
+
 }
