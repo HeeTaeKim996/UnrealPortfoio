@@ -21,6 +21,7 @@ struct FGameplayAbilitySpecHandle;
 class UR1AbilitySystemComponent;
 struct FOnAttributeChangeData;
 class UNiagaraSystem;
+struct FTraceHitInfo;
 
 
 USTRUCT(BlueprintType)
@@ -41,6 +42,8 @@ struct FBaseSetting
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UNiagaraSystem> HitFx;
 };
+
+
 
 UCLASS()
 class PORTFOLIO_API AR1Character : public ACharacter, public IR1HighlightInterface, public IAbilitySystemInterface
@@ -117,7 +120,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UMeleeTraceComponent> MeleeTrace;
 
-
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDelegate_OnTraceHit,
+		const FMeleeHitInfo&, MeleeHitInfo, const FTraceHitInfo&, TraceHitInfo);
+	FDelegate_OnTraceHit Delegate_OnTraceHit;
 	
 
 
@@ -144,16 +150,6 @@ protected:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists);
 
 
-
-
-public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackSucceed,
-		const FMeleeHitInfo&, MeleeHitInfo);
-	FGAS_OnAttackSucceed GAS_OnAttackSucceed;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackParried,
-		const FMeleeHitInfo&, MeleeHitInfo);
-	FGAS_OnAttackParried GAS_OnAttackParried;
 
 	
 protected:

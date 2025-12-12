@@ -5,6 +5,7 @@
 #include "Character/FieldMonster/FieldMonster_Kronos.h"
 #include "Character/R1Character.h"
 #include "Character/R1Monster.h"
+#include "Structures/TraceHitInfo.h"
 
 void UKronosAbility_SweepAttackTask::Activate()
 {
@@ -41,9 +42,9 @@ void UKronosAbility_SweepAttackTask::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UKronosAbility_SweepAttackTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UKronosAbility_SweepAttackTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
+	if (Super::AttackSucceed(MeleeHitInfo, TraceHitInfo) == false) return false;
 
 
 	return true;

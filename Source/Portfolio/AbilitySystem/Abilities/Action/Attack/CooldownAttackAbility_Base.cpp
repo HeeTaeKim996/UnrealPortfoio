@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/Action/Attack/CooldownAttackAbility_Base.h"
 #include "Player/R1PlayerController.h"
 #include "Character/R1Player.h"
+#include "Structures/TraceHitInfo.h"
 
 void UCooldownAttackAbilityTask_Base::Activate()
 {
@@ -34,9 +35,9 @@ void UCooldownAttackAbilityTask_Base::OnDestroy(bool bInOwnerFinished)
 
 }
 
-bool UCooldownAttackAbilityTask_Base::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UCooldownAttackAbilityTask_Base::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
+	if (Super::AttackSucceed(MeleeHitInfo, TraceHitInfo) == false) return false;
 
 	return true;
 }

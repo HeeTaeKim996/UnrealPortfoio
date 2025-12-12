@@ -5,6 +5,7 @@
 #include "Character/R1Character.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "GameplayEffect.h"
+#include "Structures/TraceHitInfo.h"
 
 void UAttackAbilityTask::Activate()
 {
@@ -17,7 +18,7 @@ void UAttackAbilityTask::Activate()
 		return;
 	}
 
-	R1Character->GAS_OnAttackSucceed.AddDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
+	R1Character->Delegate_OnTraceHit.AddDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
 }
 
 void UAttackAbilityTask::TickTask(float DeltaTime)
@@ -32,16 +33,16 @@ void UAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
 	if (R1Character)
 	{
-		R1Character->GAS_OnAttackSucceed.RemoveDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
+		R1Character->Delegate_OnTraceHit.RemoveDynamic(this, &UAttackAbilityTask::OnAttackSucceed);
 	}
 }
 
-void UAttackAbilityTask::OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+void UAttackAbilityTask::OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	AttackSucceed(MeleeHitInfo);
+	AttackSucceed(MeleeHitInfo, TraceHitInfo);
 }
 
-bool UAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
 	if (Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
 
@@ -49,34 +50,36 @@ bool UAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 	AR1Character* HItCharacter = Cast<AR1Character>(HitActor);
 	if (HItCharacter == nullptr) return false;
 
-
-	AActor* SourceActor = GetAvatarActor();
-	AR1Character* SourceCharacter = Cast<AR1Character>(SourceActor);
-	UR1AbilitySystemComponent* SourceASC
-		= Cast<UR1AbilitySystemComponent>(SourceCharacter->GetAbilitySystemComponent());
-
-	UR1AbilitySystemComponent* TargetASC
-		= Cast<UR1AbilitySystemComponent>(HItCharacter->GetAbilitySystemComponent());
-	UAttackAbility* AttackAbility = Cast<UAttackAbility>(Ability);
-
-	TSubclassOf<UGameplayEffect> GE = AttackAbility->AttackInfos[MeleeHitInfo.Protocol].GE;
-	if (TargetASC && GE && SourceASC)
+	if (TraceHitInfo.TraceHitResult == ETraceHitResult::Hit)
 	{
-		FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
-		EffectContext.AddHitResult(MeleeHitInfo.HitResult);
-		EffectContext.AddInstigator(SourceActor, SourceActor);
+		AActor* SourceActor = GetAvatarActor();
+		AR1Character* SourceCharacter = Cast<AR1Character>(SourceActor);
+		UR1AbilitySystemComponent* SourceASC
+			= Cast<UR1AbilitySystemComponent>(SourceCharacter->GetAbilitySystemComponent());
 
-		FGameplayEffectSpecHandle SpecHandle =
-			SourceASC->MakeOutgoingSpec(GE, 1, EffectContext);
-		
-		FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
-		Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_AttackCoefficient,
-			AttackAbility->AttackInfos[MeleeHitInfo.Protocol].AttackCoefficient);
-		Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_Impact,
-			AttackAbility->AttackInfos[MeleeHitInfo.Protocol].Impact);
+		UR1AbilitySystemComponent* TargetASC
+			= Cast<UR1AbilitySystemComponent>(HItCharacter->GetAbilitySystemComponent());
+		UAttackAbility* AttackAbility = Cast<UAttackAbility>(Ability);
 
-		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		TSubclassOf<UGameplayEffect> GE = AttackAbility->AttackInfos[MeleeHitInfo.Protocol].GE;
+		if (TargetASC && GE && SourceASC)
+		{
+			FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
+			EffectContext.AddHitResult(MeleeHitInfo.HitResult);
+			EffectContext.AddInstigator(SourceActor, SourceActor);
 
+			FGameplayEffectSpecHandle SpecHandle =
+				SourceASC->MakeOutgoingSpec(GE, 1, EffectContext);
+
+			FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
+			Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_AttackCoefficient,
+				AttackAbility->AttackInfos[MeleeHitInfo.Protocol].AttackCoefficient);
+			Spec->SetSetByCallerMagnitude(R1Tags::Data_GESpec_Impact,
+				AttackAbility->AttackInfos[MeleeHitInfo.Protocol].Impact);
+
+			TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+		}
 	}
 
 

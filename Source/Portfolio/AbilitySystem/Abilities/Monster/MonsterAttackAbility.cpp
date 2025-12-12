@@ -5,6 +5,7 @@
 #include "Character/R1Monster.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Structures/TraceHitInfo.h"
 
 void UMonsterAttackAbilityTask::Activate()
 {
@@ -33,9 +34,9 @@ void UMonsterAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UMonsterAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UMonsterAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
+	if (Super::AttackSucceed(MeleeHitInfo, TraceHitInfo) == false) return false;
 
 	return true;
 }

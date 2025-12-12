@@ -14,7 +14,7 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 	
 protected:
-	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo) override;
+	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo) override;
 
 protected:
 	TWeakObjectPtr<class AR1Character> WeakTarget;

@@ -7,6 +7,7 @@
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "System/R1AssetManager.h"
 #include "Data/GE/DataAsset_GE.h"
+#include "Structures/TraceHitInfo.h"
 
 AR1Monster::AR1Monster()
 	: Super()
@@ -96,6 +97,7 @@ bool AR1Monster::OnTraceHit(const FMeleeHitInfo& HitInfo)
 {
 	if (Super::OnTraceHit(HitInfo) == false) return false;
 
+	FTraceHitInfo TraceHitInfo;
 
 	AActor* HitActor = HitInfo.HitResult.GetActor();
 	if (AR1Player* R1Player = Cast<AR1Player>(HitActor))
@@ -126,12 +128,18 @@ bool AR1Monster::OnTraceHit(const FMeleeHitInfo& HitInfo)
 						if (HitTime < DeflectInfo.Start + DeflectInfo.ParrySuccedableTime)
 						{
 							DebugMessage(TEXT("R1Monster : Parry Succeed"));
+
+							TraceHitInfo.TraceHitResult = ETraceHitResult::Parry;
 						}
 						else
 						{
 							DebugMessage(TEXT("R1Monster : Just Block Succeed"));
+
+							TraceHitInfo.TraceHitResult = ETraceHitResult::Block;
 						}
 
+
+						Delegate_OnTraceHit.Broadcast(HitInfo, TraceHitInfo);
 						return true;
 					}
 
@@ -144,8 +152,9 @@ bool AR1Monster::OnTraceHit(const FMeleeHitInfo& HitInfo)
 			if (DeflectInfo.End < HitTime) break;
 		}
 
-		DebugMessage(TEXT("R1Monster : Player Hit"));
-		GAS_OnAttackSucceed.Broadcast(HitInfo);
+
+		TraceHitInfo.TraceHitResult = ETraceHitResult::Hit;
+		Delegate_OnTraceHit.Broadcast(HitInfo, TraceHitInfo);
 		return true;
 	}
 	if (AR1Monster* R1Monster = Cast<AR1Monster>(HitActor))

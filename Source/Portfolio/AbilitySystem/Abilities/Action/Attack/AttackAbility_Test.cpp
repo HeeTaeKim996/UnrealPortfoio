@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/Action/Attack/AttackAbility_Test.h"
 #include "Player/R1PlayerController.h"
 #include "Character/R1Player.h"
+#include "Structures/TraceHitInfo.h"
 
 
 void UAttacAbilityTask_Test::Activate()
@@ -34,9 +35,9 @@ void UAttacAbilityTask_Test::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UAttacAbilityTask_Test::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UAttacAbilityTask_Test::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
+	if (Super::AttackSucceed(MeleeHitInfo, TraceHitInfo) == false) return false;
 
 	return true;
 }

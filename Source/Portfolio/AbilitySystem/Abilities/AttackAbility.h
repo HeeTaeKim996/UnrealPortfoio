@@ -8,6 +8,7 @@
 
 struct FMeleeHitInfo;
 class UGameplayEffect;
+struct FTraceHitInfo;
 
 USTRUCT(BlueprintType)
 struct PORTFOLIO_API FAttackInfo
@@ -38,10 +39,10 @@ public:
 
 private:
 	UFUNCTION()
-	void OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo);
+	void OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo);
 	
 protected:
-	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo);
+	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo);
 };
 
 

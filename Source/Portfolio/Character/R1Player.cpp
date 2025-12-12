@@ -18,6 +18,7 @@
 #include "System/R1AssetManager.h"
 #include "Data/GE/DataAsset_GE.h"
 #include "AbilitySystem/Abilities/BaseAttackAbility.h"
+#include "Structures/TraceHitInfo.h"
 
 AR1Player::AR1Player() : Super()
 {
@@ -182,10 +183,14 @@ bool AR1Player::OnTraceHit(const FMeleeHitInfo& HitInfo)
 {
 	if (Super::OnTraceHit(HitInfo) == false) return false;
 
+	FTraceHitInfo TraceHitInfo;
+
 	AR1Monster* R1Monster = Cast<AR1Monster>(HitInfo.HitResult.GetActor());
 	if (R1Monster)
 	{
-		GAS_OnAttackSucceed.Broadcast(HitInfo);
+		TraceHitInfo.TraceHitResult = ETraceHitResult::Hit;
+
+		Delegate_OnTraceHit.Broadcast(HitInfo, TraceHitInfo);
 	}
 
 	return true;

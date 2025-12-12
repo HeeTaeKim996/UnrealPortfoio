@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/BaseAttackAbility.h"
 #include "Character/R1Player.h"
 #include "AbilitySystem/ASC/PlayerASC.h"
+#include "Structures/TraceHitInfo.h"
 
 void UBaseAttackAbilityTask::Activate()
 {
@@ -31,9 +32,9 @@ void UBaseAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	R1Player->Delegate_OnBaseAttackOn.Unbind();
 }
 
-bool UBaseAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
+bool UBaseAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo, const FTraceHitInfo& TraceHitInfo)
 {
-	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
+	if (Super::AttackSucceed(MeleeHitInfo, TraceHitInfo) == false) return false;
 
 	return true;
 }
