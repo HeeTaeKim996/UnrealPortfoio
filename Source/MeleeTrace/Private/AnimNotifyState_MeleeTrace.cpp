@@ -120,9 +120,13 @@ void UAnimNotifyState_MeleeTrace::NotifyTick(USkeletalMeshComponent* MeshComp, U
 	if (DebugMeshComponents.Num() == MeleeTraceInfo.MeleeTraceInfos.Num()  && bShouldDrawDebugInEditor)
 	{
 		const UWorld* World = MeshComp->GetWorld();
+		if (World == nullptr) return;
+
 
 		for (int Index = 0; Index < DebugMeshComponents.Num(); Index++)
 		{
+			if (DebugMeshComponents[Index].IsValid() == false) continue;
+
 			FCollisionShape CollisionShape;
 			if (MeleeTraceInfo.MeleeTraceInfos[Index].TraceShape)
 			{

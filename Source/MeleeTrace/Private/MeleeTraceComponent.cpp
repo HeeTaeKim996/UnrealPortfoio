@@ -170,10 +170,13 @@ void UMeleeTraceComponent::StartTraceWithContext(const FMeleeTraceInfo& MeleeTra
 
 void UMeleeTraceComponent::EndTraceWithContext(const UObject* Context)
 {
+#if 0 // ※ Obsolate. even if Context Destroyed, Context != nullptr. And Object Destroyed And This Func call Could Happen
 	if (!ensureMsgf(Context, TEXT("Invalid Context object passed to [%s]."), StringCast<TCHAR>(__FUNCTION__).Get()))
 	{
 		return;
 	}
+#endif
+	if (IsValid(Context) == false) return;
 
 	const uint32 ContextHash = GetContextHash(Context);
 	const uint32 TraceHash = MeleeTrace::GetTraceHash(ContextHash);

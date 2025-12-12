@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/ActionAbility.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "Character/R1Player.h"
+
 
 void UActionAbilityTask::Activate()
 {
@@ -38,7 +40,12 @@ UActionAbility::UActionAbility()
 void UActionAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
 	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);	
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	if (AR1Player* R1Player = Cast<AR1Player>(ActorInfo->AvatarActor))
+	{
+		R1Player->SetGAState(EGAState::None);
+	}
 }
 
 void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
@@ -51,6 +58,16 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 }
 
 
+
+void UActionAbility::OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	Super::OnMontageBlendingOutStarted(AnimMontage, bInterrupted);
+
+	if (AR1Player* R1Player = Cast<AR1Player>(GetAvatarActorFromActorInfo()))
+	{
+		R1Player->SetGAState(EGAState::ActionContinuable);
+	}
+}
 
 void UActionAbility::OnMontageEnded(UAnimMontage* Montage, bool bInterruped)
 {

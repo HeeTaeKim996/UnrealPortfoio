@@ -5,10 +5,18 @@
 #include "Structures/FNameContainer.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "Character/R1Character.h"
 
 void UKncokDownAbilityTask::Activate()
 {
 	Super::Activate();
+
+	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
+	if (R1Character)
+	{
+		ensureAlwaysMsgf(R1Character->Delegate_GACommonDelegate.IsBound() == false, TEXT("Other GA Already Bound"));
+		R1Character->Delegate_GACommonDelegate.BindUObject(this, &UKncokDownAbilityTask::OnCharacterGADelegateCall);
+	}
 }
 
 void UKncokDownAbilityTask::TickTask(float DeltaTime)
@@ -19,6 +27,19 @@ void UKncokDownAbilityTask::TickTask(float DeltaTime)
 void UKncokDownAbilityTask::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
+	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
+	if (R1Character)
+	{
+		R1Character->Delegate_GACommonDelegate.Unbind();
+	}
+}
+
+void UKncokDownAbilityTask::OnCharacterGADelegateCall(FGameplayTag InTag)
+{
+	ensureAlwaysMsgf(InTag == R1Tags::Event_GAS_KnockdownGetup, TEXT("Wrong Tag"));
+
+	Ability->GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(R1Tags::Ability_HitState_Invincible);
+	Cast<UKnockDownAbility>(Ability)->OnGetup();
 }
 
 
@@ -32,6 +53,8 @@ UKnockDownAbility::UKnockDownAbility()
 	: Super()
 {
 	AbilityTags.AddTagFast(R1Tags::Ability_Action_HitReact_Knockdown);
+
+	ActivationOwnedTags.AddTagFast(R1Tags::Ability_Action_HitReact_Knockdown);
 
 	FAbilityTriggerData TriggerData;
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
@@ -54,25 +77,29 @@ void UKnockDownAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-	ASC->AddLooseGameplayTag(R1Tags::Ability_Action_HitReact_Knockdown);
+	bIsInvincible = true;
+	ActorInfo->AbilitySystemComponent->AddLooseGameplayTag(R1Tags::Ability_HitState_Invincible);
 
-	FOnMontageBlendingOutStarted& OnBlendingOut = MontageInstance->OnMontageBlendingOutStarted;
-	OnBlendingOut.Unbind();
-	OnBlendingOut.BindUObject(this, &UKnockDownAbility::OnMontageBlendingOut);
+	UKncokDownAbilityTask* Task = UAbilityTask::NewAbilityTask<UKncokDownAbilityTask>(this);
+	Task->ReadyForActivation();
 }
 
 void UKnockDownAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-	ASC->RemoveLooseGameplayTag(R1Tags::Ability_Action_HitReact_Getup);
+
+	if (bIsInvincible)
+	{
+		GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(R1Tags::Ability_HitState_Invincible);
+		bIsInvincible = false;
+	}
 }
 
-void UKnockDownAbility::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+void UKnockDownAbility::OnGetup()
 {
-	UR1AbilitySystemComponent* ASC = Cast<UR1AbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-	ASC->RemoveLooseGameplayTag(R1Tags::Ability_Action_HitReact_Knockdown);
-	ASC->AddLooseGameplayTag(R1Tags::Ability_Action_HitReact_Getup);
+	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(R1Tags::Ability_HitState_Invincible);
+	bIsInvincible = false;
 }
+
+
 

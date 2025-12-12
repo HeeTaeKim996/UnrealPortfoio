@@ -167,7 +167,8 @@ protected:
 	TObjectPtr<class UR1AttributeSet> AttributeSet;
 
 public:
-	DECLARE_DELEGATE(FDelegate_DeadStop);
-	FDelegate_DeadStop Delegate_DeadStop;
+	DECLARE_DELEGATE_OneParam(FDelegate_GACommonDelegate,
+		FGameplayTag InTag);
+	FDelegate_GACommonDelegate Delegate_GACommonDelegate;
 };
 

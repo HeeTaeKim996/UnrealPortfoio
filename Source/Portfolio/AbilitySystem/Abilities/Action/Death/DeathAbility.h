@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/MontageAbility.h"
+#include "GameplayTagContainer.h"
 #include "DeathAbility.generated.h"
 
 UCLASS()
@@ -16,7 +17,7 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 private:
-	void OnDeadStop();
+	void OnDeadStop(FGameplayTag InTag);
 };
 
 

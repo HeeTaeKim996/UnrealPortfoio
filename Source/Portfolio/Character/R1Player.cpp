@@ -301,28 +301,19 @@ void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 
 bool AR1Player::IsAbilityActivatable(const FGameplayTag& InActionTag)
 {
-	bool IsInBaseAttack = IsInState(R1Tags::Ability_Action_Attack_BaseAttack);
-	if (IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())
-		&& IsInBaseAttack == false) return false;
-	if (IsInBaseAttack)
+	if (GAState == EGAState::BaseAttackCancellable && IsInState(R1Tags::Ability_Action_Attack_BaseAttack))
 	{
-		if (InActionTag.MatchesTag(R1Tags::Ability_Action_Attack_BaseAttack))
-		{
-			return false;
-		}
-			
-
-		if (IsBaseAttackCancable == false)
-		{
-			DebugMessage(TEXT("False"));
-			return false;
-		}
-		else
-		{
-			DebugMessage(TEXT("True"));
-			return true;
-		}
+		return true;
 	}
+	else if (GAState == EGAState::ActionContinuable && IsInState(R1Tags::Ability_Action))
+	{
+		return true;
+	}
+	else if(IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs()))
+	{
+		return false;
+	}
+
 
 	return true;
 }

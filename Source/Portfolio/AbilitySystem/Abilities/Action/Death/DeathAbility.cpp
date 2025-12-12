@@ -5,6 +5,7 @@
 #include "Structures/FNameContainer.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "Character/R1Character.h"
+#include "System/R1GameplayTags.h"
 
 
 void UDeathAbilityTask::Activate()
@@ -12,8 +13,8 @@ void UDeathAbilityTask::Activate()
 	Super::Activate();
 
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
-	R1Character->Delegate_DeadStop.Unbind();
-	R1Character->Delegate_DeadStop.BindUObject(this, &UDeathAbilityTask::OnDeadStop);
+	ensureAlwaysMsgf(R1Character->Delegate_GACommonDelegate.IsBound() == false, TEXT("Other GA Already bound"));
+	R1Character->Delegate_GACommonDelegate.BindUObject(this, &UDeathAbilityTask::OnDeadStop);
 	
 }
 
@@ -26,11 +27,13 @@ void UDeathAbilityTask::OnDestroy(bool bInOwnerFinished)
 {
 	Super::OnDestroy(bInOwnerFinished);
 	AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor());
-	R1Character->Delegate_DeadStop.Unbind();
+	R1Character->Delegate_GACommonDelegate.Unbind();
 }
 
-void UDeathAbilityTask::OnDeadStop()
+void UDeathAbilityTask::OnDeadStop(FGameplayTag InTag)
 {
+	ensureAlwaysMsgf(InTag == R1Tags::Event_GAS_DeadStop, TEXT("Other Invoked"));
+
 	if (AR1Character* R1Character = Cast<AR1Character>(GetAvatarActor()))
 	{
 		if (UAnimInstance* Anim = R1Character->GetMesh()->GetAnimInstance())
@@ -38,6 +41,8 @@ void UDeathAbilityTask::OnDeadStop()
 			Anim->Montage_Pause(Anim->GetCurrentActiveMontage());
 		}
 	}
+
+	
 }
 
 

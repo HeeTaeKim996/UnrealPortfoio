@@ -22,6 +22,14 @@ struct PORTFOLIO_API FDeflectInfo
 	double ParrySuccedableTime;
 };
 
+UENUM()
+enum class EGAState : uint8
+{
+	None,
+	BaseAttackCancellable,
+	ActionContinuable
+};
+
 UCLASS()
 class PORTFOLIO_API AR1Player : public AR1Character
 {
@@ -72,8 +80,6 @@ public:
 	
 private:
 	bool IsAbilityActivatable(const FGameplayTag& InActionTag);
-public:
-	bool IsBaseAttackCancable;
 
 public:
 	EPlayerMotionState GetPlayerMotionState() { return MotionState; }
@@ -91,10 +97,14 @@ private:
 	void OnUpperAngleSplitTagChanged(const FGameplayTag CallbackTag, int NewCount);
 	void OnMotionNoneTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
+public:
+	EGAState GetGAState() { return GAState; }
+	void SetGAState(EGAState SetState) { GAState = SetState; }
+
 protected:
 	TArray<FDeflectInfo> DeflectInfos;
 	int DeflectMax = 10;
-
+	EGAState GAState = EGAState::None;
 
 private:
 	EPlayerMotionState MotionState = EPlayerMotionState::None;

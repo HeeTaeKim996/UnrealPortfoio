@@ -20,8 +20,10 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Begin);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_End);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Player_BaseAttackOn);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_DeadStop);
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_GAS);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_GAS_DeadStop);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_GAS_KnockdownGetup);
 	/*-------------------
 		    Asset
 	--------------------*/
@@ -62,7 +64,6 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Base);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Knockdown);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_HitReact_Getup);
 
 	// Parry
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Action_Parry);
@@ -89,6 +90,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_None);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperSplit);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperAngleSplit);
+
 
 	/*-------------------
 		  GameplayCue

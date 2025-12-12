@@ -7,6 +7,7 @@
 #include "KnockDownAbility.generated.h"
 
 class UAnimMontage;
+struct FGameplayTag;
 
 UCLASS()
 class PORTFOLIO_API UKncokDownAbilityTask : public UActionAbilityTask
@@ -16,6 +17,9 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
+
+private:
+	void OnCharacterGADelegateCall(FGameplayTag InTag);
 };
 
 UCLASS()
@@ -35,8 +39,9 @@ protected:
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+public:
+	void OnGetup();
 
-protected:
-	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
-
+private:
+	bool bIsInvincible;
 };

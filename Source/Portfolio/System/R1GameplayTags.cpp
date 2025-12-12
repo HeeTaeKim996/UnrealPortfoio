@@ -17,7 +17,10 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Begin, "Event.Montage.Begin");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_End, "Event.Montage.End");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Player_BaseAttackOn, "Event.Player.BaseAttackOn");
-	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_DeadStop, "Event.Montage.DeadStop");
+
+	UE_DEFINE_GAMEPLAY_TAG(Event_GAS, "Event.GAS");
+	UE_DEFINE_GAMEPLAY_TAG(Event_GAS_DeadStop, "Event.GAS.DeadStop");
+	UE_DEFINE_GAMEPLAY_TAG(Event_GAS_KnockdownGetup, "Event.GAS.KnockdownGetup");
 
 	/*-------------------
 			Asset
@@ -63,7 +66,6 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact, "Ability.Action.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Base, "Ability.Action.HitReact.Base");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Knockdown, "Ability.Action.HitReact.Knockdown");
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Action_HitReact_Getup, "Ability.Action.HitReact.Getup");
 
 
 	// Parry

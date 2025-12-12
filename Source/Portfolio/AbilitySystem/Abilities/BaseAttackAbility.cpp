@@ -13,7 +13,7 @@ void UBaseAttackAbilityTask::Activate()
 	if (R1Player == nullptr) return;
 
 	R1Player->Delegate_OnBaseAttackOn.BindUObject(this, &UBaseAttackAbilityTask::OnPlayerBaseAttackOn);
-	R1Player->IsBaseAttackCancable = true;
+	R1Player->SetGAState(EGAState::BaseAttackCancellable);
 }
 
 void UBaseAttackAbilityTask::TickTask(float DeltaTime)
@@ -45,7 +45,7 @@ void UBaseAttackAbilityTask::OnPlayerBaseAttackOn(FGameplayTag InAbilityTag)
 		AR1Player* R1Player = Cast<AR1Player>(GetAvatarActor());
 		if (R1Player == nullptr) return;
 
-		R1Player->IsBaseAttackCancable = false;
+		R1Player->SetGAState(EGAState::None);
 	}
 }
 
@@ -97,9 +97,6 @@ void UBaseAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 #endif
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-
-
 
 }
 

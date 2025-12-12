@@ -42,6 +42,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 protected:
+	virtual void OnMontageBlendingOutStarted(UAnimMontage* AnimMontage, bool bInterrupted) override;
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterruped) override;
 
 
