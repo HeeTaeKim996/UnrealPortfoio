@@ -46,7 +46,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMeleeTraceEnd,
 	UMeleeTraceComponent*, ThisComponent, int32, HitCount, FMeleeTraceInstanceHandle, TraceHandle);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMeleeTraceHit,
-	FMeleeHitInfo, MeleeHitInfo);
+	const FMeleeHitInfo&, MeleeHitInfo);
 
 
 

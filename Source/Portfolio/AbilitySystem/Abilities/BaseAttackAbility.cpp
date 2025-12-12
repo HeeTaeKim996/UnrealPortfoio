@@ -31,7 +31,7 @@ void UBaseAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	R1Player->Delegate_OnBaseAttackOn.Unbind();
 }
 
-bool UBaseAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UBaseAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 

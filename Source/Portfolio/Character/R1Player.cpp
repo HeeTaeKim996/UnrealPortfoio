@@ -175,31 +175,20 @@ void AR1Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 }
 
 
-void AR1Player::HandleTraceStarted(UMeleeTraceComponent* ThisComponent,
-	FMeleeTraceInstanceHandle TraceHandle)
-{
-	Super::HandleTraceStarted(ThisComponent, TraceHandle);
-}
 
-void AR1Player::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
-	FMeleeTraceInstanceHandle TraceHandle)
-{
-	Super::HandleTraceEnded(ThisComponent, HitCount, TraceHandle);
-}
 
-void AR1Player::HandleTraceHit(FMeleeHitInfo HitInfo)
+
+bool AR1Player::OnTraceHit(const FMeleeHitInfo& HitInfo)
 {
-	Super::HandleTraceHit(HitInfo);
+	if (Super::OnTraceHit(HitInfo) == false) return false;
 
 	AR1Monster* R1Monster = Cast<AR1Monster>(HitInfo.HitResult.GetActor());
 	if (R1Monster)
 	{
-		if (R1Monster->IsInState(R1Tags::Ability_Dead)) return;
-
 		GAS_OnAttackSucceed.Broadcast(HitInfo);
-
 	}
-	
+
+	return true;
 }
 
 void AR1Player::RefreshHpBarRatio(float NewHealth)

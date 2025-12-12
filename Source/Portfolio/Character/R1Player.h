@@ -58,12 +58,8 @@ private:
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
-	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle) override;
+	virtual bool OnTraceHit(const FMeleeHitInfo& HitInfo) override;
 
-	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
-		FMeleeTraceInstanceHandle TraceHandle) override;
-
-	virtual void HandleTraceHit(FMeleeHitInfo HitInfo) override;
 
 protected:
 	virtual void RefreshHpBarRatio(float NewHealth) override;

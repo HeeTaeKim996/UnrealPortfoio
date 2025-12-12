@@ -98,17 +98,19 @@ protected:
 
 
 	/* MeleeTrace */
-protected:
+private:
 	UFUNCTION()
-	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
+	void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle);
 
 	UFUNCTION()
-	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
+	void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
 		FMeleeTraceInstanceHandle TraceHandle);
 
 	UFUNCTION()
-	virtual void HandleTraceHit(FMeleeHitInfo HitInfo);
+	void HandleTraceHit(const FMeleeHitInfo& HitInfo);
 
+protected:
+	virtual bool OnTraceHit(const FMeleeHitInfo& HitInfo);
 
 
 protected:
@@ -146,11 +148,11 @@ protected:
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackSucceed,
-		FMeleeHitInfo, MeleeHitInfo);
+		const FMeleeHitInfo&, MeleeHitInfo);
 	FGAS_OnAttackSucceed GAS_OnAttackSucceed;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGAS_OnAttackParried,
-		FMeleeHitInfo, MeleeHitInfo);
+		const FMeleeHitInfo&, MeleeHitInfo);
 	FGAS_OnAttackParried GAS_OnAttackParried;
 
 	

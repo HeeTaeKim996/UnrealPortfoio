@@ -17,7 +17,7 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 protected:
-	virtual bool AttackSucceed(FMeleeHitInfo MeleeHitInfo) override;
+	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo) override;
 
 };
 

@@ -41,7 +41,7 @@ void UKronosAbility_SweepAttackTask::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UKronosAbility_SweepAttackTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UKronosAbility_SweepAttackTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 

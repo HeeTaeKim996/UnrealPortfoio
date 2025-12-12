@@ -132,14 +132,30 @@ void AR1Character::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 H
 
 }
 
-void AR1Character::HandleTraceHit(FMeleeHitInfo HitInfo)
+void AR1Character::HandleTraceHit(const FMeleeHitInfo& HitInfo)
 {
-#if 0
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
-		FString::Printf(TEXT("R1Character.cpp : Ability : [%s]"), *HitInfo.Ability.GetTagName().ToString()));
-#endif
+	OnTraceHit(HitInfo);
+}
 
-	//GAS_OnAttackSucceed.Broadcast(HitInfo);
+bool AR1Character::OnTraceHit(const FMeleeHitInfo& HitInfo)
+{
+	double HitTime = HitInfo.HitTime;
+
+
+	if (AR1Character* HitCharacter = Cast<AR1Character>(HitInfo.HitResult.GetActor()))
+	{
+		FGameplayTagContainer NotHittableContainer; // Will Be Replace by UTagContainerManager's Func
+		NotHittableContainer.AddTagFast(R1Tags::Ability_Dead);
+		NotHittableContainer.AddTagFast(R1Tags::Ability_HitState_Invincible);
+
+		if (HitCharacter->IsInAnyState(NotHittableContainer)) return false;
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 

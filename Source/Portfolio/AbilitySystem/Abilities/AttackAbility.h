@@ -38,10 +38,10 @@ public:
 
 private:
 	UFUNCTION()
-	void OnAttackSucceed(FMeleeHitInfo MeleeHitInfo);
-
+	void OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo);
+	
 protected:
-	virtual bool AttackSucceed(FMeleeHitInfo MeleeHitInfo);
+	virtual bool AttackSucceed(const FMeleeHitInfo& MeleeHitInfo);
 };
 
 

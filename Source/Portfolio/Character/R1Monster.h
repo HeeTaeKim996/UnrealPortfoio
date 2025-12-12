@@ -34,5 +34,5 @@ public:
 
 
 protected:
-	virtual void HandleTraceHit(FMeleeHitInfo HitInfo) override;
+	virtual bool OnTraceHit(const FMeleeHitInfo& HitInfo) override;
 };

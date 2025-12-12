@@ -20,9 +20,5 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
-protected:
-	virtual void HandleTraceStarted(UMeleeTraceComponent* ThisComponent, FMeleeTraceInstanceHandle TraceHandle) override;
 
-	virtual void HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount,
-		FMeleeTraceInstanceHandle TraceHandle) override;
 };

@@ -33,7 +33,7 @@ void UMonsterAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UMonsterAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UMonsterAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 

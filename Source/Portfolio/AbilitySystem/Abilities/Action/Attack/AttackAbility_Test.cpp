@@ -34,7 +34,7 @@ void UAttacAbilityTask_Test::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-bool UAttacAbilityTask_Test::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UAttacAbilityTask_Test::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 

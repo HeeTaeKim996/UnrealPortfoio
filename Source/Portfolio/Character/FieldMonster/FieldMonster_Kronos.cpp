@@ -21,14 +21,4 @@ void AFieldMonster_Kronos::EndPlay(const EEndPlayReason::Type EndPlayReason)
 }
 
 
-void AFieldMonster_Kronos::HandleTraceStarted(UMeleeTraceComponent* ThisComponent, 
-	FMeleeTraceInstanceHandle TraceHandle)
-{
-	Super::HandleTraceStarted(ThisComponent, TraceHandle);
-}
 
-void AFieldMonster_Kronos::HandleTraceEnded(UMeleeTraceComponent* ThisComponent, int32 HitCount, 
-	FMeleeTraceInstanceHandle TraceHandle)
-{
-	Super::HandleTraceEnded(ThisComponent, HitCount, TraceHandle);
-}

@@ -34,7 +34,7 @@ void UCooldownAttackAbilityTask_Base::OnDestroy(bool bInOwnerFinished)
 
 }
 
-bool UCooldownAttackAbilityTask_Base::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UCooldownAttackAbilityTask_Base::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Super::AttackSucceed(MeleeHitInfo) == false) return false;
 

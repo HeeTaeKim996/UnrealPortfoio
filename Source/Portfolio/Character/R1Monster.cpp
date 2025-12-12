@@ -90,16 +90,17 @@ void AR1Monster::InitAbilitySystem()
 	CharacterASC->InitAbilityActorInfo(this, this);
 }
 
-void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
-{
-	Super::HandleTraceHit(HitInfo);
 
-	double HitTime = HitInfo.HitTime;
+
+bool AR1Monster::OnTraceHit(const FMeleeHitInfo& HitInfo)
+{
+	if (Super::OnTraceHit(HitInfo) == false) return false;
+
 
 	AActor* HitActor = HitInfo.HitResult.GetActor();
 	if (AR1Player* R1Player = Cast<AR1Player>(HitActor))
 	{
-		if (R1Player->IsInState(R1Tags::Ability_Dead)) return;
+		double HitTime = HitInfo.HitTime;
 
 		const TArray<FDeflectInfo>& DeflectInfos = R1Player->GetDeflectInfos();
 		for (int i = DeflectInfos.Num() - 1; i >= 0; i--)
@@ -131,7 +132,7 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 							DebugMessage(TEXT("R1Monster : Just Block Succeed"));
 						}
 
-						return;
+						return true;
 					}
 
 					break;
@@ -145,16 +146,15 @@ void AR1Monster::HandleTraceHit(FMeleeHitInfo HitInfo)
 
 		DebugMessage(TEXT("R1Monster : Player Hit"));
 		GAS_OnAttackSucceed.Broadcast(HitInfo);
-		return;
+		return true;
 	}
 	if (AR1Monster* R1Monster = Cast<AR1Monster>(HitActor))
 	{
 		// TODO : Address Other Character Hit (Not Player)
+
+		return true;
 	}
-	
 
-	
-
-	
+	return true;
 }
 

@@ -36,12 +36,12 @@ void UAttackAbilityTask::OnDestroy(bool bInOwnerFinished)
 	}
 }
 
-void UAttackAbilityTask::OnAttackSucceed(FMeleeHitInfo MeleeHitInfo)
+void UAttackAbilityTask::OnAttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
-	AttackSucceed(MoveTemp(MeleeHitInfo));
+	AttackSucceed(MeleeHitInfo);
 }
 
-bool UAttackAbilityTask::AttackSucceed(FMeleeHitInfo MeleeHitInfo)
+bool UAttackAbilityTask::AttackSucceed(const FMeleeHitInfo& MeleeHitInfo)
 {
 	if (Ability->AbilityTags.HasTag(MeleeHitInfo.Ability) == false) return false;
 
