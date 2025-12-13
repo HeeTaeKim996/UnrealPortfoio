@@ -207,7 +207,7 @@ void AR1Player::RefreshHpBarRatio(float NewHealth)
 
 void AR1Player::RefreshStaminaBarRatio(const FOnAttributeChangeData& Data)
 {
-	float Ratio = Data.NewValue / AttributeSet->GetMaxHealth();
+	float Ratio = Data.NewValue / AttributeSet->GetMaxStamina();
 
 	Cast<AR1PlayerController>(GetController())->GetMainUI()->UpdatePlayerStaminaBar(Ratio);
 }

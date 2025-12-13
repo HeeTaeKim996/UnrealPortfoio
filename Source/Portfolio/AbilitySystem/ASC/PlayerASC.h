@@ -25,13 +25,15 @@ public:
 public:
 	int GetComboCount() { return ComboCount; }
 	void SetLastComboTime(double SetTime) { LastComboTime = SetTime; }
-
+	void ApplyNotPlayerStaminable();
 
 private:
 	int ComboCount = 0;
 	double LastComboTime;
 
-public:
 	UPROPERTY()
 	TSubclassOf<UGameplayEffect> GE_PlayerStamina;
+
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> GE_NoPlayerStaminable;
 };

@@ -2,7 +2,7 @@
 
 
 #include "AbilitySystem/Abilities/ActionAbility.h"
-#include "AbilitySystem/R1AbilitySystemComponent.h"
+#include "AbilitySystem/ASC/PlayerASC.h"
 #include "Character/R1Player.h"
 
 
@@ -54,7 +54,13 @@ void UActionAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
 	
-
+	if (AR1Player* R1Player = Cast<AR1Player>(ActorInfo->AvatarActor))
+	{
+		if (UPlayerASC* PlayerASC = Cast<UPlayerASC>(ActorInfo->AbilitySystemComponent))
+		{
+			PlayerASC->ApplyNotPlayerStaminable();
+		}
+	}
 }
 
 

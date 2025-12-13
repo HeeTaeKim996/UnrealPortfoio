@@ -38,6 +38,8 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_GEs);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_PlayerStamina);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_NoPlayerStaminable);
+
 
 	/*-------------------
 			Ability

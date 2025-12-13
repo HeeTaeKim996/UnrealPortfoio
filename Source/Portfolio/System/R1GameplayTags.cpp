@@ -36,7 +36,7 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer, "Asset.GE.Initializer");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_GEs, "Asset.GE.Initializer.GEs");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_PlayerStamina, "Asset.GE.Initializer.PlayerStamina");
-
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_NoPlayerStaminable, "Asset.GE.Initializer.NoPlayerStaminable");
 
 	/*-------------------
 			Ability
