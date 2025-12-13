@@ -21,4 +21,9 @@ UDataAsset_GameplayTagContainers::UDataAsset_GameplayTagContainers()
 
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Action);
 	OnHitReact_CancelTags.AddTagFast(R1Tags::Ability_Mode);
+
+#if 0 // Obsolate
+	PlayerNotRegenableTags.AddTagFast(R1Tags::Ability_Action);
+	PlayerNotRegenableTags.AddTagFast(R1Tags::Ability_ETC_NoStaminaRegen);
+#endif
 }

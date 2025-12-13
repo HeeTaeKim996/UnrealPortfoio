@@ -8,6 +8,7 @@
 #include "PlayerASC.generated.h"
 
 struct FGameplayAbilitySpecHandle;
+class UGameplayEffect;
 
 UCLASS()
 class PORTFOLIO_API UPlayerASC : public UCharacterASC
@@ -25,7 +26,12 @@ public:
 	int GetComboCount() { return ComboCount; }
 	void SetLastComboTime(double SetTime) { LastComboTime = SetTime; }
 
+
 private:
 	int ComboCount = 0;
 	double LastComboTime;
+
+public:
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> GE_PlayerStamina;
 };

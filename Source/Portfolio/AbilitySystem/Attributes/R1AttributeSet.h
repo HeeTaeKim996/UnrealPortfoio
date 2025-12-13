@@ -35,7 +35,7 @@ public:
 
 private:
 	void OnDamage(const FGameplayEffectModCallbackData& Data);
-
+	void OnStaminaUpdate(const FGameplayEffectModCallbackData& Data);
 
 
 public:

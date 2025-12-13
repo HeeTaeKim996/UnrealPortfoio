@@ -35,8 +35,9 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_InitializePlayerSet);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_InitializeMonsterSet);
-
-
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_GEs);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_PlayerStamina);
 
 	/*-------------------
 			Ability
@@ -91,6 +92,9 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperSplit);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_MotionState_UpperAngleSplit);
 
+	/* ETC */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ETC_NoStaminaRegen);
+
 
 	/*-------------------
 		  GameplayCue
@@ -104,4 +108,6 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_AttackCoefficient);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_GESpec_Impact);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_Cooldown);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_StaminaRegen);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_MitigatedStaminaRegen);
 }

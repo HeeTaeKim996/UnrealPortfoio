@@ -16,9 +16,9 @@
 #include "AbilitySystem/ASC/PlayerASC.h"
 #include "System/Subsystem/TagContainersManager.h"
 #include "System/R1AssetManager.h"
-#include "Data/GE/DataAsset_GE.h"
 #include "AbilitySystem/Abilities/BaseAttackAbility.h"
 #include "Structures/TraceHitInfo.h"
+#include "Data/GE/Data_InitializeGEs.h"
 
 AR1Player::AR1Player() : Super()
 {
@@ -99,12 +99,13 @@ void AR1Player::BeginPlay()
 	CharacterASC->RegisterGameplayTagEvent(R1Tags::Ability_Cooldown_AssignLocation_First,
 		EGameplayTagEventType::NewOrRemoved).AddUObject(R1PC, &AR1PlayerController::OnFirstSkillTagChanged);
 
-	const UDataAsset_GE* GEData = UR1AssetManager::GetAssetByName<UDataAsset_GE>
-		(R1Tags::Asset_GE_InitializePlayerSet);
-	ensureAlwaysMsgf(GEData, TEXT("GEData is Null"));
+	UData_InitializeGEs* InitializeGes = UR1AssetManager::GetAssetByName<UData_InitializeGEs>(R1Tags::Asset_GE_Initializer_GEs);
+
+	TSubclassOf<UGameplayEffect> GE_InitializePlayerSet = InitializeGes->FindGEByTag(R1Tags::Asset_GE_InitializePlayerSet);
+	ensureAlwaysMsgf(GE_InitializePlayerSet, TEXT("Initialize GE is Not assigned"));
 
 	FGameplayEffectContextHandle Context = CharacterASC->MakeEffectContext();
-	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GEData->GE, 1.f, Context);
+	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GE_InitializePlayerSet, 1.f, Context);
 	CharacterASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
@@ -295,7 +296,8 @@ void AR1Player::Input_Cancel(FGameplayTagContainer InCancelStates)
 
 bool AR1Player::IsAbilityActivatable(const FGameplayTag& InActionTag)
 {
-	if (GAState == EGAState::BaseAttackCancellable && IsInState(R1Tags::Ability_Action_Attack_BaseAttack))
+	if (GAState == EGAState::BaseAttackCancellable && IsInState(R1Tags::Ability_Action_Attack_BaseAttack)
+		&& InActionTag.MatchesTag(R1Tags::Ability_Action_Attack_BaseAttack) == false)
 	{
 		return true;
 	}

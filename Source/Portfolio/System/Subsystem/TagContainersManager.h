@@ -33,6 +33,11 @@ public:
 		return TagContainersData->OnHitReact_CancelTags;
 	}
 
+	FORCEINLINE const FGameplayTagContainer& PlayerNotRegenableTags() const
+	{
+		return TagContainersData->PlayerNotRegenableTags;
+	}
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UDataAsset_GameplayTagContainers> TagContainersData;

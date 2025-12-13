@@ -33,9 +33,11 @@ void UR1AttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 	if (ModifiedAttr == GetMetaDamageAttribute())
 	{
 		OnDamage(Data);
-		
 	}
-	
+	else if (ModifiedAttr == GetStaminaAttribute())
+	{
+		OnStaminaUpdate(Data);
+	}
 
 }
 
@@ -170,4 +172,10 @@ void UR1AttributeSet::OnDamage(const FGameplayEffectModCallbackData& Data)
 				R1Tags::Ability_Action_HitReact_Knockdown, EventData);
 		}		
 	}
+}
+
+void UR1AttributeSet::OnStaminaUpdate(const FGameplayEffectModCallbackData& Data)
+{
+	SetStamina(FMath::Clamp(GetStamina(), 0, GetMaxStamina()));
+
 }

@@ -33,7 +33,9 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE, "Asset.GE");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_InitializePlayerSet, "Asset.GE.InitializePlayerSet");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_InitializeMonsterSet, "Asset.GE.InitializeMonsterSet");
-
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer, "Asset.GE.Initializer");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_GEs, "Asset.GE.Initializer.GEs");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_PlayerStamina, "Asset.GE.Initializer.PlayerStamina");
 
 
 	/*-------------------
@@ -94,6 +96,9 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_MotionState_UpperSplit, "Ability.MotionState.UpperSplit");
 	UE_DEFINE_GAMEPLAY_TAG(Ability_MotionState_UpperAngleSplit, "Ability.MotionState.UpperAngleSplit");
 
+	/* ETC */
+	UE_DEFINE_GAMEPLAY_TAG(Ability_ETC_NoStaminaRegen, "Ability.ETC.NoStaminaRegen");
+
 	/*-------------------
 	      GameplayCue
 	--------------------*/
@@ -107,6 +112,8 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_AttackCoefficient, "Data.GESpec.AttackCoefficient");
 	UE_DEFINE_GAMEPLAY_TAG(Data_GESpec_Impact, "Data.GESpec.Impact");
 	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_Cooldown, "Data.SetByCaller.Cooldown");
+	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_StaminaRegen, "Data.SetByCaller.StaminaRegen");
+	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_MitigatedStaminaRegen, "Data.SetByCaller.MitigatedStaminaRegen");
 }
 
 

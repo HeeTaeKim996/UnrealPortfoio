@@ -6,8 +6,8 @@
 #include "AbilitySystem/ASC/MonsterASC.h"
 #include "AbilitySystem/Attributes/R1AttributeSet.h"
 #include "System/R1AssetManager.h"
-#include "Data/GE/DataAsset_GE.h"
 #include "Structures/TraceHitInfo.h"
+#include "Data/GE/Data_InitializeGEs.h"
 
 AR1Monster::AR1Monster()
 	: Super()
@@ -31,12 +31,13 @@ void AR1Monster::BeginPlay()
 
 	InitAbilitySystem();
 
-	const UDataAsset_GE* GEData = UR1AssetManager::GetAssetByName<UDataAsset_GE>
-		(R1Tags::Asset_GE_InitializeMonsterSet);
-	ensureAlwaysMsgf(GEData, TEXT("GEData is Null"));
+	UData_InitializeGEs* InitializeGes = UR1AssetManager::GetAssetByName<UData_InitializeGEs>(R1Tags::Asset_GE_Initializer_GEs);
+
+	TSubclassOf<UGameplayEffect> GE_InitializeMonsterSet = InitializeGes->FindGEByTag(R1Tags::Asset_GE_InitializeMonsterSet);
+	ensureAlwaysMsgf(GE_InitializeMonsterSet, TEXT("Initialize GE is Not assigned"));
 
 	FGameplayEffectContextHandle Context = CharacterASC->MakeEffectContext();
-	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GEData->GE, 1.f, Context);
+	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GE_InitializeMonsterSet, 1.f, Context);
 	CharacterASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 

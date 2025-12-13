@@ -26,4 +26,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
 	FGameplayTagContainer OnHitReact_CancelTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tags")
+	FGameplayTagContainer PlayerNotRegenableTags;
 };
