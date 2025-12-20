@@ -22,31 +22,40 @@ void ACurveFloatObject::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FRotator StartRot = GetActorRotation();
+	PitchRot = StartRot.Pitch;
+	YawRot = StartRot.Yaw;
+
+
 	ensureAlwaysMsgf(Curve, TEXT("Curve is Not assigned"));
 
-	CurveTimeline = NewObject<UTimelineComponent>(this, TEXT("Timeline"));
-	CurveTimeline->RegisterComponent();
 
 
 
 	FOnTimelineFloat UpdateDelegate;
 
-	UpdateDelegate.BindUFunction(this, TEXT("OnCurveTimeUpdate"));
+	UpdateDelegate.BindUFunction(this, TEXT("OnCurveTimeUpdate")); // ¡Ø Must Match Function Name
 
+	CurveTimeline = NewObject<UTimelineComponent>(this, TEXT("Timeline"));
+	CurveTimeline->RegisterComponent();
 
 	CurveTimeline->AddInterpFloat(Curve, UpdateDelegate);
 	CurveTimeline->SetLooping(true);
 	CurveTimeline->SetPlayRate(CurveSpeed);
-	CurveTimeline->Play();
+
+	const float WaitTime = FMath::FRandRange(0.f, 5.f);
+	GetWorld()->GetTimerManager().SetTimer(SwayTimerHandle,
+		[this]()
+		{
+			CurveTimeline->Play();
+		}
+		, WaitTime, false);
 }
 
 void ACurveFloatObject::OnCurveTimeUpdate(float Value)
 {
-	const float Rot = Value * CurveIntensity;
-	Box->SetRelativeRotation(FRotator(
-		bUsePitchRot ?	Rot : 0,
-		bUseYawRot ?	Rot : 0, 
-		bUseRollRot ?	Rot : 0));
+	const float Roll = Value * CurveIntensity;
+	Box->SetRelativeRotation(FRotator(PitchRot, YawRot, Roll));
 }
 
 

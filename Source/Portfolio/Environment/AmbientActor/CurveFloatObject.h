@@ -41,18 +41,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "CurveConfig")
 	float CurveIntensity = 1.f;
 
-	UPROPERTY(EditAnywhere, Category = "CurveConfig")
-	bool bUseRollRot = false;
-
-	UPROPERTY(EditAnywhere, Category = "CurveConfig")
-	bool bUsePitchRot = false;
-
-	UPROPERTY(EditAnywhere, Category = "CurveConfig")
-	bool bUseYawRot = false;
-
-
 	UFUNCTION()
 	void OnCurveTimeUpdate(float Value);
-
-
+	
+private:
+	float PitchRot;
+	float YawRot;
+	FTimerHandle SwayTimerHandle;
 };
