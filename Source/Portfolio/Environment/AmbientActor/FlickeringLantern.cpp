@@ -68,10 +68,12 @@ void AFlickeringLantern::BeginPlay()
 		}, WaitTime, false);
 }
 
+
 void AFlickeringLantern::OnSwayUpdate(float Value)
 {
 	Root->SetRelativeRotation(FRotator(PitchRot, YawRot, Value));
 }
+
 
 void AFlickeringLantern::OnFlickerUpdate(float Value)
 {
