@@ -12,6 +12,8 @@ void UTagContainersManager::Initialize(FSubsystemCollectionBase& Collection)
 		TEXT("/Script/Portfolio.DataAsset_GameplayTagContainers'/Game/Data/StaticPaths/DA_GameplayTagContainers.DA_GameplayTagContainers'"));
 }
 
+
+
 UTagContainersManager* UTagContainersManager::Get(const UObject* WorldContextObject)
 {
 	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull))

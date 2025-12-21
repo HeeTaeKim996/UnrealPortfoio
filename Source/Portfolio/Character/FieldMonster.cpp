@@ -26,7 +26,6 @@ AFieldMonster::AFieldMonster()
 		HpBarComponent->SetDrawAtDesiredSize(true);
 		HpBarComponent->SetRelativeLocation(FVector(0, 0, 100));
 	}
-
 }
 
 void AFieldMonster::RefreshHpBarRatio(float NewHealth)
