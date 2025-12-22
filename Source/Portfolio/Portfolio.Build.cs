@@ -15,7 +15,8 @@ public class Portfolio : ModuleRules
 
 			"EnhancedInput"/*EnhancedInput*/, "GameplayTags"/*GameplayTags*/, "NavigationSystem"/*==NavMesh*/,
 			"AIModule"/*AIController, BehaviourTree..*/, "Niagara"/*==ParticleEffect*/, "UMG"/* UI */,
-			"GameplayTasks" /*GAS*/, "GameplayAbilities"/*GAS*/, 
+			"GameplayTasks" /*GAS*/, "GameplayAbilities"/*GAS*/, "AudioMixer"/* Quartz*/,
+
 
 			/*Plugins*/
 			"ModuleTest" /*TEST*/, "MeleeTrace"/* Prevent Hitch Problem In HitDetection*/,
