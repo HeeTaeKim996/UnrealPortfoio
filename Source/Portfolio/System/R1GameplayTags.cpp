@@ -40,6 +40,24 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_PlayerStamina, "Asset.GE.Initializer.PlayerStamina");
 	UE_DEFINE_GAMEPLAY_TAG(Asset_GE_Initializer_NoPlayerStaminable, "Asset.GE.Initializer.NoPlayerStaminable");
 
+	/* Music */
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music, "Asset.Music");
+
+	// Stem
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Layer1, "Asset.Music.Stem.Layer1");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Layer2, "Asset.Music.Stem.Layer2");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Layer3, "Asset.Music.Stem.Layer3");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Layer4, "Asset.Music.Stem.Layer4");
+
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Cello, "Asset.Music.Stem.Cello");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Drum, "Asset.Music.Stem.Drum");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Flute, "Asset.Music.Stem.Flute");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Stem_Voices, "Asset.Music.Stem.Voices");
+
+	// Event
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Event_PrepareNext, "Asset.Music.Event.PrepareNext");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_Music_Event_ChangeMusic, "Asset.Music.Event.ChangeMusic");
+
 	/*-------------------
 			Ability
 	--------------------*/

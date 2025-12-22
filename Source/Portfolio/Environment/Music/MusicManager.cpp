@@ -20,8 +20,8 @@ AMusicManager::AMusicManager()
 void AMusicManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("Start1"));
+
+	Audios.SetNum(static_cast<uint8>(ESoundType::End));
 
 	UGameInstance* GI = GetGameInstance();
 	if (GI == nullptr) return;
@@ -29,30 +29,39 @@ void AMusicManager::BeginPlay()
 	UQuartzSubsystem* QuartzSubsystem = UQuartzSubsystem::Get(GetWorld());
 	if (QuartzSubsystem == nullptr) return;
 
-	FQuartzTimeSignature TimeSignature;
-	TimeSignature.NumBeats = 4;
-	TimeSignature.BeatType = EQuartzTimeSignatureQuantization::QuarterNote;
-
-	FQuartzClockSettings ClockSettings;
-	ClockSettings.TimeSignature = TimeSignature;
-	ClockSettings.bIgnoreLevelChange = true; // 『 May MusicManager doest need to be AActor ? or Can Move To Other Level?
-
 	const FName ClockName(TEXT("MusicManagerClock"));
-	ClockHandle = QuartzSubsystem->CreateNewClock(this, ClockName, ClockSettings, true, true);
+	if (QuartzSubsystem->DoesClockExist(this, ClockName) == true)
+	{
+		ClockHandle = QuartzSubsystem->GetHandleForClock(this, ClockName);
+	}
+	else
+	{
+		FQuartzTimeSignature TimeSignature;
+		TimeSignature.NumBeats = 4;
+		TimeSignature.BeatType = EQuartzTimeSignatureQuantization::QuarterNote;
+
+		FQuartzClockSettings ClockSettings;
+		ClockSettings.TimeSignature = TimeSignature;
+		ClockSettings.bIgnoreLevelChange = true;
+
+
+		ClockHandle = QuartzSubsystem->CreateNewClock(this, ClockName, ClockSettings, true, true);
+	}
+
+
 
 	if (ClockHandle == nullptr) return;
-
 
 	FQuartzQuantizationBoundary Boundary;
 	Boundary.Quantization = EQuartzCommandQuantization::None;
 	const float BPM = 100.f;
-	FOnQuartzCommandEventBP Delegate; 
+	SecondsPerBeat = 60.f / BPM;
+
+	FOnQuartzCommandEventBP Delegate;
 
 	ClockHandle->SetBeatsPerMinute(this, Boundary, Delegate, ClockHandle, BPM);
 
 	ClockHandle->StartClock(this, ClockHandle);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("Start2"));
 }
 
 void AMusicManager::Test1()
@@ -66,7 +75,7 @@ void AMusicManager::Test1()
 	if (Sound1 == nullptr) return;
 
 	FQuartzQuantizationBoundary Boundary;
-	Boundary.Quantization = EQuartzCommandQuantization::Bar;
+	Boundary.Quantization = EQuartzCommandQuantization::Beat;
 	Boundary.Multiplier = 1.f;
 	Boundary.CountingReferencePoint = EQuarztQuantizationReference::TransportRelative;
 
@@ -85,7 +94,7 @@ void AMusicManager::Test2()
 	if (Sound2 == nullptr) return;
 
 	FQuartzQuantizationBoundary Boundary;
-	Boundary.Quantization = EQuartzCommandQuantization::Bar;
+	Boundary.Quantization = EQuartzCommandQuantization::Beat;
 	Boundary.Multiplier = 1.f;
 	Boundary.CountingReferencePoint = EQuarztQuantizationReference::TransportRelative;
 
@@ -104,6 +113,42 @@ void AMusicManager::Test3()
 	{
 		Sound2->Stop();
 	}
+}
+
+void AMusicManager::Test4()
+{
+	PlaySound(T1Sound, ESoundType::MainTheme, 1.f, 1.f, 2.f);
+}
+
+void AMusicManager::Test5()
+{
+	PlaySound(T2Sound, ESoundType::MainTheme, 1.f, 1.f, 2.f);
+}
+
+void AMusicManager::PlaySound(USoundBase* NewSound, ESoundType SoundType, float FadeOut, float FadeIn, 
+	float FadeInStart)
+{
+	TObjectPtr<UAudioComponent>& Audio = Audios[static_cast<uint8>(SoundType)];
+
+	if (Audio)
+	{
+		Audio->FadeOut(FadeOut, 0.f); // 『 Unit : Second
+	}
+
+	if (NewSound == nullptr) return;
+
+	Audio = UGameplayStatics::CreateSound2D(this, NewSound, 1.f, 1.f, 0, nullptr, false, false);
+	if (Audio == nullptr) return;
+
+	FQuartzQuantizationBoundary Boundary;
+	Boundary.Quantization = EQuartzCommandQuantization::Beat;
+	Boundary.Multiplier = FadeInStart / SecondsPerBeat; // 『 Unit : Beat
+	Boundary.CountingReferencePoint = EQuarztQuantizationReference::TransportRelative;
+
+	FOnQuartzCommandEventBP Delegate;
+
+	Audio->PlayQuantized(this, ClockHandle, Boundary, Delegate, 0.f, FadeIn, 1.f, EAudioFaderCurve::Linear);
+	// 『 FadeIn's Unit : Second
 }
 
 

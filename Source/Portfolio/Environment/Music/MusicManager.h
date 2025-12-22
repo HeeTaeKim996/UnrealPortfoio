@@ -9,6 +9,18 @@
 
 class UQuartzClockHandle;
 
+UENUM()
+enum class ESoundType : uint8
+{
+	MainTheme,
+	Battle,
+	UI,
+
+
+	End
+};
+
+
 UCLASS()
 class PORTFOLIO_API AMusicManager : public AActor
 {
@@ -43,10 +55,32 @@ private:
 	UPROPERTY()
 	UQuartzClockHandle* ClockHandle;
 
+private:
+	// Temp
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> Sound1;
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> Sound2;
 
+
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void Test4();
+
+	UFUNCTION(BlueprintCallable)
+	void Test5();
+
+
+public:
+	void PlaySound(USoundBase* NewSound, ESoundType SoundType, float FadeOut, float FadeIn,
+		float FadeInStart);
+
+
+private:
+	UPROPERTY()
+	TArray<TObjectPtr<UAudioComponent>> Audios;
+
+	float SecondsPerBeat;
 };

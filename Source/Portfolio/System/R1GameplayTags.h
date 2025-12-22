@@ -43,6 +43,23 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_PlayerStamina);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_GE_Initializer_NoPlayerStaminable);
 
+	/* Music */
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music);
+
+	// Stem
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Layer1);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Layer2);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Layer3);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Layer4);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Cello);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Drum);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Flute);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Stem_Voices);
+
+	// Event
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Event_PrepareNext);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Music_Event_ChangeMusic);
 
 	/*-------------------
 			Ability
