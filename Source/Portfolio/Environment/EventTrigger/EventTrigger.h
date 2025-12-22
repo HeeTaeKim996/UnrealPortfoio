@@ -4,17 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TriggerInfo.h"
 #include "EventTrigger.generated.h"
 
-USTRUCT()
-struct FTriggerInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	AActor* TriggeringActor;
-	AActor* TriggerOwner;
-};
 
 
 
