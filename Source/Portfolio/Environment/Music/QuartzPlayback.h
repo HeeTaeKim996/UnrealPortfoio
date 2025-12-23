@@ -29,13 +29,11 @@ public:
 
 private:
 	UFUNCTION()
-	void OnQuantizationEvent(
-		FName ClockName,
-		EQuartzCommandQuantization QuantizationType,
-		int32 NumBars,
-		int32 Beat,
-		float BeatFraction
-	);
+	void OnQuantizationEvent(FName ClockName, EQuartzCommandQuantization QuantizationType, int32 NumBars,
+		int32 Beat, float BeatFraction);
+
+	UFUNCTION()
+	void OnAudioFinished();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
@@ -46,6 +44,6 @@ protected:
 	UQuartzClockHandle* ClockHandle;
 
 	int32 EventIndex;
-	TMap<FGameplayTag, TObjectPtr<UAudioComponent>> Audios;
+	TMap<FName, TObjectPtr<UAudioComponent>> Audios;
 	float SecondsPerBeat;
 };

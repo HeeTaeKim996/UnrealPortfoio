@@ -11,7 +11,7 @@ class AMusicPlayback;
 UENUM()
 enum class EAnnounceType
 {
-	PrepareNext,
+	MusicFinished,
 	
 };
 
@@ -44,11 +44,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void StartPlayMusic();
 	virtual void EndPlayMusic();
 
 protected:
-	void AnnouncePrepareNext();
+	void AnnounceMusicFinished();
 
 public:
 	DECLARE_DELEGATE_OneParam(FDelegate_Announce,

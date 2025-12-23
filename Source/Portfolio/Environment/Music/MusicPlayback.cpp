@@ -27,13 +27,14 @@ void AMusicPlayback::StartPlayMusic()
 
 void AMusicPlayback::EndPlayMusic()
 {
+	AnnounceMusicFinished();
 }
 
-void AMusicPlayback::AnnouncePrepareNext()
+void AMusicPlayback::AnnounceMusicFinished()
 {
 	FMusicPlaybackAnnounce PlaybackAnnounce;
 	PlaybackAnnounce.Owner = this;
-	PlaybackAnnounce.AnnounceType = EAnnounceType::PrepareNext;
+	PlaybackAnnounce.AnnounceType = EAnnounceType::MusicFinished;
 
 	Delegate_Announce.ExecuteIfBound(PlaybackAnnounce);
 }

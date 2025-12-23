@@ -25,7 +25,7 @@ struct FMusicBarEvent
 	int32 Unit = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag MusicProtocol;
+	FName Stem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USoundBase> Sound;
@@ -38,13 +38,10 @@ class PORTFOLIO_API UDataAsset_QuartzMusic : public UDataAsset
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 TotalBars = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FMusicBarEvent> Events;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FGameplayTag> Stems;
+	TArray<FName> Stems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EQuartzUnitType UnitType;
