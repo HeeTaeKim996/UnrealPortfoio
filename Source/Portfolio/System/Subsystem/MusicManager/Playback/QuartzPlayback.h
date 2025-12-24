@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Environment/Music/MusicPlayback.h"
+#include "System/Subsystem/MusicManager/Playback/MusicPlayback.h"
 #include "Data/Music/DataAsset_QuartzMusic.h"
 #include "QuartzPlayback.generated.h"
 
@@ -24,6 +24,7 @@ protected:
 
 
 public:
+	
 	virtual void StartPlayMusic() override;
 	virtual void EndPlayMusic() override;
 
@@ -35,8 +36,8 @@ private:
 	UFUNCTION()
 	void OnAudioFinished();
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UDataAsset_QuartzMusic> QuartzData;
 
 protected:

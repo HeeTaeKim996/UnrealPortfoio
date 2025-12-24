@@ -33,20 +33,21 @@ UCLASS()
 class PORTFOLIO_API AMusicPlayback : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AMusicPlayback();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void StartPlayMusic();
 	virtual void EndPlayMusic();
+
 
 protected:
 	void AnnounceMusicFinished();

@@ -1,7 +1,7 @@
 
 
 
-#include "Environment/Music/QuartzPlayback.h"
+#include "System/Subsystem/MusicManager/Playback/QuartzPlayback.h"
 #include "System/R1GameplayTags.h"
 
 #include "Quartz/QuartzSubsystem.h"
@@ -11,6 +11,7 @@
 #include "Sound/SoundWave.h"
 #include "Sound/QuartzQuantizationUtilities.h"
 #include "Components/AudioComponent.h"
+
 
 AQuartzPlayback::AQuartzPlayback()
 	: Super()
@@ -24,9 +25,6 @@ void AQuartzPlayback::BeginPlay()
 	Super::BeginPlay();
 
 	ensureAlwaysMsgf(QuartzData, TEXT("Quartz Data is Not assigned"));
-
-	
-
 }
 
 void AQuartzPlayback::StartPlayMusic()

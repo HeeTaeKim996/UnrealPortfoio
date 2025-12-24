@@ -81,6 +81,3 @@ DerivedDataCache/*
 # PCH etc.
 **/*.ipch
 **/*.pch
-
-# When LFS Budget is Limited
-Content/*

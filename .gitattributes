@@ -1,14 +1,14 @@
-# Content/**/*.uasset filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.umap   filter=lfs diff=lfs merge=lfs -text
+Content/**/*.uasset filter=lfs diff=lfs merge=lfs -text
+Content/**/*.umap   filter=lfs diff=lfs merge=lfs -text
 
-# Content/**/*.fbx filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.png filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.jpg filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.tga filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.bmp filter=lfs diff=lfs merge=lfs -text
+Content/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+Content/**/*.png filter=lfs diff=lfs merge=lfs -text
+Content/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+Content/**/*.tga filter=lfs diff=lfs merge=lfs -text
+Content/**/*.bmp filter=lfs diff=lfs merge=lfs -text
 
-# Content/**/*.wav filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+Content/**/*.wav filter=lfs diff=lfs merge=lfs -text
+Content/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
 
-# Content/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
-# Content/**/*.mov filter=lfs diff=lfs merge=lfs -text
+Content/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+Content/**/*.mov filter=lfs diff=lfs merge=lfs -text
