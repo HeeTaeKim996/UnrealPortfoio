@@ -32,9 +32,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	void TickTime(float DeltaSeconds);
 	void ApplyCurrentTimeSettings();
-	void UpdateSunRotation();
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -44,15 +42,32 @@ public:
 	void SetDesiredTime(float NewDesiredTime);
 
 protected:
+	UPROPERTY(EditAnywhere, Category = "Config")
+	bool bTimePassDefaultly = false;
 
-	UPROPERTY(EditAnywhere, Category = "Time")
-	float TimeScale = 0.001f;
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float DefaultTimeScale = 0.001f;
 
-	UPROPERTY(EditAnywhere, Category = "Time")
-	bool bTickTime = true;
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float DesiredTimeScale = 0.05f;
 
+	UPROPERTY(EditAnywhere, Category = "Config")
+	bool bUseStartTimeSet = false;
+
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float StartTime;
+
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float SunlightIntensity = 10.f;
+
+	UPROPERTY(EditAnywhere, Category = "Config")
+	float MoonlightIntensity = 0.05f;
+
+	
+
+protected:
 	UPROPERTY(EditInstanceOnly, Category = "World")
-	TObjectPtr<ADirectionalLight> SunLight;
+	TObjectPtr<ADirectionalLight> DirectionLight;
 
 	UPROPERTY(EditInstanceOnly, Category = "World")
 	TObjectPtr<ASkyLight> SkyLight;
@@ -61,11 +76,24 @@ protected:
 	TObjectPtr<AExponentialHeightFog> HeightFog;
 
 	UPROPERTY(EditInstanceOnly, Category = "World")
-	TObjectPtr<APostProcessVolume> PostProcess;
-
-	UPROPERTY(EditInstanceOnly, Category = "World")
 	TObjectPtr<ASkyAtmosphere> SkyAtmosphere;
 
+	UPROPERTY(EditInstanceOnly, Category = "World")
+	TObjectPtr<APostProcessVolume> PostProcess;
+
+protected:
+	UPROPERTY(EditInstanceOnly, Category = "Curves")
+	TObjectPtr<UCurveLinearColor> SunColorCurve;
+
+	UPROPERTY(EditInstanceOnly, Category = "Curves")
+	TObjectPtr<UCurveFloat> SkyLightIntensityCurve;
+
+	UPROPERTY(EditInstanceOnly, Category = "Curves")
+	TObjectPtr<UCurveFloat> FogDensityCurve;
+
+	UPROPERTY(EditInstanceOnly, Category = "Curves")
+	TObjectPtr<UCurveLinearColor> FogColorCurve;
+	
 protected:
 	UPROPERTY()
 	float NormalizedTime = 0.5f;
@@ -77,7 +105,7 @@ protected:
 	FVector SunRotAxis;
 
 	UPROPERTY()
-	TObjectPtr<UDirectionalLightComponent> SunLightComponent;
+	TObjectPtr<UDirectionalLightComponent> DirectionalLightComponent;
 
 	UPROPERTY()
 	TObjectPtr<USkyLightComponent> SkyLightComponent;
@@ -90,5 +118,12 @@ protected:
 
 private:
 	static const FVector NoonDir;
-	bool bUseDesiredTime = false;
+
+	enum EDesiredTimeState : uint8
+	{
+		None,
+		Today,
+		Tomorrow,
+	};
+	EDesiredTimeState DesiredTimeState = EDesiredTimeState::None;
 };

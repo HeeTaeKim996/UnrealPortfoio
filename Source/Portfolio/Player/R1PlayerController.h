@@ -66,6 +66,13 @@ public:
 	FVector GetCursorPos() { return CursorPos; }
 	UMainUserWidget* GetMainUI() { return MainUI; }
 
+	UFUNCTION(Exec)
+	void TimeOfDay_SetTime(float SetTime);
+
+	UFUNCTION(Exec)
+	void TimeOfDay_SetDesiredTime(float DesiredTime);
+
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	float ShortPressThreshold = 0.3f;

@@ -11,7 +11,7 @@
 #include "Runtime/Engine/Classes/Components/DirectionalLightComponent.h"
 #include "Runtime/Engine/Classes/Components/SkyLightComponent.h"
 #include "Runtime/Engine/Classes/Components/ExponentialHeightFogComponent.h"
-
+#include "Curves/CurveLinearColor.h"
 
 const FVector ATimeOfDay::NoonDir = FVector(0, 0, -1);
 
@@ -24,17 +24,17 @@ ATimeOfDay::ATimeOfDay()
 void ATimeOfDay::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	ensureAlwaysMsgf(SunLight && SkyLight && HeightFog && SkyAtmosphere,
+
+	ensureAlwaysMsgf(DirectionLight && SkyLight && HeightFog && SkyAtmosphere,
 		TEXT("Time Value Must be assigned"));
 
-	SunLightComponent = SunLight->GetComponent();
+	DirectionalLightComponent = DirectionLight->GetComponent();
 	SkyLightComponent = SkyLight->GetLightComponent();
 	HeightFogComponent = HeightFog->GetComponent();
 	SkyAtmosphereComponent = SkyAtmosphere->GetComponent();
 
 
-	FVector LightDir = SunLightComponent->GetDirection();
+	FVector LightDir = DirectionalLightComponent->GetDirection();
 	bool bIsAM = LightDir.X < 0;
 
 	float Cos = NoonDir.Dot(LightDir); // Prelude LightDir is Normalized Vec
@@ -47,6 +47,13 @@ void ATimeOfDay::BeginPlay()
 	SunRotAxis = bIsAM ? LightDir.Cross(NoonDir) : NoonDir.Cross(LightDir);
 	SunRotAxis.Normalize();
 
+
+	if (bUseStartTimeSet)
+	{
+		NormalizedTime = StartTime;
+		NormalizedTime = FMath::Clamp(NormalizedTime, 0.f, 1.f);
+	}
+
 	ApplyCurrentTimeSettings();
 }
 
@@ -54,63 +61,114 @@ void ATimeOfDay::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bTickTime)
+	if (DesiredTimeState != EDesiredTimeState::None)
 	{
-		TickTime(DeltaTime);
-	}
-}
+		NormalizedTime += DesiredTimeScale * DeltaTime;
 
-
-
-
-void ATimeOfDay::TickTime(float DeltaSeconds)
-{
-	if (bUseDesiredTime == true)
-	{
-		NormalizedTime += TimeScale * 50.f * DeltaSeconds;
-
-
-		float DiffTime = NormalizedTime - DesiredTime;
-		if (DiffTime < 0.5f && DiffTime > 0.01f)
+		if (DesiredTimeState == EDesiredTimeState::Tomorrow && NormalizedTime > 1.f)
 		{
-			bUseDesiredTime = false;
+			DesiredTimeState = EDesiredTimeState::Today;
+			NormalizedTime -= 1.f;
 		}
-	}
-	else if (bTickTime == true)
-	{
-		NormalizedTime += TimeScale * DeltaSeconds;
-	}
+		else if (DesiredTimeState == EDesiredTimeState::Today && NormalizedTime >= DesiredTime)
+		{
+			DesiredTimeState = EDesiredTimeState::None;
+			NormalizedTime = DesiredTime;
+		}
 
-	
+		if (NormalizedTime > 1.f)
+		{
+			NormalizedTime -= 1.f;
+		}
 
-	if (NormalizedTime > 1.f)
-	{
-		NormalizedTime -= 1.f;
+		ApplyCurrentTimeSettings();
 	}
-	else if (NormalizedTime < 0.f)
+	else if (bTimePassDefaultly == true)
 	{
-		NormalizedTime += 1.f;
-	}
+		NormalizedTime += DefaultTimeScale * DeltaTime;
 
-	ApplyCurrentTimeSettings();
+		if (NormalizedTime > 1.f)
+		{
+			NormalizedTime -= 1.f;
+		}
+
+		ApplyCurrentTimeSettings();
+	}
 }
+
+
+
 
 void ATimeOfDay::ApplyCurrentTimeSettings()
 {
-	UpdateSunRotation();
+	// Set DirectionLight Rotation
+	if (DirectionLight) 
+	{
+		if (NormalizedTime >= 0.25f && NormalizedTime <= 0.75f)
+		{
+			float Angle = (NormalizedTime - 0.5f) * 360.f;
 
-	//  TODO : Apply Other Settings
-}
+			FVector NewDirection = NoonDir.RotateAngleAxis(Angle, SunRotAxis);
+			DirectionLight->SetActorRotation(NewDirection.Rotation());
+		}
+		else
+		{
+			FVector NewDirection = NoonDir.RotateAngleAxis(0.4f, SunRotAxis);
+			DirectionLight->SetActorRotation(NewDirection.Rotation());
+		}
+	}
 
-void ATimeOfDay::UpdateSunRotation()
-{
-	if (SunLight == nullptr) return;
+
+	// Set Directional Light's Intensity and Color
+	if (DirectionalLightComponent)
+	{
+		if (NormalizedTime >= 0.25f && NormalizedTime <= 0.75f)
+		{
+			if (DirectionalLightComponent->Intensity != SunlightIntensity)
+			{
+				DirectionalLightComponent->SetIntensity(SunlightIntensity);
+			}
+		}
+		else
+		{
+			if (DirectionalLightComponent->Intensity != MoonlightIntensity)
+			{
+				DirectionalLightComponent->SetIntensity(MoonlightIntensity);
+			}
+		}
+		if (SunColorCurve)
+		{
+			DirectionalLightComponent->SetLightColor(SunColorCurve->GetLinearColorValue(NormalizedTime));
+		}
+	}
 	
-	float Angle = (NormalizedTime - 0.5f) * 360.f;
+	// Set SkyLight's Intensity
+	if (SkyLight)
+	{
+		if (SkyLightIntensityCurve)
+		{
+			SkyLightComponent->SetIntensity(SkyLightIntensityCurve->GetFloatValue(NormalizedTime));
+		}
 
-	FVector NewDirection = NoonDir.RotateAngleAxis(Angle, SunRotAxis);
-	SunLight->SetActorRotation(NewDirection.Rotation());
+
+		SkyLightComponent->RecaptureSky();
+	}
+
+	// Set Fog 
+	if (HeightFogComponent)
+	{
+		if (FogDensityCurve)
+		{
+			HeightFogComponent->SetFogDensity(FogDensityCurve->GetFloatValue(NormalizedTime));
+		}
+		
+		if (FogColorCurve)
+		{
+			HeightFogComponent->SetFogInscatteringColor(FogColorCurve->GetLinearColorValue(NormalizedTime));
+		}
+	}
 }
+
 
 
 
@@ -130,7 +188,22 @@ void ATimeOfDay::SetTime(float NewTime)
 
 void ATimeOfDay::SetDesiredTime(float NewDesiredTime)
 {
-	DesiredTime = FMath::Clamp(NewDesiredTime, 0.f, 24.f);
-	bUseDesiredTime = true;
+	DesiredTime = FMath::Clamp(NewDesiredTime, 0.f, 1.f);
+
+	if (FMath::Abs(NewDesiredTime - NormalizedTime) < 0.005f)
+	{
+		NormalizedTime = DesiredTime;
+		ApplyCurrentTimeSettings();
+		return;
+	}
+
+	if (NewDesiredTime > NormalizedTime)
+	{
+		DesiredTimeState = EDesiredTimeState::Today;
+	}
+	else if (NewDesiredTime < NormalizedTime)
+	{
+		DesiredTimeState = EDesiredTimeState::Tomorrow;
+	}
 }
 

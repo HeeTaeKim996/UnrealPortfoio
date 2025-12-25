@@ -25,6 +25,8 @@
 #include "System/Subsystem/TagContainersManager.h"
 #include "Player/R1PlayerState.h"
 #include "Structures/PlayerUpperBodyState.h"
+#include "Environment/TimeOfDay/TimeOfDay.h"
+#include "Kismet/GameplayStatics.h"
 
 AR1PlayerController::AR1PlayerController(const FObjectInitializer& objectInitializer)
 	: Super(objectInitializer)
@@ -428,6 +430,24 @@ void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag,
 	else
 	{
 		bIsFirstSkillable = false;
+	}
+}
+
+void AR1PlayerController::TimeOfDay_SetTime(float SetTime)
+{
+	ATimeOfDay* TimeOfDay = Cast<ATimeOfDay>(UGameplayStatics::GetActorOfClass(GetWorld(), ATimeOfDay::StaticClass()));
+	if (TimeOfDay)
+	{
+		TimeOfDay->SetTime(SetTime);
+	}
+}
+
+void AR1PlayerController::TimeOfDay_SetDesiredTime(float DesiredTime)
+{
+	ATimeOfDay* TimeOfDay = Cast<ATimeOfDay>(UGameplayStatics::GetActorOfClass(GetWorld(), ATimeOfDay::StaticClass()));
+	if (TimeOfDay)
+	{
+		TimeOfDay->SetDesiredTime(DesiredTime);
 	}
 }
 

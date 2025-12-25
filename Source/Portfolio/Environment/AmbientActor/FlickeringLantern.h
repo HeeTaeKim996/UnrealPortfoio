@@ -46,6 +46,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UTimelineComponent> FlickerTimeline;
 
+
 	UFUNCTION()
 	void OnSwayUpdate(float Value);
 
