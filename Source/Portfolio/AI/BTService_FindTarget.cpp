@@ -7,7 +7,7 @@
 #include "Character/R1Player.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
- 
+#include "Character/FieldMonster.h" 
 
 UBTService_FindTarget::UBTService_FindTarget()
 	: Super()
@@ -44,9 +44,15 @@ void UBTService_FindTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 			{
 				OwnerComp.GetBlackboardComponent()
 					->SetValueAsObject(TargetKey.SelectedKeyName, PlayerCharacter);
+				OwnerComp.GetBlackboardComponent()->SetValueAsFloat(ActivateTimeKey.SelectedKeyName, ActivateTime);
+
+				if (AFieldMonster* FieldMonster = Cast<AFieldMonster>(OwnerPawn))
+				{
+					FieldMonster->DoWork();
+				}
+
 
 				DrawDebugSphere(World, Location, SearchRadius, 16, FColor::Green, false, 0.2f);
-
 				return;
 			}
 		}

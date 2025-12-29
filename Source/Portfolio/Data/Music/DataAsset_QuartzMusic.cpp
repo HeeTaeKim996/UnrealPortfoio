@@ -5,6 +5,7 @@
 #include "UObject/ObjectSaveContext.h"
 
 
+#if WITH_EDITOR
 void UDataAsset_QuartzMusic::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -31,3 +32,4 @@ void UDataAsset_QuartzMusic::SortEvents()
 			return A.Unit < B.Unit;
 		});
 }
+#endif

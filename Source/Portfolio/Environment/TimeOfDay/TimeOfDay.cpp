@@ -28,7 +28,7 @@ void ATimeOfDay::BeginPlay()
 	ensureAlwaysMsgf(DirectionLight && SkyLight && HeightFog && SkyAtmosphere,
 		TEXT("Time Value Must be assigned"));
 
-	DirectionalLightComponent = DirectionLight->GetComponent();
+	DirectionalLightComponent = Cast<UDirectionalLightComponent>(DirectionLight->GetLightComponent());
 	SkyLightComponent = SkyLight->GetLightComponent();
 	HeightFogComponent = HeightFog->GetComponent();
 	SkyAtmosphereComponent = SkyAtmosphere->GetComponent();

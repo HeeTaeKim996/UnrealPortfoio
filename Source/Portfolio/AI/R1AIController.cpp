@@ -6,8 +6,8 @@
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BehaviorTree.h"
 
-AR1AIController::AR1AIController(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AR1AIController::AR1AIController()
+	: Super()
 {
 	
 }
@@ -15,11 +15,6 @@ AR1AIController::AR1AIController(const FObjectInitializer& ObjectInitializer)
 void AR1AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-}
-
-void AR1AIController::BeginPlay()
-{
-	Super::BeginPlay();
 
 	if (BlackboardAsset)
 	{
@@ -30,6 +25,14 @@ void AR1AIController::BeginPlay()
 	{
 		RunBehaviorTree(BehaviorTreeAsset);
 	}
+
+}
+
+void AR1AIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	
 
 }
 

@@ -18,6 +18,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndReason) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -42,7 +43,7 @@ protected:
 private:
 	TObjectPtr<AAmbientCrow> Crow;
 
-	FTimerHandle RoamWaitTimer;
+	FTimerHandle CrowTimerHandle;
 
 	FVector StartPos;
 	bool IsFlying = false;

@@ -52,6 +52,11 @@ void ACurveFloatObject::BeginPlay()
 		, WaitTime, false);
 }
 
+void ACurveFloatObject::EndPlay(EEndPlayReason::Type EndReason)
+{
+	GetWorld()->GetTimerManager().ClearTimer(SwayTimerHandle);
+}
+
 void ACurveFloatObject::OnCurveTimeUpdate(float Value)
 {
 	const float Roll = Value * CurveIntensity;

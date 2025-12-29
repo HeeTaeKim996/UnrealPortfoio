@@ -18,6 +18,9 @@ AFlickeringLantern::AFlickeringLantern()
 
 	FlickeringLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FlickeringLight"));
 	FlickeringLight->SetupAttachment(Root);
+
+	SwayTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SwayTimeline"));
+	FlickerTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("FlickerTimeline"));
 }
 
 void AFlickeringLantern::BeginPlay()
@@ -34,18 +37,11 @@ void AFlickeringLantern::BeginPlay()
 	FOnTimelineFloat SwayDelegate;
 	SwayDelegate.BindUFunction(this, TEXT("OnSwayUpdate")); // ¡Ø Must Concur the func name
 
-	SwayTimeline = NewObject<UTimelineComponent>(this, TEXT("SwayTimeline"));
-	SwayTimeline->RegisterComponent();
 
 	SwayTimeline->AddInterpFloat(SwayCurveFloat, SwayDelegate);
 	SwayTimeline->SetLooping(true);
 	SwayTimeline->SetPlayRate(1.f);
 
-
-
-
-	FlickerTimeline = NewObject<UTimelineComponent>(this, TEXT("FlickerTimeline"));
-	FlickerTimeline->RegisterComponent();
 
 	FOnTimelineFloat FlickerDelegate;
 	FlickerDelegate.BindUFunction(this, TEXT("OnFlickerUpdate")); // ¡Ø Must Concur The Func name
@@ -66,6 +62,28 @@ void AFlickeringLantern::BeginPlay()
 			FlickerTimeline->Play();
 
 		}, WaitTime, false);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("Begin Check"));
+}
+
+void AFlickeringLantern::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(TimerHandle);
+	}
+	if (SwayTimeline)
+	{
+		SwayTimeline->Stop();
+	}
+	if (FlickerTimeline)
+	{
+		FlickerTimeline->Stop();
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("EndPlay Check"));
 }
 
 

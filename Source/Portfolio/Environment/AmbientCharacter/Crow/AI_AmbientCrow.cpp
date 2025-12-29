@@ -23,7 +23,7 @@ void AAI_AmbientCrow::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DoRoam();
+	GetWorld()->GetTimerManager().SetTimer(CrowTimerHandle, this, &AAI_AmbientCrow::DoRoam, 0.1f, false);
 }
 
 void AAI_AmbientCrow::OnPossess(APawn* InPawn)
@@ -49,6 +49,16 @@ void AAI_AmbientCrow::OnPossess(APawn* InPawn)
 	FlyingDir = Crow->FlyDirectionArrow->GetForwardVector();
 	FlyingDir.Z = 0;
 	FlyingDir.Normalize();
+}
+
+void AAI_AmbientCrow::EndPlay(const EEndPlayReason::Type EndReason)
+{
+	Super::EndPlay(EndReason);
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(CrowTimerHandle);
+	}
 }
 
 
@@ -87,7 +97,7 @@ void AAI_AmbientCrow::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowi
 	Super::OnMoveCompleted(RequestID, Result);
 
 	const float WaitTime = FMath::FRandRange(2.f, 6.f);
-	GetWorld()->GetTimerManager().SetTimer(RoamWaitTimer, this, &AAI_AmbientCrow::DoRoam, WaitTime, false);
+	GetWorld()->GetTimerManager().SetTimer(CrowTimerHandle, this, &AAI_AmbientCrow::DoRoam, WaitTime, false);
 }
 
 void AAI_AmbientCrow::DoRoam()

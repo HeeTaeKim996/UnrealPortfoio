@@ -26,6 +26,11 @@ protected:
 	float SearchRadius = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ActivateTime = 30.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FBlackboardKeySelector TargetKey;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FBlackboardKeySelector ActivateTimeKey;
 };
