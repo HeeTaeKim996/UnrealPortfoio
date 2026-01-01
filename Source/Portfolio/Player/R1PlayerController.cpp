@@ -78,8 +78,10 @@ void AR1PlayerController::BeginPlay()
 		if (MainUI)
 		{
 			MainUI->AddToViewport();
+
 		}
 	}
+
 
 }
 
@@ -129,6 +131,10 @@ void AR1PlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ThisClass::OnDodgeKeyTriggered);
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Completed, this, &ThisClass::OnDodgeKeyReleased);
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Canceled, this, &ThisClass::OnDodgeKeyReleased);
+
+		const UInputAction* ToggleMenuAction = InputData->FindInputActionByTag(R1Tags::Input_ETC_ToggleMenu);
+		EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this,
+			&ThisClass::OnToggleMenuStarted);
 	}
 }
 
@@ -136,9 +142,16 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	TickCursorTrace();
-	ChaseTargetAndAttack();
+	if (bMenuOpen == false)
+	{
+		TickCursorTrace();
+		ChaseTargetAndAttack();
+		UpdatePlyaerRotation();
+	}
+}
 
+void AR1PlayerController::UpdatePlyaerRotation()
+{
 	if (!R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs())
 		&& R1Player->GetPlayerMotionState() == EPlayerMotionState::Split_Angle)
 	{
@@ -236,6 +249,8 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
+	DebugMessage(TEXT("R1PlayerController.cpp : InputMove"));
+
 	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs()))
 	{
 		return;
@@ -264,7 +279,7 @@ void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 
 
 
-	
+
 }
 
 void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
@@ -272,69 +287,6 @@ void AR1PlayerController::OnMoveReleased(const FInputActionValue& InputValue)
 	bMovePressed = false;
 }
 
-/*
-#if 0 // Obsolate
-void AR1PlayerController::OnWheelStarted()
-{
-	bWheelPressed = true;
-
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-
-	StopMovement(); // ※ NavigationSystem's Stop Movement
-	if (Highlighted)
-	{
-		TargetMonster = Cast<AR1Monster>(Highlighted->_getUObject());
-	}
-	else
-	{
-		TargetMonster = nullptr;
-	}
-}
-
-void AR1PlayerController::OnWheelTriggered()
-{
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-	if (TargetMonster) return; // ※ Obsolatable
-
-
-
-	cursorPushedTime += GetWorld()->GetDeltaSeconds();
-
-	if (R1Player)
-	{
-		FVector WorldDirection = CursorPos - R1Player->GetActorLocation();
-		WorldDirection.Z = 0;
-		WorldDirection.Normalize();
-
-		R1Player->AddMovementInput(WorldDirection, 1.f, false);
-		// (1) : dir, (2) : magnitude, (3) : if ture => even if (1) * (2) == 0, Make Move
-		R1Player->SetDesiredVec(WorldDirection);
-	}
-}
-
-void AR1PlayerController::OnWheelReleased()
-{
-	bWheelPressed = false;
-
-	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->CantBaseActableTags())) return;
-
-	if (cursorPushedTime <= ShortPressThreshold)
-	{
-		if (TargetMonster == nullptr)
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, CursorPos); // == NavMesh.SetDestination
-			// ※ Require NavMeshBoundVolume In Editor's Map
-
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CursorPos, FRotator::ZeroRotator,
-				FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-			// (1) : Where. Mainly this, (2) : SpawnedFX, (3) : T, (4) : R, (5) : S, (6) : bAutoDestroy, (7) : bAutoActive
-			// (8) : PoolingSystemFlag, (9) : bPreCullCheck(FromCamera)
-		}
-	}
-	cursorPushedTime = 0.f;
-}
-#endif
-*/
 
 void AR1PlayerController::OnWheelStarted()
 {
@@ -402,7 +354,7 @@ void AR1PlayerController::OnDodgeKeyTriggered()
 
 	DodgePushedTime += GetWorld()->GetDeltaSeconds();
 
-	if(DodgePushedTime > 0.5f)
+	if (DodgePushedTime > 0.5f)
 	{
 		if (R1Player->IsInState(R1Tags::Ability_Mode_Sprint) == false)
 		{
@@ -419,6 +371,24 @@ void AR1PlayerController::OnDodgeKeyReleased()
 		TagContainer.AddTagFast(R1Tags::Ability_Mode_Sprint);
 		R1Player->AbilityCancel(TagContainer);
 	}
+}
+
+void AR1PlayerController::OnToggleMenuStarted()
+{
+	if (bMenuOpen == true) return;
+
+#if 0 // Reference
+	SetInputMode(FInputModeGameOnly());
+	MainUI->CloseMenu();
+#endif
+
+	FInputModeUIOnly Mode;
+	Mode.SetWidgetToFocus(MainUI->TakeWidget());
+	SetInputMode(Mode);
+	MainUI->OpenMenu();
+
+
+	bMenuOpen = !bMenuOpen;
 }
 
 void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount)

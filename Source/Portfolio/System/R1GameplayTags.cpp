@@ -9,7 +9,7 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Wheel, "Input.Action.Wheel");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Block, "Input.Action.Block");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Dodge, "Input.Action.Dodge");
-
+	UE_DEFINE_GAMEPLAY_TAG(Input_ETC_ToggleMenu, "Input.ETC.ToggleMenu");
 
 	/*-------------------
 			Event

@@ -13,6 +13,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Wheel);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Block);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Dodge);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_ETC_ToggleMenu);
 
 	/*-------------------
 			Event

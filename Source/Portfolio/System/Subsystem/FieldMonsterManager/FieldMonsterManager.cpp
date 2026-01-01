@@ -9,14 +9,17 @@ void UFieldMonsterManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	FWorldDelegates::LevelAddedToWorld.AddUObject(this, &UFieldMonsterManager::OnLevelAdded);
+	DelegateHandle_LevelAddedToWorld = 
+		FWorldDelegates::LevelAddedToWorld.AddUObject(this, &UFieldMonsterManager::OnLevelAdded);
 
-	FWorldDelegates::LevelRemovedFromWorld.AddUObject(this, &UFieldMonsterManager::OnLevelRemoved);
+	DelegateHandle_LevelRemovedFromWorld =
+		FWorldDelegates::LevelRemovedFromWorld.AddUObject(this, &UFieldMonsterManager::OnLevelRemoved);
 }
 
 void UFieldMonsterManager::Deinitialize()
 {
-	// TODO
+	FWorldDelegates::LevelAddedToWorld.Remove(DelegateHandle_LevelAddedToWorld);
+	FWorldDelegates::LevelRemovedFromWorld.Remove(DelegateHandle_LevelRemovedFromWorld);
 
 	Super::Deinitialize();
 }
@@ -137,6 +140,3 @@ void UFieldMonsterManager::OnLeaveWork(const FName& StreamingLevelName, AFieldMo
 		FieldMonster->Sleep();
 	}
 }
-
-
-

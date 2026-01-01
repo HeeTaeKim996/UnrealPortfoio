@@ -8,6 +8,7 @@
 
 class UButton;
 class UProgressBar;
+class UCanvasPanel;
 
 /**
  * 
@@ -23,10 +24,18 @@ protected:
 	UFUNCTION()
 	void OnTestButtonClicked();
 
+	UFUNCTION()
+	void OnMenuExitButtonClicked();
+
 public:
 	void UpdatePlayerHealthBar(float Ratio);
 	void UpdatePlayerStaminaBar(float Ratio);
 	void UpdateFirstSkillCooldownBar(float Ratio);
+
+	void OpenMenu();
+
+private:
+	void CloseMenu();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -40,5 +49,14 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> FirstSkiallCooldownBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> Canvas_Panel_InGame;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> Canvas_Panel_Menu;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Button_MenuExit;
 };
 

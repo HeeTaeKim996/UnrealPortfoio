@@ -36,8 +36,12 @@ protected:
 
 
 private:
+	void UpdatePlyaerRotation();
 	void TickCursorTrace();
 	void ChaseTargetAndAttack();
+
+public:
+	void SetMenuOpenFalse() { bMenuOpen = false; } // Temp
 
 private:
 	void Input_Move(const FInputActionValue& InputValue);
@@ -58,6 +62,8 @@ private:
 	void OnDodgeKeyStarted();
 	void OnDodgeKeyTriggered();
 	void OnDodgeKeyReleased();
+
+	void OnToggleMenuStarted();
 
 public:
 	void OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount);
@@ -81,6 +87,7 @@ public:
 	TObjectPtr<UNiagaraSystem> FXCursor;
 
 private:
+	bool bMenuOpen = false;
 	FVector CursorPos;
 	float cursorPushedTime;
 	bool bWheelPressed = false;

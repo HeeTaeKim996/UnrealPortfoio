@@ -58,4 +58,8 @@ protected:
 	TMap<FName, FLevelSet> LandToStreamMap;
 
 	TSet<FName> ActiveLevelNames;
+
+private:
+	FDelegateHandle DelegateHandle_LevelAddedToWorld;
+	FDelegateHandle DelegateHandle_LevelRemovedFromWorld;
 };
