@@ -18,4 +18,7 @@ class PORTFOLIO_API UMainSaveData : public USaveGame
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString SaveDateTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TempString = TEXT("-");
 };

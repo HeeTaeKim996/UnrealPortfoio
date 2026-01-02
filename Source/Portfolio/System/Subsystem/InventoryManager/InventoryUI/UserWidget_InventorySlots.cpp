@@ -8,6 +8,8 @@
 #include "../InventoryManager.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "../Item/Drag/R1DragDropOperation.h"
+#include "../Item/ItemStructures/ItemDefines.h"
 
 #define SLOTS_X_COUNT 10
 #define SLOTS_Y_COUNT 5
@@ -28,6 +30,7 @@ UUserWidget_InventorySlots::UUserWidget_InventorySlots()
 	{
 		EntryWidgetClass = FindEntryWidgetClass.Class;
 	}
+
 }
 
 void UUserWidget_InventorySlots::NativeConstruct()
@@ -62,6 +65,56 @@ void UUserWidget_InventorySlots::NativeConstruct()
 	}
 }
 
+bool UUserWidget_InventorySlots::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
+
+	UR1DragDropOperation* DragDrop = Cast<UR1DragDropOperation>(InOperation);
+	check(DragDrop);
+
+	FVector2D MouseWidgetPos = InGeometry.AbsoluteToLocal(InDragDropEvent.GetScreenSpacePosition());
+	FVector2D ToWidgetPos = MouseWidgetPos - DragDrop->DeltaWidgetPos;
+	FIntPoint ToSlotPos = FIntPoint(ToWidgetPos.X / ITEM_SLOT_WIDTH, ToWidgetPos.Y / ITEM_SLOT_HEIGHT);
+
+	if (PrevDragOverSlotPos == ToSlotPos) return true;
+	
+	PrevDragOverSlotPos = ToSlotPos;
+
+
+	return false;
+}
+
+void UUserWidget_InventorySlots::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
+
+	FinishDrag();
+}
+
+bool UUserWidget_InventorySlots::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	FinishDrag();
+
+	UR1DragDropOperation* DragDrop = Cast<UR1DragDropOperation>(InOperation);
+	check(DragDrop);
+
+	FVector2D MouseWidgetPos = InGeometry.AbsoluteToLocal(InDragDropEvent.GetScreenSpacePosition());
+	FVector2D ToWidgetPos = MouseWidgetPos - DragDrop->DeltaWidgetPos;
+	FIntPoint ToItemSlotPos = FIntPoint(ToWidgetPos.X / ITEM_SLOT_WIDTH, ToWidgetPos.Y / ITEM_SLOT_HEIGHT);
+
+	if (DragDrop->FromItemSlotPos != ToItemSlotPos)
+	{
+		// TODO : Switch Items. Not just Setting before nullptr
+
+		OnInventoryEntryChanged(DragDrop->FromItemSlotPos, nullptr);
+		OnInventoryEntryChanged(ToItemSlotPos, DragDrop->ItemInstance);
+	}
+
+	return false;
+}
+
 void UUserWidget_InventorySlots::OnInventoryEntryChanged(const FIntPoint& ItemSlotPos, TObjectPtr<UR1ItemInstance> Item)
 {
 	int32 SlotIndex = ItemSlotPos.Y * SLOTS_X_COUNT + ItemSlotPos.X;
@@ -87,4 +140,9 @@ void UUserWidget_InventorySlots::OnInventoryEntryChanged(const FIntPoint& ItemSl
 		EntryWidget->Init(this, Item, 1);
 
 	}
+}
+
+void UUserWidget_InventorySlots::FinishDrag()
+{
+	PrevDragOverSlotPos = FIntPoint(-1, -1);
 }

@@ -4,11 +4,34 @@
 #include "System/Subsystem/SaveGame/SaveDataManager.h"
 #include "SaveData/MainSaveData.h"
 #include "Kismet/GameplayStatics.h"
+#include "SaveData/SaveDataLog.h"
+
+#define SAVE_DATAS_MAX_COUNT 10
 
 void USaveDataManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	FString MainMainSlotName = MainSlotTemplate + TEXT("Main");
+	
+	
+	if (UGameplayStatics::DoesSaveGameExist(MainMainSlotName, 0) == true)
+	{
+		CurrentMainData = Cast<UMainSaveData>(UGameplayStatics::LoadGameFromSlot(MainMainSlotName, 0));
+	}
+	else
+	{
+		CurrentMainData = Cast<UMainSaveData>(UGameplayStatics::CreateSaveGameObject(UMainSaveData::StaticClass()));
+	}
+
+	if (UGameplayStatics::DoesSaveGameExist(SaveDataLogName, 0) == true)
+	{
+		SaveDataLog = Cast<USaveDataLog>(UGameplayStatics::LoadGameFromSlot(SaveDataLogName, 0));
+	}
+	else
+	{
+		SaveDataLog = Cast<USaveDataLog>(UGameplayStatics::CreateSaveGameObject(USaveDataLog::StaticClass()));
+	}
 }
 
 USaveDataManager* USaveDataManager::Get(const UObject* WorldContext)
@@ -21,43 +44,66 @@ USaveDataManager* USaveDataManager::Get(const UObject* WorldContext)
 	return nullptr;
 }
 
-void USaveDataManager::TempSave()
+void USaveDataManager::SaveCurrent()
 {
-	const FString SlotName = TEXT("TempSave");
-	const int32 UserIndex = 0;
+	CurrentMainData->SaveDateTime = FDateTime::Now().ToString(TEXT("%Y-%m-%d__%H-%M-%S"));
 
-	UMainSaveData* SaveObject = Cast<UMainSaveData>(UGameplayStatics::CreateSaveGameObject
-	(UMainSaveData::StaticClass()));
-
-	SaveObject->SaveDateTime = FDateTime::Now().ToString(TEXT("%Y-%m-%d %H:%M:%S"));
-
-	const FString Msg = FString::Printf(TEXT("SaveDataManager.cpp : SaveDate : [%s]"), *SaveObject->SaveDateTime);
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, Msg);
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
-
-	UGameplayStatics::SaveGameToSlot(SaveObject, SlotName, UserIndex);
+	FString MainMainSlotName = MainSlotTemplate + TEXT("Main");
+	ensureAlwaysMsgf(UGameplayStatics::SaveGameToSlot(CurrentMainData, MainMainSlotName, 0), TEXT("SaveFailed. Slot Name MUST NOT CONTAINS ':'"));
 }
 
-UMainSaveData* USaveDataManager::TempLoad()
+void USaveDataManager::SaveAppendary()
 {
-	const FString SlotName = TEXT("TempSave");
-	const int32 UserIndex = 0;
+	SaveCurrent();
+
+	UMainSaveData* CurrentClone = DuplicateObject<UMainSaveData>(CurrentMainData, GetTransientPackage());
+	if (CurrentClone == nullptr) return;
+
+	TArray<FSaveSlotMeta>& Slots = SaveDataLog->Slots;
 	
-	if (UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex) == false)
+	if(Slots.Num() >= SAVE_DATAS_MAX_COUNT)
 	{
-		const FString Msg = FString::Printf(TEXT("SaveDataManager.cpp : NoDataToLoad"));
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, Msg);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+		int RemoveCount = Slots.Num() - SAVE_DATAS_MAX_COUNT + 1;
+		for (int i = 0; i < RemoveCount; i++)
+		{
+			UGameplayStatics::DeleteGameInSlot(Slots[i].SlotName, 0);
+		}
 
-		return nullptr;
+		SaveDataLog->Slots.RemoveAt(0, SaveDataLog->Slots.Num() - SAVE_DATAS_MAX_COUNT + 1);
 	}
-		
 
-	UMainSaveData* SaveData = Cast<UMainSaveData>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));
+	FSaveSlotMeta SaveSlotMeta;
+	SaveSlotMeta.SaveDateTime = FDateTime::Now().ToString(TEXT("%Y-%m-%d__%H-%M-%S"));
+	SaveSlotMeta.SlotName = MainSlotTemplate + SaveSlotMeta.SaveDateTime;
 
-	const FString Msg = FString::Printf(TEXT("SaveDataManager.cpp : LoadDate : [%s]"), *SaveData->SaveDateTime);
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, Msg);
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+	ensureAlwaysMsgf(UGameplayStatics::SaveGameToSlot(CurrentClone, SaveSlotMeta.SlotName, 0), TEXT("SaveFailed. Slot Name MUST NOT CONTAINS ':'"));
 
-	return SaveData;
+	Slots.Add(SaveSlotMeta);
+
+	ensureAlwaysMsgf(UGameplayStatics::SaveGameToSlot(SaveDataLog, SaveDataLogName, 0), TEXT("SaveFailed. Slot Name MUST NOT CONTAINS ':'"));
+}
+
+void USaveDataManager::SwitchCurrentMainData(FString SlotName)
+{
+#if 0
+	for (FSaveSlotMeta& Test : SaveDataLog->Slots)
+	{
+		if (Test.SlotName == SlotName)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, FString::Printf(TEXT("@@@@@@@@@@@@@@")));
+		}
+	}
+#endif
+
+	ensureAlwaysMsgf(UGameplayStatics::DoesSaveGameExist(SlotName, 0), TEXT("Can't Find Data"));
+
+	UMainSaveData* SwitchingData = Cast<UMainSaveData>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+	CurrentMainData = SwitchingData;
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, FString::Printf(TEXT("SaveDataManager.cpp : [%s]"), *CurrentMainData->SaveDateTime));
+}
+
+TArray<FSaveSlotMeta>& USaveDataManager::GetSaveDatas()
+{
+	return SaveDataLog->Slots;
 }

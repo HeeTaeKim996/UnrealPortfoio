@@ -28,8 +28,6 @@ void UMainUserWidget::OnTestButtonClicked()
 {
 	USaveDataManager* SaveDataManager = USaveDataManager::Get(this);
 
-	SaveDataManager->TempLoad();
-	SaveDataManager->TempSave();
 }
 
 void UMainUserWidget::OnMenuExitButtonClicked()

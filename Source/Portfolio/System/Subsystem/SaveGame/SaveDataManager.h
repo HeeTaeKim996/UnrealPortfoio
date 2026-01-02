@@ -7,6 +7,8 @@
 #include "SaveDataManager.generated.h"
 
 class UMainSaveData;
+struct FSaveSlotMeta;
+class USaveDataLog;
 
 UCLASS()
 class PORTFOLIO_API USaveDataManager : public UGameInstanceSubsystem
@@ -17,8 +19,18 @@ public:
 
 	static USaveDataManager* Get(const UObject* World);
 
+public:
+	void SaveCurrent();
+	void SaveAppendary();
+	void SwitchCurrentMainData(FString SlotName);
+	TArray<FSaveSlotMeta>& GetSaveDatas();
 
-	void TempSave();
-	UMainSaveData* TempLoad();
 
+private:
+	TObjectPtr<UMainSaveData> CurrentMainData;
+	TObjectPtr<USaveDataLog> SaveDataLog;
+
+private:
+	FString MainSlotTemplate = TEXT("Main_");
+	FString SaveDataLogName = TEXT("SaveDataLog");
 };

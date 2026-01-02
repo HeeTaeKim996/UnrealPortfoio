@@ -100,6 +100,7 @@ void UUserWidget_InventoryEntry::NativeOnDragCancelled(const FDragDropEvent& InD
 {
 	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);
 
+	RefreshWidgetOpacity(true);
 }
 
 void UUserWidget_InventoryEntry::RefreshWidgetOpacity(bool bClearVisible)
