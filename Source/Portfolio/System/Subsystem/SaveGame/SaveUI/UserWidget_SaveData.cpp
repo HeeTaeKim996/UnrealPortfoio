@@ -23,10 +23,6 @@ void UUserWidget_SaveData::NativeConstruct()
 	{
 		Button_Exit->OnClicked.AddDynamic(this, &UUserWidget_SaveData::OnExitButtonClicked);
 	}
-	if (Button_SaveCurrent)
-	{
-		Button_SaveCurrent->OnClicked.AddDynamic(this, &UUserWidget_SaveData::OnSaveCurrentButtonClicked);
-	}
 	if (Button_SaveAppendary)
 	{
 		Button_SaveAppendary->OnClicked.AddDynamic(this, &UUserWidget_SaveData::OnSaveAppendaryButtonClicked);
@@ -59,7 +55,7 @@ void UUserWidget_SaveData::UpdateListView()
 
 void UUserWidget_SaveData::OnExitButtonClicked()
 {
-	// TODO
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UUserWidget_SaveData::OnSaveCurrentButtonClicked()

@@ -35,9 +35,6 @@ private:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_SaveCurrent;
-
-	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Button_SaveAppendary;
 
 	UPROPERTY(meta = (BindWidget))

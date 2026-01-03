@@ -9,10 +9,10 @@
 class UButton;
 class UProgressBar;
 class UCanvasPanel;
+class UUserWidget_SaveData;
 
-/**
- * 
- */
+
+
 UCLASS()
 class PORTFOLIO_API UMainUserWidget : public UUserWidget
 {
@@ -22,7 +22,10 @@ protected:
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
-	void OnTestButtonClicked();
+	void OnSaveButtonClicked();
+
+	UFUNCTION()
+	void OnLoadButtonClicked();
 
 	UFUNCTION()
 	void OnMenuExitButtonClicked();
@@ -38,8 +41,7 @@ private:
 	void CloseMenu();
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> TestButton;
+
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> PlayerHpBar;
@@ -56,7 +58,19 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> Canvas_Panel_Menu;
 
+
+
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Button_Save;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Button_Load;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Button_MenuExit;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UUserWidget_SaveData> LoadWidget;
 };
 

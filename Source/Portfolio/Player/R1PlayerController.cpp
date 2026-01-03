@@ -252,8 +252,6 @@ void AR1PlayerController::ChaseTargetAndAttack()
 
 void AR1PlayerController::Input_Move(const FInputActionValue& InputValue)
 {
-	DebugMessage(TEXT("R1PlayerController.cpp : InputMove"));
-
 	if (R1Player->IsInAnyState(UTagContainersManager::Get(this)->BaseAbilityBlockTgs()))
 	{
 		return;
@@ -334,6 +332,8 @@ void AR1PlayerController::OnBlockKeyStarted()
 void AR1PlayerController::OnBlockKeyTriggered()
 {
 	R1Player->Input_Block();
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1PlayerController.cpp : Clicked Check"));
 }
 
 void AR1PlayerController::OnBlockKeyReleased()

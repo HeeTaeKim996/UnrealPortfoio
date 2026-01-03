@@ -14,6 +14,8 @@ class PORTFOLIO_API UR1UserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void NativeOnInitialized() override;
 
 
 };

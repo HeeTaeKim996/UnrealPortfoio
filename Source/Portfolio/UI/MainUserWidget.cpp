@@ -7,27 +7,41 @@
 #include "System/Subsystem/SaveGame/SaveDataManager.h"
 #include "Components/CanvasPanel.h"
 #include "Player/R1PlayerController.h"
+#include "System/Subsystem/SaveGame/SaveUI/UserWidget_SaveData.h"
 
 void UMainUserWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (TestButton)
+	if (Button_Save)
 	{
-		TestButton->OnClicked.AddDynamic(this, &UMainUserWidget::OnTestButtonClicked);
+		Button_Save->OnClicked.AddDynamic(this, &UMainUserWidget::OnSaveButtonClicked);
+	}
+	if (Button_Load)
+	{
+		Button_Load->OnClicked.AddDynamic(this, &UMainUserWidget::OnLoadButtonClicked);
 	}
 	if (Button_MenuExit)
 	{
 		Button_MenuExit->OnClicked.AddDynamic(this, &UMainUserWidget::OnMenuExitButtonClicked);
 	}
 
+	LoadWidget->SetVisibility(ESlateVisibility::Collapsed);
 	CloseMenu();
 }
 
-void UMainUserWidget::OnTestButtonClicked()
+void UMainUserWidget::OnSaveButtonClicked()
 {
 	USaveDataManager* SaveDataManager = USaveDataManager::Get(this);
+	if (SaveDataManager)
+	{
+		SaveDataManager->SaveCurrent();
+	}
+}
 
+void UMainUserWidget::OnLoadButtonClicked()
+{
+	LoadWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UMainUserWidget::OnMenuExitButtonClicked()
