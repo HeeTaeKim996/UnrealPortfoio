@@ -21,4 +21,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TempString = TEXT("-");
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector PlayerPos = FVector::Zero();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FRotator PlayerRot = FRotator::ZeroRotator;
+
 };

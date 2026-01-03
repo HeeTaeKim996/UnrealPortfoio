@@ -84,7 +84,8 @@ void AR1PlayerController::BeginPlay()
 		}
 	}
 
-
+	SetInputMode(FInputModeGameOnly());
+	SetMenuOpenFalse();
 }
 
 void AR1PlayerController::SetupInputComponent()

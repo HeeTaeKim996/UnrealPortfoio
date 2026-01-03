@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "SaveData/SaveDataLog.h"
 
+#include "Player/R1PlayerController.h"
+
 #define SAVE_DATAS_MAX_COUNT 10
 
 void USaveDataManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -47,6 +49,11 @@ USaveDataManager* USaveDataManager::Get(const UObject* WorldContext)
 void USaveDataManager::SaveCurrent()
 {
 	CurrentMainData->SaveDateTime = FDateTime::Now().ToString(TEXT("%Y-%m-%d__%H-%M-%S"));
+
+#if 1 // Temp
+	CurrentMainData->PlayerPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation(); 
+	CurrentMainData->PlayerRot = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorRotation();
+#endif
 
 	FString MainMainSlotName = MainSlotTemplate + TEXT("Main");
 	ensureAlwaysMsgf(UGameplayStatics::SaveGameToSlot(CurrentMainData, MainMainSlotName, 0), TEXT("SaveFailed. Slot Name MUST NOT CONTAINS ':'"));
@@ -101,9 +108,16 @@ void USaveDataManager::SwitchCurrentMainData(FString SlotName)
 	CurrentMainData = SwitchingData;
 
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, FString::Printf(TEXT("SaveDataManager.cpp : [%s]"), *CurrentMainData->SaveDateTime));
+
+	UGameplayStatics::OpenLevel(this, FName(TEXT("TempLevel")));
 }
 
 TArray<FSaveSlotMeta>& USaveDataManager::GetSaveDatas()
 {
 	return SaveDataLog->Slots;
+}
+
+UMainSaveData* USaveDataManager::GetCurrentData()
+{
+	return CurrentMainData;
 }

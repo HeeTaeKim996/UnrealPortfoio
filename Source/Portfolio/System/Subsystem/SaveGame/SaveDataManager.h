@@ -24,10 +24,13 @@ public:
 	void SaveAppendary();
 	void SwitchCurrentMainData(FString SlotName);
 	TArray<FSaveSlotMeta>& GetSaveDatas();
-
+	UMainSaveData* GetCurrentData();
 
 private:
+	UPROPERTY()
 	TObjectPtr<UMainSaveData> CurrentMainData;
+
+	UPROPERTY()
 	TObjectPtr<USaveDataLog> SaveDataLog;
 
 private:

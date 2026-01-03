@@ -14,5 +14,5 @@ void UMenuUserWidget::NativeOnInitialized()
 
 void UMenuUserWidget::OnContinueButtonClicked()
 {
-	UGameplayStatics::OpenLevel(this, FName(TEXT("MainLevel")));
+	UGameplayStatics::OpenLevel(this, FName(TEXT("TempLevel")));
 }
