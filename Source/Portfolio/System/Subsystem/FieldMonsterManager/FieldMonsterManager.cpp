@@ -5,6 +5,7 @@
 #include "R1Define.h"
 #include "Character/FieldMonster.h"
 
+
 void UFieldMonsterManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -28,7 +29,7 @@ UFieldMonsterManager* UFieldMonsterManager::Get(const UObject* WorldContextObjec
 {
 	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull))
 	{
-		return World->GetGameInstance()->GetSubsystem<UFieldMonsterManager>();
+		return World->GetSubsystem<UFieldMonsterManager>();
 	}
 	return nullptr;
 }
@@ -55,6 +56,7 @@ void UFieldMonsterManager::OnLevelAdded(ULevel* InLevel, UWorld* InWorld)
 
 	const FName LevelName = InLevel->GetOutermost()->GetFName();
 
+	LevelToLevelNameMap.Add(InLevel, LevelName);
 	ActiveLevelNames.Add(LevelName);
 
 	if (FStreamingMonsters* StreamingMonsters = FMonstersMap.Find(LevelName))
@@ -78,24 +80,27 @@ void UFieldMonsterManager::OnLevelRemoved(ULevel* InLevel, UWorld* InWorld)
 #endif
 
 
-	const FName LevelName = InLevel->GetOutermost()->GetFName();
+	const FName* LevelName = LevelToLevelNameMap.Find(InLevel); // ¡Ø doesn't use InLevel->GetOutermost()->GetFName. when Switching Level, OnLevelRemoved call but InLevel is Destroying.
+	if (LevelName == nullptr) return;
 
-	ActiveLevelNames.Remove(LevelName);
+	ActiveLevelNames.Remove(*LevelName);
+	LevelToLevelNameMap.Remove(InLevel);
 
-	if (FLevelSet* StreamingLevels = LandToStreamMap.Find(LevelName))
+
+	if (FLevelSet* StreamingLevels = LandToStreamMap.Find(*LevelName))
 	{
 		for (FName StreamingLevelName : StreamingLevels->Levels)
 		{
 			FMonstersMap.Remove(StreamingLevelName);
 		}
 
-		LandToStreamMap.Remove(LevelName);
+		LandToStreamMap.Remove(*LevelName);
 	}
-	else if (FStreamingMonsters* StreamingMonsters = FMonstersMap.Find(LevelName))
+	else if (FStreamingMonsters* StreamingMonsters = FMonstersMap.Find(*LevelName))
 	{
 		for (AFieldMonster* FieldMonster : StreamingMonsters->FieldMonsters)
 		{
-			if (FieldMonster->IsWorking() == false && FieldMonster->IsSleeping() == false)
+			if (FieldMonster && FieldMonster->IsWorking() == false && FieldMonster->IsSleeping() == false)
 			{
 				FieldMonster->Sleep();
 			}

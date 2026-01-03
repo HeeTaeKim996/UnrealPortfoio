@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "FieldMonsterManager.generated.h"
 
 class AFieldMonster;
@@ -27,7 +27,7 @@ struct FLevelSet
 
 
 UCLASS()
-class PORTFOLIO_API UFieldMonsterManager : public UGameInstanceSubsystem
+class PORTFOLIO_API UFieldMonsterManager : public UWorldSubsystem
 {
 	GENERATED_BODY()
 	
@@ -56,6 +56,9 @@ protected:
 
 	UPROPERTY()
 	TMap<FName, FLevelSet> LandToStreamMap;
+
+	UPROPERTY()
+	TMap<ULevel*, FName> LevelToLevelNameMap;
 
 	TSet<FName> ActiveLevelNames;
 

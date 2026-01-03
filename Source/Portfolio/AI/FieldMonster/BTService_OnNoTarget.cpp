@@ -77,6 +77,7 @@ void UBTService_OnNoTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 			const FVector Orig = BlackboardComponent->GetValueAsVector(OriginalPosKey.SelectedKeyName);
 			const float DistSq = FVector::DistSquared(Curr, Orig);
 
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("BTService_OnNoTarget.cpp ~~ "));
 			GEngine->AddOnScreenDebugMessage(
 				-1, 1.f, FColor::Cyan,
 				FString::Printf(TEXT("Curr=(%.1f, %.1f, %.1f)"), Curr.X, Curr.Y, Curr.Z));
