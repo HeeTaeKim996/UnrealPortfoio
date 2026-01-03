@@ -20,7 +20,7 @@
 #include "Character/R1Monster.h"
 
 #include "UI/MainUserWidget.h"
-#include "Data/Data_MainUserWidget.h"
+#include "Data/Data_UserWidget.h"
 #include "AbilitySystem/R1AbilitySystemComponent.h"
 #include "System/Subsystem/TagContainersManager.h"
 #include "Player/R1PlayerState.h"
@@ -66,10 +66,12 @@ void AR1PlayerController::BeginPlay()
 
 	R1Player = Cast<AR1Player>(GetPawn());
 
-	UData_MainUserWidget* Data_MainUserWidget =
-		UR1AssetManager::GetAssetByName<UData_MainUserWidget>(R1Tags::Asset_UserWidget_MainUserWidget);
+	UData_UserWidget* Data_UserWidgets =
+		UR1AssetManager::GetAssetByName<UData_UserWidget>(R1Tags::Asset_UserWidget_UserWidgets);
 
-	TSubclassOf<UUserWidget> MainUIClass = Data_MainUserWidget->MainUserWidget;
+	ensureAlwaysMsgf(Data_UserWidgets, TEXT("Data_UserWidgets is NOT assigend in PDA"));
+
+	TSubclassOf<UUserWidget> MainUIClass = Data_UserWidgets->MainUserWidgetClass;
 	// TSubclassOf : Holds Class Type.		TObjectPtr : Holds Class Instance
 
 	if (MainUIClass)

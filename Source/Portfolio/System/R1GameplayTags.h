@@ -32,7 +32,7 @@ namespace R1Tags
 		    Asset
 	--------------------*/
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_IMC_Base);
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_UserWidget_MainUserWidget);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_UserWidget_UserWidgets);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Asset_Label_Preload);
 

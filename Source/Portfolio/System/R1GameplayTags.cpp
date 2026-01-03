@@ -28,7 +28,7 @@ namespace R1Tags
 			Asset
 	--------------------*/
 	UE_DEFINE_GAMEPLAY_TAG(Asset_IMC_Base, "Asset.IMC.Base");
-	UE_DEFINE_GAMEPLAY_TAG(Asset_UserWidget_MainUserWidget, "Asset.UserWidget.MainUserWidget");
+	UE_DEFINE_GAMEPLAY_TAG(Asset_UserWidget_UserWidgets, "Asset.UserWidget.UserWidgets");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Asset_Label_Preload, "Asset.Label.Preload");
 
