@@ -25,6 +25,10 @@
 			"Name": "MeleeTrace",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SUQS",
+			"Type": "Runtime"
 		}
 	],
 	"Plugins": [
