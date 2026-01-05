@@ -208,7 +208,7 @@ public:
 
 /*
 #if 0
-/// A task is a single item of work that can be checked off, which contributes to an objective, which in turn advances a quest. 
+/// A task is a single item of work that can be checked off, which contributes to an objective, which in turn advances a quest.
 USTRUCT(BlueprintType)
 struct SUQS_API FSuqsTask
 {
@@ -218,10 +218,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Task")
 	FName Identifier;
 
-	/// Optional list of labels to associate with the task. Could be used for categorisation etc 
+	/// Optional list of labels to associate with the task. Could be used for categorisation etc
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Task")
 	TArray<FName> Labels;
-	
+
 	/// The player-visible text of the task
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Task")
 	FText Title;
@@ -251,7 +251,7 @@ public:
 	/// via ResolveTask
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Task")
 	bool bResolveAutomatically = true;
-	
+
 	/// An optional time delay so that after this task is completed / failed, this much time must pass before the
 	/// knock-on effects of that are resolved (activating next task etc)
 	/// If set to >= 0 this will override any defaults set via USuqsProgression::SetDefaultProgressionTimeDelays
@@ -266,7 +266,7 @@ public:
 
 	/// If true, overrides the usual behaviour of automatically hiding tasks when they're resolved
 	/// and if they're mandatory and sequential. Set this to true if you always want this task to
-	/// keep being displayed while the parent objective is active. 
+	/// keep being displayed while the parent objective is active.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Task")
 	bool bAlwaysVisible = false;
 
@@ -284,20 +284,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	FName Identifier;
 
-	/// The title of this objective 
+	/// The title of this objective
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	FText Title;
 
 	/// Additional description to append to the quest description when this quest is active (and uncompleted)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	FText DescriptionWhenActive;
-	
+
 	/// Additional description to append to the quest description when this quest is completed
 	/// Unlike quests, if this is blank it won't use the active description
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	FText DescriptionWhenCompleted;
 
-	/// Whether the tasks in this objective need to be completed sequentially. Default is false, since 
+	/// Whether the tasks in this objective need to be completed sequentially. Default is false, since
 	/// objectives are sequential and your tasks are often parallel, but you can change this.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	bool bSequentialTasks = false;
@@ -320,14 +320,14 @@ public:
 	/// Objectives are always still sequential but essentially depend on the previous active objective (taking into account branches)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	FName Branch;
-	
-	/// List of actual tasks that must be performed to complete this objective. 
+
+	/// List of actual tasks that must be performed to complete this objective.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Objective")
 	TArray<FSuqsTask> Tasks;
 
 	/// Attempt to get a task by its identifier
 	const FSuqsTask* FindTask(const FName& Identifier) const;
-	
+
 };
 
 /// A top-level quest. Made up of objectives which represent the multi-stage nature of a quest. Objectives are usually
@@ -351,14 +351,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	FName Identifier;
 
-	/// Optional list of labels to associate with the quest. Could be used for categorisation etc 
+	/// Optional list of labels to associate with the quest. Could be used for categorisation etc
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	TArray<FName> Labels;
 
 	/// Whether this quest is intended for the player to see, or whether it's just an internal state tracker
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	bool bPlayerVisible = true;
-	
+
 	/// Summary title of the quest
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	FText Title;
@@ -388,7 +388,7 @@ public:
 	/// List of quest identifiers which must have failed in order for this quest to be accepted
 	/// Only does something when AutoAccept is enabled. This allows you to activate quest chains based on failure.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
-	TArray<FName> PrerequisiteQuestFailures;	
+	TArray<FName> PrerequisiteQuestFailures;
 
 	/// List of quest branches which are active by default when the quest is accepted
 	/// This is equivalent to calling SetBranchActive on the quest immediately after accepting it
@@ -400,7 +400,7 @@ public:
 	/// happen when explicitly requested via ResolveQuest
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	bool bResolveAutomatically = true;
-	
+
 	/// An optional time delay so that after this quest is completed / failed, this much time must pass before the
 	/// knock-on effects of that are resolved (activating a dependent quest, removing it from the active quests)
 	/// If set to >= 0 this will override any defaults set via USuqsProgression::SetDefaultProgressionTimeDelays
@@ -412,7 +412,7 @@ public:
 	/// from the active list, or when quests that come after it are accepted, instead of immediately
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	FName ResolveGate;
-	
+
 	/// List of objectives involved in the quest. They are all sequential, and mandatory, but may be hidden to provide some branching
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Quest")
 	TArray<FSuqsObjective> Objectives;

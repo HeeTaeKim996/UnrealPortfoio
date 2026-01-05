@@ -1,8 +1,6 @@
 using UnrealBuildTool;
 using System.IO;
 
-// https://github.com/sinbad/SUQS
-
 public class SUQS : ModuleRules
 {
 	public SUQS(ReadOnlyTargetRules Target) : base(Target)

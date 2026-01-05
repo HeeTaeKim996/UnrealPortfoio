@@ -122,7 +122,7 @@ const FSuqsTask* FSuqsObjective::FindTask(const FName& Id) const
 			return &Task;
 	}
 	return nullptr;
-	
+
 }
 
 const FSuqsObjective* FSuqsQuest::FindObjective(const FName& Id) const

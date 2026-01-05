@@ -10,7 +10,6 @@
 
 class USuqsProgression;
 
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSuqsOnProgressViewChanged, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, Progress);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSuqsOnProgressViewChangedWithDiff, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, ProgressSnapshot, const FSuqsProgressViewDiff&, ProgressDiff);
 /**

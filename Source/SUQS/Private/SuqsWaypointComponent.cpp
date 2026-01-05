@@ -6,6 +6,261 @@
 #include "Net/UnrealNetwork.h"
 
 
+
+USuqsWaypointComponent::USuqsWaypointComponent()
+	: Super()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+	bIsCurrent = false;
+
+	SetIsReplicatedByDefault(true); // Doesn't need in Single play. But Reserved it from git code
+}
+
+
+
+void USuqsWaypointComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bWantsOnUpdateTransform = bRaiseMoveEvents;
+
+	Register();
+}
+
+// Called when bWantsOnUpdateTransform == true && SceneComponent's Transform Updated
+void USuqsWaypointComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	Super::OnUpdateTransform(UpdateTransformFlags, Teleport);
+
+	if (bIsCurrent && bRaiseMoveEvents)
+	{
+		OnWaypointMoved.Broadcast(this);
+	}
+}
+
+void USuqsWaypointComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	Unregister();
+}
+
+// Doesn't need in Single play
+void USuqsWaypointComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(USuqsWaypointComponent, bEnabled, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(USuqsWaypointComponent, bIsCurrent, COND_None, REPNOTIFY_Always);
+}
+
+
+
+
+
+void USuqsWaypointComponent::SetEnabled(bool bNewEnabled)
+{
+	if (bEnabled != bNewEnabled)
+	{
+		bEnabled = bNewEnabled;
+		OnIsEnabledChanged();
+	}
+}
+
+// Act for RE initialize
+void USuqsWaypointComponent::Initialise(FName InQuestID, FName InTaskID, uint8 InSequenceIndex)
+{
+	if (GetOwnerRole() == ROLE_Authority) // ※ ROLE_Authority : Server. Desont need in Single Play
+	{
+		if (InQuestID.IsNone() == false && InTaskID.IsNone() == false)
+		{
+			if (bIsRegistered)
+			{
+				Unregister();
+			}
+			QuestID = InQuestID;
+			TaskID = InTaskID;
+			SequenceIndex = InSequenceIndex;
+			Register();
+		}
+	}
+	else
+	{
+		UE_LOG(LogSUQS, Warning, TEXT("Called Waypoint component Initialise() from non-Server, ignoring"));
+	}
+}
+
+
+
+
+
+
+
+void USuqsWaypointComponent::SetIsCurrent(bool bNewIsCurrent)
+{
+	if (bIsCurrent != bNewIsCurrent)
+	{
+		bIsCurrent = bNewIsCurrent;
+		OnIsCurrentChanged();
+	}
+}
+
+
+
+
+void USuqsWaypointComponent::Register()
+{
+	if (GetOwnerRole() == ROLE_Authority && bIsRegistered == false)
+	{
+		if (QuestID.IsNone() == false && TaskID.IsNone() == false && IsValid(GetWorld()))
+		{
+			const UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+			if (IsValid(GI))
+			{
+				USuqsWaypointSubsystem* Suqs = GI->GetSubsystem<USuqsWaypointSubsystem>();
+				Suqs->RegisterWaypoint(this);
+				bIsRegistered = true;
+			}
+
+		}
+	}
+
+}
+
+void USuqsWaypointComponent::Unregister()
+{
+	if (GetOwnerRole() == ROLE_Authority && bIsRegistered == true)
+	{
+		if (IsValid(GetWorld()))
+		{
+			const UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+			if (IsValid(GI))
+			{
+				USuqsWaypointSubsystem* Suqs = GI->GetSubsystem<USuqsWaypointSubsystem>();
+				Suqs->UnregisterWaypoint(this);
+				bIsRegistered = false;
+			}
+		}
+	}
+}
+
+
+
+void USuqsWaypointComponent::OnIsCurrentChanged()
+{
+	OnWaypointIsCurrentChanged.Broadcast(this);
+}
+
+
+
+void USuqsWaypointComponent::OnIsEnabledChanged()
+{
+	OnWaypointEnabledChanged.Broadcast(this);
+}
+
+
+void USuqsWaypointComponent::OnRep_Enabled()
+{
+	OnIsEnabledChanged();
+}
+
+void USuqsWaypointComponent::OnRep_IsCurrent()
+{
+	OnIsCurrentChanged();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
 USuqsWaypointComponent::USuqsWaypointComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -24,7 +279,7 @@ void USuqsWaypointComponent::BeginPlay()
 	bWantsOnUpdateTransform = bRaiseMoveEvents;
 
 	Register();
-	
+
 }
 
 void USuqsWaypointComponent::Register()
@@ -72,7 +327,7 @@ void USuqsWaypointComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTrans
 	{
 		OnWaypointMoved.Broadcast(this);
 	}
-	
+
 }
 
 
@@ -81,7 +336,7 @@ void USuqsWaypointComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	Unregister();
-	
+
 }
 
 
@@ -92,7 +347,7 @@ void USuqsWaypointComponent::SetIsCurrent(bool bNewIsCurrent)
 	{
 		bIsCurrent = bNewIsCurrent;
 		OnIsCurrentChanged();
-		
+
 	}
 }
 
@@ -156,3 +411,5 @@ void USuqsWaypointComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME_CONDITION_NOTIFY(USuqsWaypointComponent, bEnabled, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(USuqsWaypointComponent, bIsCurrent, COND_None, REPNOTIFY_Always);
 }
+#endif
+*/
