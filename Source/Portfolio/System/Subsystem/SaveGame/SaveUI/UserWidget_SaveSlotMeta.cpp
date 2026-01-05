@@ -29,7 +29,7 @@ void UUserWidget_SaveSlotMeta::NativeOnListItemObjectSet(UObject* ListItemObject
 	}
 	if (Button_CurrentSwitch)
 	{
-		Button_CurrentSwitch->OnClicked.AddDynamic(this, &UUserWidget_SaveSlotMeta::OnCurrentSwitchButtonClicked);
+		Button_CurrentSwitch->OnClicked.AddUniqueDynamic(this, &UUserWidget_SaveSlotMeta::OnCurrentSwitchButtonClicked);
 	}
 }
 

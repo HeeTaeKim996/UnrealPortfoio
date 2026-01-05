@@ -71,7 +71,7 @@ void UBTService_OnNoTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 			BlackboardComponent->GetValueAsVector(OriginalPosKey.SelectedKeyName)) < 1600.0;
 		BlackboardComponent->SetValueAsBool(IsLeaveWorkableKey.SelectedKeyName, bIsLeaveWorkable);
 
-#if 1
+#if 0
 		{
 			const FVector Curr = OwnerPawn->GetActorLocation();
 			const FVector Orig = BlackboardComponent->GetValueAsVector(OriginalPosKey.SelectedKeyName);

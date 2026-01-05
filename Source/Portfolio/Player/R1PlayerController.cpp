@@ -84,8 +84,7 @@ void AR1PlayerController::BeginPlay()
 		}
 	}
 
-	SetInputMode(FInputModeGameOnly());
-	SetMenuOpenFalse();
+	SetInputModeGameOnly(); // Must Invoke After MainUI setted
 }
 
 void AR1PlayerController::SetupInputComponent()
@@ -145,7 +144,7 @@ void AR1PlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	if (bMenuOpen == false)
+	if (bGameOnlyMode == true)
 	{
 		TickCursorTrace();
 		ChaseTargetAndAttack();
@@ -333,7 +332,7 @@ void AR1PlayerController::OnBlockKeyTriggered()
 {
 	R1Player->Input_Block();
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1PlayerController.cpp : Clicked Check"));
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan, TEXT("R1PlayerController.cpp : Clicked Check"));
 }
 
 void AR1PlayerController::OnBlockKeyReleased()
@@ -378,20 +377,31 @@ void AR1PlayerController::OnDodgeKeyReleased()
 
 void AR1PlayerController::OnToggleMenuStarted()
 {
-	if (bMenuOpen == true) return;
+	if (bGameOnlyMode == false) return;
 
-#if 0 // Reference
-	SetInputMode(FInputModeGameOnly());
+	SetInputModeUIOnly();
+}
+
+void AR1PlayerController::SetInputModeGameOnly()
+{
+	FInputModeGameOnly Mode;
+	Mode.SetConsumeCaptureMouseDown(false);
+	SetInputMode(Mode);
+
+	bGameOnlyMode = true;
+
 	MainUI->CloseMenu();
-#endif
+}
 
+void AR1PlayerController::SetInputModeUIOnly()
+{
 	FInputModeUIOnly Mode;
 	Mode.SetWidgetToFocus(MainUI->TakeWidget());
 	SetInputMode(Mode);
+
+	bGameOnlyMode = false;
+
 	MainUI->OpenMenu();
-
-
-	bMenuOpen = !bMenuOpen;
 }
 
 void AR1PlayerController::OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount)

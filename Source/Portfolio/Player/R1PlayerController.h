@@ -41,7 +41,7 @@ private:
 	void ChaseTargetAndAttack();
 
 public:
-	void SetMenuOpenFalse() { bMenuOpen = false; } // Temp
+	void SetMenuOpenFalse() { bGameOnlyMode = false; } // Temp
 
 private:
 	void Input_Move(const FInputActionValue& InputValue);
@@ -66,6 +66,10 @@ private:
 	void OnToggleMenuStarted();
 
 public:
+	void SetInputModeGameOnly();
+	void SetInputModeUIOnly();
+
+public:
 	void OnFirstSkillTagChanged(const FGameplayTag CallbackTag, int NewCount);
 
 public:
@@ -87,7 +91,7 @@ public:
 	TObjectPtr<UNiagaraSystem> FXCursor;
 
 private:
-	bool bMenuOpen = false;
+	bool bGameOnlyMode = false;
 	FVector CursorPos;
 	float cursorPushedTime;
 	bool bWheelPressed = false;

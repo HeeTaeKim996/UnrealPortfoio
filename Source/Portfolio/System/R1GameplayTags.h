@@ -28,6 +28,7 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_GAS_KnockdownGetup);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_GAS_AttackSoundStart);
 
+
 	/*-------------------
 		    Asset
 	--------------------*/

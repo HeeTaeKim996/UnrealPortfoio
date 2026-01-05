@@ -36,12 +36,11 @@ public:
 	void UpdateFirstSkillCooldownBar(float Ratio);
 
 	void OpenMenu();
-
-private:
 	void CloseMenu();
 
 protected:
-
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> CanvasPanel_Root;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> PlayerHpBar;

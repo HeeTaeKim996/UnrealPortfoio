@@ -47,10 +47,8 @@ void UMainUserWidget::OnLoadButtonClicked()
 void UMainUserWidget::OnMenuExitButtonClicked()
 {
 	AR1PlayerController* PC = Cast<AR1PlayerController>(GetWorld()->GetFirstPlayerController());
-	PC->SetInputMode(FInputModeGameOnly());
-	PC->SetMenuOpenFalse();
 
-	CloseMenu();
+	PC->SetInputModeGameOnly();
 }
 
 void UMainUserWidget::UpdatePlayerHealthBar(float Ratio)

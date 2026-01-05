@@ -107,6 +107,7 @@ void AR1Player::BeginPlay()
 	FGameplayEffectContextHandle Context = CharacterASC->MakeEffectContext();
 	FGameplayEffectSpecHandle SpecHandle = CharacterASC->MakeOutgoingSpec(GE_InitializePlayerSet, 1.f, Context);
 	CharacterASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
 }
 
 void AR1Player::PossessedBy(AController* NewController)
@@ -391,7 +392,3 @@ void AR1Player::OnMotionNoneTagChanged(const FGameplayTag CallbackTag, int NewCo
 		MotionState = EPlayerMotionState::None;
 	}
 }
-
-
-
-

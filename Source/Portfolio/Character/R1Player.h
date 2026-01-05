@@ -125,6 +125,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> CharMovement;
 
+
 public:
 	DECLARE_DELEGATE_OneParam(FDelegate_OnBaseAttackOn,
 		FGameplayTag AbilityTag);
