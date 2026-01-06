@@ -12,6 +12,213 @@
 class USuqsObjectiveState;
 class USuqsTaskState;
 
+
+
+
+UENUM(BlueprintType)
+enum class ESuqsQuestStatus : uint8
+{
+	Incomplete = 0,
+
+	Completed = 8,
+
+	Failed = 20,
+
+	Unavailable = 30
+};
+
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true")) // Use enum's mask value as under value in editor ( under's 0, 1, 2, 4)
+enum class ESuqsResolveBarrierCondition : uint8
+{
+	None = 0 UMETA(Hidden),
+
+	Time = (1 << 0),
+
+	Gate = (1 << 1),
+
+	Explicit = (1 << 2),
+};
+
+ENUM_CLASS_FLAGS(ESuqsResolveBarrierCondition); // ¡Ø ENUM_CLASS_FLAGS : Make Bit Flag Operatable to that enum class ( used below code's int32 Conditions )
+
+USTRUCT(BlueprintType)
+struct FSuqsResolveBarrier
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, meta = (Bitmask, BitmaskEnum = "/Script/SUQS.ESuqsResolveBarrierCondition"))
+	int32 Conditions;
+
+	UPROPERTY(BlueprintReadOnly)
+	float TimeRemaining;
+
+	UPROPERTY(BlueprintReadOnly)
+	FName Gate;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bGrantedExplicitly;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bPending;
+
+	FSuqsResolveBarrier() :
+		Conditions(0),
+		TimeRemaining(0),
+		Gate(FName()),
+		bGrantedExplicitly(false),
+		bPending(false)
+	{}
+
+	FSuqsResolveBarrier(int32 InBarriers, float InTimeRemaining, const FName& InGate, bool bInGrantedExplicitly, bool bInPending) :
+		Conditions(InBarriers),
+		TimeRemaining(InTimeRemaining),
+		Gate(InGate),
+		bGrantedExplicitly(bInGrantedExplicitly),
+		bPending(bInPending)
+	{}
+
+	FSuqsResolveBarrier& operator = (const FSuqsResolveBarrierStateData& B)
+	{
+		Conditions = B.Conditions;
+		TimeRemaining = B.TimeRemaining;
+		Gate = FName(B.Gate);
+		bGrantedExplicitly = B.bGrantedExplicitly;
+		bPending = B.bPending;
+		return *this;
+	}
+
+	friend bool operator == (const FSuqsResolveBarrier & A, const FSuqsResolveBarrier & B)
+	{
+		return A.Conditions == B.Conditions &&
+			A.TimeRemaining == B.TimeRemaining &&
+			A.Gate == B.Gate &&
+			A.bGrantedExplicitly == B.bGrantedExplicitly &&
+			A.bPending == B.bPending;
+	}
+
+	friend bool operator != (const FSuqsResolveBarrier& A, const FSuqsResolveBarrier& B)
+	{
+		return (A == B) == false;
+	}
+
+	FSuqsResolveBarrier(const FSuqsResolveBarrierStateData& B)
+	{
+		*this = B;
+	}
+};
+
+
+
+
+
+UCLASS(BlueprintType)
+class SUQS_API USuqsQuestState : public UObject
+{
+	GENERATED_BODY()
+
+	friend class USuqsProgression;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
+	ESuqsQuestStatus Status = ESuqsQuestStatus::Incomplete;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
+	TArray<USuqsObjectiveState*> Objectives;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
+	TArray<FName> ActiveBranches;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
+	int CurrentObjectiveIndex = -1; // -1 Protocol Quest is completed
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
+	FSuqsResolveBarrier ResolveBarrier;
+
+	UPROPERTY()
+	TMap<FName, USuqsTaskState*> FastTaskLookup;
+
+	const FSuqsQuest* QuestDefinition;
+	TWeakObjectPtr<USuqsProgression> Progression;
+
+	bool bSuppressObjectiveChangeEvent = false;
+
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 UENUM(BlueprintType)
 enum class ESuqsQuestStatus : uint8
 {
@@ -370,3 +577,4 @@ public:
 	void FinishLoad();
 	bool IsLoading() const { return bIsLoading; }
 };
+#endif
