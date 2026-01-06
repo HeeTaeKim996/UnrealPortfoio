@@ -158,7 +158,7 @@ void ASuqsWaypointActor::UpdateWaypointWidget_Implementation(bool bVisible) cons
 
 
 
-
+/*
 #if 0
 ASuqsWaypointActorBase::ASuqsWaypointActorBase()
 {
@@ -207,3 +207,4 @@ void ASuqsWaypointActor::UpdateWaypointWidget_Implementation(bool bVisible) cons
 	VisualWidget->SetVisibility(bVisible);
 }
 #endif
+*/

@@ -19,10 +19,342 @@ void USuqsTaskState::Initialise(const FSuqsTask* TaskDef, USuqsObjectiveState* O
 
 void USuqsTaskState::Tick(float DeltaTime)
 {
+	if (bHidden == false && IsIncomplete() && IsTimeLimited() && TimeRemaining > 0)
+	{
+		SetTimeRemaining(TimeRemaining - DeltaTime);
+	}
+
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Time))
+	{
+		ResolveBarrier.TimeRemaining = FMath::Max(ResolveBarrier.TimeRemaining - DeltaTime, 0.f);
+		MaybeNotifyParentStatusChange();
+	}
+}
+
+void USuqsTaskState::ChangeStatus(ESuqsTaskStatus NewStatus, bool bIgnoreResolveBarriers)
+{
+	if (Status == NewStatus) return;
+
+	Status = NewStatus;
+
+	switch (NewStatus)
+	{
+	case ESuqsTaskStatus::Completed:
+		Progression->RaiseTaskCompleted(this);
+		break;
+	case ESuqsTaskStatus::Failed:
+		Progression->RaiseTaskFailed(this);
+		break;
+	default:
+		Progression->RaiseTaskUpdated(this);
+		break;
+	}
+
+	QueueParentStatusChangeNotification(bIgnoreResolveBarriers);
+}
+
+
+void USuqsTaskState::QueueParentStatusChangeNotification(bool bIgnoreBarriers)
+{
+	if (bIgnoreBarriers)
+	{
+		ResolveBarrier = FSuqsResolveBarrier();
+		ResolveBarrier.bPending = true;
+	}
+	else
+	{
+		ResolveBarrier = Progression->GetResolveBarrierForTask(TaskDefinition, Status);
+	}
+
+	MaybeNotifyParentStatusChange();
+}
+
+bool USuqsTaskState::IsResolveBlockedOn(ESuqsResolveBarrierCondition Barrier) const
+{
+	return ResolveBarrier.bPending && (ResolveBarrier.Conditions & static_cast<uint32>(Barrier)) > 0;
+}
+
+void USuqsTaskState::MaybeNotifyParentStatusChange()
+{
+	if (ResolveBarrier.bPending == false) return;
+
+	bool bCleared = true;
+
+	if (
+		(IsResolveBlockedOn(ESuqsResolveBarrierCondition::Time) && ResolveBarrier.TimeRemaining > 0)
+		||
+		(IsResolveBlockedOn(ESuqsResolveBarrierCondition::Gate) && Progression->IsGateOpen(ResolveBarrier.Gate) == false)
+		)
+	{
+		bCleared = false;
+	}
+
+
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Explicit))
+	{
+		bCleared = ResolveBarrier.bGrantedExplicitly;
+	}
+
+	if (bCleared)
+	{
+		ResolveBarrier.bPending = false;
+		ParentObjective->NotifyTaskStatusChanged(this);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+FText USuqsTaskState::GetTitle() const
+{
+	if (bTitleNeedsFormatting)
+	{
+		return GetRootProgression()->FormatTaskText(GetParentObjective()->GetParentQuest()->GetIdentifier(), GetIdentifier(), TaskDefinition->Title);
+	}
+	else
+	{
+		return TaskDefinition->Title;
+	}
+}
+
+void USuqsTaskState::Fail(bool bIgnoreResolveBarriers)
+{
+	ChangeStatus(ESuqsTaskStatus::Failed, bIgnoreResolveBarriers);
+}
+
+bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
+{
+	// Already completed
+	if (Status == ESuqsTaskStatus::Completed) return true;
+
+
+	// Skip validation when loading ( loading means reimplementing task from saved data )
+	if (ParentObjective->GetParentQuest()->IsLoading() == false)
+	{
+		if (ParentObjective->GetParentQuest()->GetCurrentObjective() != ParentObjective)
+		{
+			UE_LOG(LogSUQS, Verbose, TEXT("Tried to complete task [%s] but parent objective [%s] is not current, ignoring"),
+				*GetIdentifier().ToString(), *ParentObjective->GetIdentifier().ToString())
+				return false;
+		}
+		if (ParentObjective->AreTasksSequential())
+		{
+			if (IsMandatory() && ParentObjective->GetNextMandatoryTask() != this)
+			{
+				UE_LOG(LogSUQS, Warning, TEXT("Tried to complete mandatory task [%s] out of order, ignoring"), *GetIdentifier().ToString())
+					return false;
+			}
+		}
+	}
+	Number = TaskDefinition->TargetNumber;
+	ChangeStatus(ESuqsTaskStatus::Completed, bIgnoreResolveBarriers);
+
+
+	return true;
+}
+
+
+
+void USuqsTaskState::Resolve()
+{
+
+}
+
+int USuqsTaskState::Progress(int Delta)
+{
+
+}
+
+
+void USuqsTaskState::SetNumber(int N)
+{
+
+}
+
+void USuqsTaskState::SetTimeRemaining(float T)
+{
+
+}
+
+void USuqsTaskState::SetResolveBarrier(const FSuqsResolveBarrier& Barrier)
+{
+
+}
+
+
+
+
+int USuqsTaskState::GetNumberOutstanding() const
+{
+
+}
+
+bool USuqsTaskState::IsRelevant() const
+{
+
+}
+
+void USuqsTaskState::Reset()
+{
+
+}
+
+bool USuqsTaskState::IsResolveBlocked() const
+{
+
+}
+
+void USuqsTaskState::NotifyGateOpened(const FName& GateName)
+{
+
+}
+
+bool USuqsTaskState::IsHiddenOnCompleteOrFail() const
+{
+
+}
+
+
+
+USuqsWaypointComponent* USuqsTaskState::GetWaypoint(bool bOnlyEnabled)
+{
+
+}
+
+TArray<USuqsWaypointComponent*> USuqsTaskState::GetWaypoints(bool bOnlyEnabled)
+{
+
+
+}
+
+void USuqsTaskState::FinishLoad()
+{
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+void USuqsTaskState::Initialise(const FSuqsTask* TaskDef, USuqsObjectiveState* ObjState, USuqsProgression* Root)
+{
+	TaskDefinition = TaskDef;
+	ParentObjective = ObjState;
+	Progression = Root;
+
+	bTitleNeedsFormatting = USuqsProgression::GetTextNeedsFormatting(TaskDef->Title);
+
+	Reset();
+}
+
+void USuqsTaskState::Tick(float DeltaTime)
+{
 	// Don't reduce time when task is hidden (e.g. not the next in sequence)
 	// Also not when also completed / failed
 	if (!bHidden &&
-		IsIncomplete() && 
+		IsIncomplete() &&
 		IsTimeLimited() &&
 		TimeRemaining > 0)
 	{
@@ -40,8 +372,8 @@ FText USuqsTaskState::GetTitle() const
 {
 	if (bTitleNeedsFormatting)
 		return GetRootProgression()->FormatTaskText(GetParentObjective()->GetParentQuest()->GetIdentifier(),
-													 GetIdentifier(),
-													 TaskDefinition->Title);
+			GetIdentifier(),
+			TaskDefinition->Title);
 	else
 		return TaskDefinition->Title;
 }
@@ -50,8 +382,8 @@ void USuqsTaskState::SetTimeRemaining(float T)
 {
 	const float PrevTime = TimeRemaining;
 	// Clamp to 0, but allow higher than taskdef time limit if desired
-    TimeRemaining = std::max(0.f, T);
-		
+	TimeRemaining = std::max(0.f, T);
+
 	if (IsTimeLimited() && TimeRemaining < PrevTime)
 	{
 		Progression->RaiseTaskUpdated(this);
@@ -67,7 +399,7 @@ void USuqsTaskState::SetTimeRemaining(float T)
 				Fail();
 			}
 		}
-	}	
+	}
 }
 
 void USuqsTaskState::SetResolveBarrier(const FSuqsResolveBarrier& Barrier)
@@ -83,9 +415,9 @@ void USuqsTaskState::ChangeStatus(ESuqsTaskStatus NewStatus, bool bIgnoreResolve
 	{
 		Status = NewStatus;
 
-		switch(NewStatus)
+		switch (NewStatus)
 		{
-		case ESuqsTaskStatus::Completed: 
+		case ESuqsTaskStatus::Completed:
 			Progression->RaiseTaskCompleted(this);
 			break;
 		case ESuqsTaskStatus::Failed:
@@ -114,13 +446,13 @@ void USuqsTaskState::QueueParentStatusChangeNotification(bool bIgnoreBarriers)
 	}
 
 	MaybeNotifyParentStatusChange();
-	
+
 }
 
 bool USuqsTaskState::IsResolveBlockedOn(ESuqsResolveBarrierCondition Barrier) const
 {
 	return ResolveBarrier.bPending &&
-	   (ResolveBarrier.Conditions & static_cast<uint32>(Barrier)) > 0;
+		(ResolveBarrier.Conditions & static_cast<uint32>(Barrier)) > 0;
 }
 
 void USuqsTaskState::MaybeNotifyParentStatusChange()
@@ -151,7 +483,7 @@ void USuqsTaskState::MaybeNotifyParentStatusChange()
 	{
 		bCleared = ResolveBarrier.bGrantedExplicitly;
 	}
-	
+
 	if (bCleared)
 	{
 		ResolveBarrier.bPending = false;
@@ -176,7 +508,7 @@ bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
 			{
 				UE_LOG(LogSUQS, Verbose, TEXT("Tried to complete task %s but parent objective %s is not current, ignoring"),
 					*GetIdentifier().ToString(), *ParentObjective->GetIdentifier().ToString())
-				return false;
+					return false;
 			}
 			if (ParentObjective->AreTasksSequential())
 			{
@@ -184,10 +516,10 @@ bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
 				if (IsMandatory() && ParentObjective->GetNextMandatoryTask() != this)
 				{
 					UE_LOG(LogSUQS, Warning, TEXT("Tried to complete mandatory task %s out of order, ignoring"), *GetIdentifier().ToString())
-					return false;
+						return false;
 				}
 			}
-		}		
+		}
 		Number = TaskDefinition->TargetNumber;
 		ChangeStatus(ESuqsTaskStatus::Completed, bIgnoreResolveBarriers);
 	}
@@ -223,9 +555,9 @@ void USuqsTaskState::SetNumber(int N)
 			Complete();
 		else
 			ChangeStatus(Number > 0 ? ESuqsTaskStatus::InProgress : ESuqsTaskStatus::NotStarted);
-		
+
 	}
-	
+
 }
 
 int USuqsTaskState::GetNumberOutstanding() const
@@ -327,5 +659,6 @@ void USuqsTaskState::FinishLoad()
 	}
 
 	// Also need to determine if the title needs formatting, since Initialise() is not called
-	bTitleNeedsFormatting = USuqsProgression::GetTextNeedsFormatting(TaskDefinition->Title); 
+	bTitleNeedsFormatting = USuqsProgression::GetTextNeedsFormatting(TaskDefinition->Title);
 }
+#endif

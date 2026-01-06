@@ -7,6 +7,230 @@
 #include "SuqsTaskState.generated.h"
 
 class USuqsWaypointComponent;
+
+
+UENUM(BlueprintType)
+enum class ESuqsTaskStatus : uint8
+{
+	NotStarted = 0,
+
+	InProgress = 4,
+
+	Completed = 8,
+
+	Failed = 20
+};
+
+
+UCLASS(BlueprintType)
+class SUQS_API USuqsTaskState : public UObject
+{
+	GENERATED_BODY()
+
+	friend class USuqsObjectiveState;
+
+protected:
+	void Initialise(const FSuqsTask* TaskDef, USuqsObjectiveState* ObjState, USuqsProgression* Root);
+	void Tick(float DeltaTime);
+	void ChangeStatus(ESuqsTaskStatus NewStatus, bool bIgnoreResolveBarriers = false);
+	void QueueParentStatusChangeNotification(bool bIgnoreBarriers);
+	bool IsResolveBlockedOn(ESuqsResolveBarrierCondition Barrier) const;
+	void MaybeNotifyParentStatusChange();
+
+public:
+	int GetNumber() const { return Number; }
+	float GetTimeRemaining() const { return TimeRemaining; }
+	ESuqsTaskStatus GetStatus() const { return Status; }
+	bool GetHidden() const { return bHidden; }
+	const FSuqsResolveBarrier& GetResolveBarrier() const { return ResolveBarrier; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FName& GetIdentifier() const { return TaskDefinition->Identifier; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsMandatory() const { return TaskDefinition->bMandatory; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsTimeLimited() const { return TaskDefinition->TimeLimit > 0; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetTimeLimit() const { return TaskDefinition->TimeLimit; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FText GetTitle() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetTargetNumber() const { return TaskDefinition->TargetNumber; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool HasTargetNumber() const { return GetTargetNumber() > 1; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsObjectiveState* GetParentObjective() const { return ParentObjective.Get(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsProgression* GetRootProgression() const { return Progression.Get(); }
+
+	UFUNCTION(BlueprintCallable)
+	void Fail(bool bIgnoreResolveBarriers = false);
+
+	UFUNCTION(BlueprintCallable)
+	bool Complete(bool bIgnoreResolveBarriers = false);
+
+	UFUNCTION(BlueprintCallable)
+	void Resolve();
+
+	UFUNCTION(BlueprintCallable)
+	int Progress(int Delta);
+
+	UFUNCTION(BlueprintCallable)
+	void SetNumber(int N);
+
+	UFUNCTION(BlueprintCallable)
+	void SetTimeRemaining(float T);
+
+	UFUNCTION(BlueprintCallable)
+	void SetResolveBarrier(const FSuqsResolveBarrier& Barrier);
+
+	UFUNCTION(BlueprintCallable)
+	int GetNumberOutstanding() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsIncomplete() const { return Status != ESuqsTaskStatus::Completed && Status != ESuqsTaskStatus::Failed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCompleted() const { return Status == ESuqsTaskStatus::Completed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsFailed() const { return Status == ESuqsTaskStatus::Failed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsRelevant() const;
+
+	UFUNCTION(BlueprintCallable)
+	void Reset();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsResolveBlocked() const;
+
+	void NotifyGateOpened(const FName& GateName);
+
+	bool IsHiddenOnCompleteOrFail() const;
+
+	UFUNCTION(BlueprintCallable)
+	USuqsWaypointComponent* GetWaypoint(bool bOnlyEnabled = true);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<USuqsWaypointComponent*> GetWaypoints(bool bOnlyEnabled = true);
+
+	void FinishLoad();
+
+
+	protected:
+		UPROPERTY(BlueprintReadOnly, Category = "Task State")
+		int Number;
+
+		UPROPERTY(BlueprintReadOnly, Category = "Task State")
+		float TimeRemaining = 0;
+
+		UPROPERTY(BlueprintReadOnly, Category = "Task State")
+		ESuqsTaskStatus Status = ESuqsTaskStatus::NotStarted;
+
+		UPROPERTY(BlueprintReadOnly, Category = "Task State")
+		bool bHidden;
+
+		UPROPERTY(BlueprintReadOnly, Category = "Task State")
+		FSuqsResolveBarrier ResolveBarrier;
+
+		const FSuqsTask* TaskDefinition;
+		TWeakObjectPtr<USuqsObjectiveState> ParentObjective;
+		TWeakObjectPtr<USuqsProgression> Progression;
+
+		bool bTitleNeedsFormatting;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
 UENUM(BlueprintType)
 enum class ESuqsTaskStatus : uint8
 {
@@ -21,9 +245,9 @@ enum class ESuqsTaskStatus : uint8
 };
 
 
-/**
- * Record of the state of a task in a quest objective
- */
+//*
+// * Record of the state of a task in a quest objective
+// 
 UCLASS(BlueprintType)
 class SUQS_API USuqsTaskState : public UObject
 {
@@ -104,21 +328,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool Complete(bool bIgnoreResolveBarriers = false);
 
-	/**
-	 * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
-	 * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
-	 * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
-	 * Has no effect on tasks which are incomplete.
-	 * @returns Whether the task was successfully resolved
-	 */
+	//*
+	// * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
+	// * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
+	// * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
+	// * Has no effect on tasks which are incomplete.
+	// * @returns Whether the task was successfully resolved
+	// 
 	UFUNCTION(BlueprintCallable)
 	void Resolve();
 
-	/**
-	 * Advance the number associated with progress on this quest. If it reaches the target number or more, it will automatically complete
-	 * @param Delta The number to change the progress by
-	 * @return The number of things outstanding after the delta was applied
-	 */
+	//*
+	// * Advance the number associated with progress on this quest. If it reaches the target number or more, it will automatically complete
+	// * @param Delta The number to change the progress by
+	// * @return The number of things outstanding after the delta was applied
+	// 
 	UFUNCTION(BlueprintCallable)
 	int Progress(int Delta);
 
@@ -165,24 +389,26 @@ public:
 	bool IsResolveBlocked() const;
 	
 	void NotifyGateOpened(const FName& GateName);
-	/**
-	 * Return whether this task will become hidden on completion/failure or not. Reasons not to are that it's optional
-	 * or the tasks are non-sequential, so stick around until the objective is completed/failed
-	 */
+	//*
+	// * Return whether this task will become hidden on completion/failure or not. Reasons not to are that it's optional
+	// * or the tasks are non-sequential, so stick around until the objective is completed/failed
+	// 
 	bool IsHiddenOnCompleteOrFail() const;
 
-	/**
-	 * @brief Get the first/next waypoint associated with this task
-	 * @param bOnlyEnabled Only report enabled waypoints
-	 */
+	//*
+	// * @brief Get the first/next waypoint associated with this task
+	// * @param bOnlyEnabled Only report enabled waypoints
+	// 
 	UFUNCTION(BlueprintCallable)
 	USuqsWaypointComponent* GetWaypoint(bool bOnlyEnabled = true);
 
-	/**
-	 * @brief Get all world waypoint components associated with this task
-	 * @param bOnlyEnabled Only report enabled waypoints
-	 */
+	//*
+	// * @brief Get all world waypoint components associated with this task
+	// * @param bOnlyEnabled Only report enabled waypoints
+	// 
 	UFUNCTION(BlueprintCallable)
 	TArray<USuqsWaypointComponent*> GetWaypoints(bool bOnlyEnabled = true);
 	void FinishLoad();
 };
+#endif
+*/
