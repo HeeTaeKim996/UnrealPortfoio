@@ -7,6 +7,207 @@
 #include "SuqsObjectiveState.generated.h"
 
 
+
+
+
+
+UENUM(BlueprintType)
+enum class ESuqsObjectiveStatus : uint8
+{
+	NotStarted = 0,
+
+	InProgress = 4,
+
+	Completed = 8,
+
+	Failed = 20
+};
+
+UCLASS(BlueprintType)
+class SUQS_API USuqsObjectiveState : public UObject
+{
+	GENERATED_BODY()
+
+	friend class USuqsQuestState;
+	
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Objective Status")
+	ESuqsObjectiveStatus Status = ESuqsObjectiveStatus::NotStarted;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Objective Status")
+	TArray<USuqsTaskState*> Tasks;
+
+	const FSuqsObjective* ObjectiveDefinition;
+	TWeakObjectPtr<USuqsQuestState> ParentQuest;
+	TWeakObjectPtr<USuqsProgression> Progression;
+
+	int MandatoryTasksNeededToComplete;
+
+	void Initialise(const FSuqsObjective* ObjDef, USuqsQuestState* QuestState, USuqsProgression* Root);
+	void Tick(float DeltaTime);
+	void ChangeStatus(ESuqsObjectiveStatus NewStatus);
+	
+public:
+	ESuqsObjectiveStatus GetStatus() const { return Status; }
+	const TArray<USuqsTaskState*>& GetTasks() { return Tasks; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FName& GetIdentifier() const { return ObjectiveDefinition->Identifier; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FText& GetTitle() const { return ObjectiveDefinition->Title; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsQuestState* GetParentQuest() const { return ParentQuest.Get(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsProgression* GetRootProgression() const { return Progression.Get(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FName& GetBranch() const { return ObjectiveDefinition->Branch; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool AreTasksSequential() const { return ObjectiveDefinition->bSequentialTasks; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool AreAllMandatoryTasksRequired() const { return ObjectiveDefinition->NumberOfMandatoryTasksRequired == -1; }
+	// return false means all Tasks doesnt need to be finished for Objective's finish
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int NumberOfMandatoryTasksRequired() const { return MandatoryTasksNeededToComplete; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool GetContinueOnFail() { return ObjectiveDefinition->bContinueOnFail; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FText& GetDescription() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsIncomplete() const { return Status != ESuqsObjectiveStatus::Completed && Status != ESuqsObjectiveStatus::Failed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCompleted() const { return Status == ESuqsObjectiveStatus::Completed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsFailed() const { return Status == ESuqsObjectiveStatus::Failed; }
+
+	UFUNCTION(BlueprintCallable)
+	void Reset();
+
+	UFUNCTION(BlueprintCallable)
+	void FailOutstandingTasks();
+
+	void CompleteAllMandatoryTasks();
+
+	UFUNCTION(BlueprintCallable)
+	USuqsTaskState* GetNextMandatoryTask() const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetAllRelevantTasks(TArray<USuqsTaskState*>& RelevantTasksOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetIncompleteTasks(TArray<USuqsTaskState*>& IncompleteTasksOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetCompletedTasks(TArray<USuqsTaskState*>& CompletedTasksOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetFailedTasks(TArray<USuqsTaskState*>& FailedTasksOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOnActiveBranch() const;
+
+	void NotifyTaskStatusChanged(const USuqsTaskState* ChangedTaskOrNull);
+	void NotifyGateOpened(const FName& GateName);
+	void FinishLoad();
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
 UENUM(BlueprintType)
 enum class ESuqsObjectiveStatus : uint8
 {
@@ -20,9 +221,9 @@ enum class ESuqsObjectiveStatus : uint8
     Failed = 20
 };
 
-/**
- * Objective state
- */
+//*
+// * Objective state
+// 
 UCLASS(BlueprintType)
 class SUQS_API USuqsObjectiveState : public UObject
 {
@@ -133,3 +334,5 @@ public:
 	void NotifyGateOpened(const FName& GateName);
 	void FinishLoad();
 };
+#endif
+*/

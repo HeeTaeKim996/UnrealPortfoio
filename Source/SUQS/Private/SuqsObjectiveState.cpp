@@ -2,6 +2,396 @@
 #include "SuqsProgression.h"
 #include "SuqsTaskState.h"
 
+
+void USuqsObjectiveState::Initialise(const FSuqsObjective* ObjDef, USuqsQuestState* QuestState, USuqsProgression* Root)
+{
+	ObjectiveDefinition = ObjDef;
+	ParentQuest = QuestState;
+	Progression = Root;
+
+	Status = ESuqsObjectiveStatus::NotStarted;
+	MandatoryTasksNeededToComplete = AreAllMandatoryTasksRequired() ? 0 : ObjDef->NumberOfMandatoryTasksRequired; // 0 is For ++ (Under Code)
+
+	for (const FSuqsTask& TaskDef : ObjDef->Tasks)
+	{
+		USuqsTaskState* Task = NewObject<USuqsTaskState>(GetOuter()); // ¡Ø GetOuter : This Instance's Resides in Object
+		Task->Initialise(&TaskDef, this, Root);
+		Tasks.Add(Task);
+
+		if (AreAllMandatoryTasksRequired() && TaskDef.bMandatory)
+		{
+			++MandatoryTasksNeededToComplete;
+		}
+	}
+
+	NotifyTaskStatusChanged(nullptr);
+}
+
+void USuqsObjectiveState::FinishLoad()
+{
+	for (USuqsTaskState* const T : Tasks)
+	{
+		T->FinishLoad();
+	}
+
+	NotifyTaskStatusChanged(nullptr);
+}
+
+void USuqsObjectiveState::Tick(float DeltaTime)
+{
+	for (USuqsTaskState* const T : Tasks)
+	{
+		T->Tick(DeltaTime);
+	}
+}
+
+
+const FText& USuqsObjectiveState::GetDescription() const
+{
+	switch (Status)
+	{
+	case ESuqsObjectiveStatus::NotStarted:
+	case ESuqsObjectiveStatus::InProgress:
+	case ESuqsObjectiveStatus::Failed:
+	default:
+		return ObjectiveDefinition->DescriptionWhenActive;
+		
+	case ESuqsObjectiveStatus::Completed:
+		return ObjectiveDefinition->DescriptionWhenCompleted;
+	}
+}
+
+void USuqsObjectiveState::Reset()
+{
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		Task->Reset();
+	}
+}
+
+void USuqsObjectiveState::FailOutstandingTasks()
+{
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->IsIncomplete() && Task->bHidden == false)
+		{
+			// Don;t wait to resolve
+			Task->Fail(true);
+		}
+	}
+}
+
+void USuqsObjectiveState::CompleteAllMandatoryTasks()
+{
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->IsMandatory())
+		{
+			Task->Complete(true);
+			if (AreAllMandatoryTasksRequired() == false)
+			{
+				break;
+			}
+		}
+	}
+}
+
+USuqsTaskState* USuqsObjectiveState::GetNextMandatoryTask() const
+{
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->IsIncomplete() && Task->IsMandatory())
+		{
+			return Task;
+		}
+	}
+	
+	return nullptr;
+}
+
+void USuqsObjectiveState::GetAllRelevantTasks(TArray<USuqsTaskState*>& RelevantTasksOut) const
+{
+	RelevantTasksOut.Empty();
+
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->bHidden == false)
+		{
+			RelevantTasksOut.Add(Task);
+		}
+	}
+}
+
+
+void USuqsObjectiveState::GetIncompleteTasks(TArray<USuqsTaskState*>& IncompleteTasksOut) const
+{
+	IncompleteTasksOut.Empty();
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->IsIncomplete())
+		{
+			IncompleteTasksOut.Add(Task);
+		}
+	}
+
+
+}
+
+void USuqsObjectiveState::GetCompletedTasks(TArray<USuqsTaskState*>& CompletedTasksOut) const
+{
+	CompletedTasksOut.Empty();
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->GetStatus() == ESuqsTaskStatus::Completed)
+		{
+			CompletedTasksOut.Add(Task);
+		}
+	}
+
+}
+
+void USuqsObjectiveState::GetFailedTasks(TArray<USuqsTaskState*>& FailedTasksOut) const
+{
+	FailedTasksOut.Empty();
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		if (Task->GetStatus() == ESuqsTaskStatus::Failed)
+		{
+			FailedTasksOut.Add(Task);
+		}
+	}
+}
+
+bool USuqsObjectiveState::IsOnActiveBranch() const
+{
+	return ParentQuest->IsBranchActive(GetBranch());
+}
+
+void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedTaskOrNull)
+{
+	// Re-scan our tasks and decide what this means for our own state
+	int MandatoryTasksFailed = 0;
+	int MandatoryTasksComplete = 0;
+	int IncompleteMandatoryTasks = 0;
+
+
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		const bool bPreviouslyHidden = Task->bHidden;
+		
+		Task->bHidden = false;
+		if (Task->IsMandatory())
+		{
+			switch (Task->Status)
+			{
+			case ESuqsTaskStatus::Completed:
+				if (Task->GetResolveBarrier().bPending == false)
+				{
+					++MandatoryTasksComplete;
+				}
+				if (Task->IsHiddenOnCompleteOrFail())
+				{
+					Task->bHidden = true;
+				}
+				break;
+
+			case ESuqsTaskStatus::Failed:
+				++MandatoryTasksFailed;
+				if (Task->IsHiddenOnCompleteOrFail())
+				{
+					Task->bHidden = true;
+				}
+				break;
+
+			case ESuqsTaskStatus::NotStarted:
+			case ESuqsTaskStatus::InProgress:
+				if (ObjectiveDefinition->bSequentialTasks &&
+					(IncompleteMandatoryTasks > 0 || MandatoryTasksFailed > 0))
+				{
+					// If tasks are sequential, and either there have been incomplete mendatory tasks before,
+					// or a failed mendatory task before, this task should be hidden because it's not actionable
+					Task->bHidden = true;
+				}
+				++IncompleteMandatoryTasks;
+				break;
+
+			default:
+				break;
+			}
+		}
+		if (bPreviouslyHidden != Task->bHidden)
+		{
+			if (Task->bHidden)
+			{
+				// This task was hidden during this update
+				if (Progression.IsValid())
+				{
+					Progression->RaiseTaskRemoved(Task); // Broadcast WaypointComponent's IsCurrent changed (true)
+				}
+			}
+			else
+			{
+				// This task became visible during this update
+				if (Progression.IsValid())
+				{
+					Progression->RaiseTaskAdded(Task); // Broadcast WaypointComponent's IsCurrent changed (false)
+				}
+			}
+		}
+	}
+
+
+	if (MandatoryTasksFailed > 0 &&
+		(IncompleteMandatoryTasks + MandatoryTasksComplete) < MandatoryTasksNeededToComplete)
+		// If least one failed && Completable + Completed < NeededToComplete -> Must Fail
+	{
+		ChangeStatus(ESuqsObjectiveStatus::Failed);
+	}
+	else if (MandatoryTasksComplete >= MandatoryTasksNeededToComplete)
+	{
+		ChangeStatus(ESuqsObjectiveStatus::Completed);
+	}
+	else
+	{
+		ChangeStatus(MandatoryTasksComplete > 0 ? ESuqsObjectiveStatus::InProgress : ESuqsObjectiveStatus::NotStarted);
+	}
+}
+
+void USuqsObjectiveState::NotifyGateOpened(const FName& GateName)
+{
+	for (USuqsTaskState* const Task : Tasks)
+	{
+		Task->NotifyGateOpened(GateName);
+	}
+}
+
+void USuqsObjectiveState::ChangeStatus(ESuqsObjectiveStatus NewStatus)
+{
+	if (Status != NewStatus)
+	{
+		Status = NewStatus;
+
+		switch (NewStatus)
+		{
+		case ESuqsObjectiveStatus::Completed:
+			Progression->RaiseObjectiveCompleted(this);
+			break;
+
+		case ESuqsObjectiveStatus::Failed:
+			Progression->RaiseObjectiveFailed(this);
+			break;
+
+		default:
+			break;
+		}
+
+		// No barriers on objectives. just tasks and quests
+		// Objectives are just groupings and inherit their behaviour from task
+		ParentQuest->NotifyObjectiveStatusChanged();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
 void USuqsObjectiveState::Initialise(const FSuqsObjective* ObjDef, USuqsQuestState* QuestState,
 	USuqsProgression* Root)
 {
@@ -23,7 +413,7 @@ void USuqsObjectiveState::Initialise(const FSuqsObjective* ObjDef, USuqsQuestSta
 	}
 
 	NotifyTaskStatusChanged(nullptr);
-	
+
 }
 
 void USuqsObjectiveState::FinishLoad()
@@ -32,7 +422,7 @@ void USuqsObjectiveState::FinishLoad()
 	{
 		T->FinishLoad();
 	}
-	
+
 	NotifyTaskStatusChanged(nullptr);
 }
 
@@ -94,7 +484,7 @@ void USuqsObjectiveState::CompleteAllMandatoryTasks()
 			if (!AreAllMandatoryTasksRequired())
 				break;
 		}
-	}	
+	}
 }
 
 USuqsTaskState* USuqsObjectiveState::GetNextMandatoryTask() const
@@ -167,7 +557,7 @@ void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedT
 		Task->bHidden = false;
 		if (Task->IsMandatory())
 		{
-			switch(Task->Status)
+			switch (Task->Status)
 			{
 			case ESuqsTaskStatus::Completed:
 				if (!Task->GetResolveBarrier().bPending)
@@ -202,7 +592,7 @@ void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedT
 				// This task was hidden during this update
 				if (Progression.IsValid())
 					Progression->RaiseTaskRemoved(Task);
-				
+
 			}
 			else
 			{
@@ -212,7 +602,7 @@ void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedT
 			}
 		}
 	}
-	
+
 	if (MandatoryTasksFailed > 0 &&
 		(IncompleteMandatoryTasks + MandatoryTasksComplete) < MandatoryTasksNeededToComplete)
 	{
@@ -236,7 +626,7 @@ void USuqsObjectiveState::NotifyGateOpened(const FName& GateName)
 	{
 		Task->NotifyGateOpened(GateName);
 	}
-	
+
 }
 
 void USuqsObjectiveState::ChangeStatus(ESuqsObjectiveStatus NewStatus)
@@ -245,9 +635,9 @@ void USuqsObjectiveState::ChangeStatus(ESuqsObjectiveStatus NewStatus)
 	{
 		Status = NewStatus;
 
-		switch(NewStatus)
+		switch (NewStatus)
 		{
-		case ESuqsObjectiveStatus::Completed: 
+		case ESuqsObjectiveStatus::Completed:
 			Progression->RaiseObjectiveCompleted(this);
 			break;
 		case ESuqsObjectiveStatus::Failed:
@@ -259,6 +649,8 @@ void USuqsObjectiveState::ChangeStatus(ESuqsObjectiveStatus NewStatus)
 		// No barriers on objectives, just tasks and quests
 		// Objectives are just groupings and inherit their behaviour from task
 		ParentQuest->NotifyObjectiveStatusChanged();
-		
+
 	}
 }
+#endif
+*/

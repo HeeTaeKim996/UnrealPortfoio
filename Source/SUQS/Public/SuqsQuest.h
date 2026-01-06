@@ -67,7 +67,7 @@ public:
 	bool bSequentialTasks = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
-	int NumberOfMandatoryTasksRequired = -1;
+	int NumberOfMandatoryTasksRequired = -1; // -1 Protocol All Tasks are mandatory required
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	bool bContinueOnFail = false;

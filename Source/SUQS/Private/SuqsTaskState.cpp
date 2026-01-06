@@ -155,7 +155,6 @@ bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
 	Number = TaskDefinition->TargetNumber;
 	ChangeStatus(ESuqsTaskStatus::Completed, bIgnoreResolveBarriers);
 
-
 	return true;
 }
 
@@ -163,28 +162,67 @@ bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
 
 void USuqsTaskState::Resolve()
 {
-
+	ResolveBarrier.bGrantedExplicitly = true;
+	MaybeNotifyParentStatusChange();
 }
 
 int USuqsTaskState::Progress(int Delta)
 {
+	SetNumber(Number + Delta);
 
+	return GetNumberOutstanding();
 }
 
 
 void USuqsTaskState::SetNumber(int N)
 {
+	const int PrevNumber = Number;
 
+	Number = std::min(std::max(0, N), TaskDefinition->TargetNumber);
+
+	if (PrevNumber != Number)
+	{
+		Progression->RaiseTaskUpdated(this);
+
+		if (Number == TaskDefinition->TargetNumber)
+		{
+			Complete();
+		}
+		else
+		{
+			ChangeStatus(Number > 0 ? ESuqsTaskStatus::InProgress : ESuqsTaskStatus::NotStarted);
+		}
+	}
 }
 
 void USuqsTaskState::SetTimeRemaining(float T)
 {
+	const float PrevTime = TimeRemaining;
 
+	TimeRemaining = std::max(0.f, T);
+
+	if (IsTimeLimited() && TimeRemaining < PrevTime)
+	{
+		Progression->RaiseTaskUpdated(this);
+		if (TimeRemaining <= 0)
+		{
+			TimeRemaining = 0;
+			if (TaskDefinition->TimeLimitCompleteOnExpiry)
+			{
+				Complete();
+			}
+			else
+			{
+				Fail();
+			}
+		}
+	}
 }
 
 void USuqsTaskState::SetResolveBarrier(const FSuqsResolveBarrier& Barrier)
 {
-
+	ResolveBarrier = Barrier;
+	MaybeNotifyParentStatusChange();
 }
 
 
@@ -192,51 +230,115 @@ void USuqsTaskState::SetResolveBarrier(const FSuqsResolveBarrier& Barrier)
 
 int USuqsTaskState::GetNumberOutstanding() const
 {
-
+	// Number should be limited already so don't was time clamping
+	return GetTargetNumber() - Number;
 }
 
 bool USuqsTaskState::IsRelevant() const
 {
-
+	return IsIncomplete() && 
+		bHidden == false && 
+		GetParentObjective() == GetParentObjective()->GetParentQuest()->GetCurrentObjective() &&
+		GetParentObjective()->GetParentQuest()->IsIncomplete();
 }
 
 void USuqsTaskState::Reset()
 {
+	const bool bRaiseUpdate = Number > 0 || TimeRemaining < TaskDefinition->TimeLimit;
 
+	Number = 0;
+	TimeRemaining = TaskDefinition->TimeLimit;
+	ChangeStatus(ESuqsTaskStatus::NotStarted);
+
+	if (bRaiseUpdate)
+	{
+		Progression->RaiseTaskUpdated(this);
+	}
 }
 
 bool USuqsTaskState::IsResolveBlocked() const
 {
+	return IsIncomplete() == false &&
+		ResolveBarrier.Conditions > 0 &&
+		ResolveBarrier.bPending;
 
 }
 
 void USuqsTaskState::NotifyGateOpened(const FName& GateName)
 {
-
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Gate) && ResolveBarrier.Gate == GateName)
+	{
+		MaybeNotifyParentStatusChange();
+	}
 }
 
 bool USuqsTaskState::IsHiddenOnCompleteOrFail() const
 {
-
+	return TaskDefinition->bAlwaysVisible == false &&
+		IsMandatory() &&
+		ParentObjective.IsValid() &&
+		ParentObjective->AreTasksSequential();
 }
 
 
 
 USuqsWaypointComponent* USuqsTaskState::GetWaypoint(bool bOnlyEnabled)
 {
-
+	if (IsValid(GetWorld()))
+	{
+		UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+		if (IsValid(GI))
+		{
+			USuqsWaypointSubsystem* Suqs = GI->GetSubsystem<USuqsWaypointSubsystem>();
+			return Suqs->GetWaypoint(GetParentObjective()->GetParentQuest()->GetIdentifier(), GetIdentifier(), bOnlyEnabled);
+		}
+	}
+	return nullptr;
 }
 
 TArray<USuqsWaypointComponent*> USuqsTaskState::GetWaypoints(bool bOnlyEnabled)
 {
+	TArray<USuqsWaypointComponent*> Ret;
+	if (IsValid(GetWorld()))
+	{
+		UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+		if (IsValid(GI))
+		{
+			USuqsWaypointSubsystem* Suqs = GI->GetSubsystem<USuqsWaypointSubsystem>();
+			Suqs->GetWaypoints(GetParentObjective()->GetParentQuest()->GetIdentifier(), GetIdentifier(), bOnlyEnabled, Ret);
+		}
+	}
 
-
+	return Ret;
 }
 
+// This func called when Loading Task from SaveGame is Finished
 void USuqsTaskState::FinishLoad()
 {
+	// Derive hidden from other state. since it's not saved
+	bHidden = false;
+	if (IsMandatory())
+	{
+		if (
+			IsHiddenOnCompleteOrFail() &&
+			(IsCompleted() || IsFailed())
+			)
+		{
+			bHidden = true;
+		}
+		else
+		{
+			// IF incomplete, this is hidden if objective is set to sequential tasks and this isn't the next one
+			USuqsObjectiveState* Obj = GetParentObjective();
+			if (Obj->AreTasksSequential() && Obj->GetNextMandatoryTask() != this)
+			{
+				bHidden = true;
+			}
+		}
+	}
 
-
+	// Also need to determine if the title needs formatting. since Initialise() is not called
+	bTitleNeedsFormatting = USuqsProgression::GetTextNeedsFormatting(TaskDefinition->Title);
 }
 
 
@@ -336,7 +438,7 @@ void USuqsTaskState::FinishLoad()
 
 
 
-
+/*
 #if 0
 void USuqsTaskState::Initialise(const FSuqsTask* TaskDef, USuqsObjectiveState* ObjState, USuqsProgression* Root)
 {
@@ -662,3 +764,4 @@ void USuqsTaskState::FinishLoad()
 	bTitleNeedsFormatting = USuqsProgression::GetTextNeedsFormatting(TaskDefinition->Title);
 }
 #endif
+*/
