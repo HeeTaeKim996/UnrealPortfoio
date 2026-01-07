@@ -404,37 +404,157 @@ void USuqsQuestState::FinishLoad()
 
 void USuqsQuestState::NotifyObjectiveStatusChanged()
 {
-	
+	int PrevObjIndex = CurrentObjectiveIndex;
+
+	// If Incomplete's doesn't assign index, May Completed ( But may Fail)
+	CurrentObjectiveIndex = -1;
+	bool FailQuest = false;
+
+	for (int i = 0; i < Objectives.Num(); i++)
+	{
+		USuqsObjectiveState* Obj = Objectives[i];
+
+		if (IsBranchActive(Obj->GetBranch()))
+		{
+			if (Obj->IsIncomplete())
+			{
+				CurrentObjectiveIndex = i;
+				break;
+			}
+			else if (Obj->IsFailed())
+			{
+				// Failed objective may fail quest
+				FailQuest = !Obj->GetContinueOnFail();
+			}
+		}
+	}
+
+
+	if (FailQuest)
+	{
+		// If any unfiltered objectives failed, we lose
+		ChangeStatus(ESuqsQuestStatus::Failed);
+	}
+	else if (CurrentObjectiveIndex == -1)
+	{
+		// No incomplete objectives, and no failures
+		ChangeStatus(ESuqsQuestStatus::Completed);
+	}
+	else
+	{
+		// Just in case we go backwards (e.g. reset)
+		ChangeStatus(ESuqsQuestStatus::Incomplete);
+
+		if (PrevObjIndex != CurrentObjectiveIndex)
+		{
+			if(bSuppressObjectiveChangeEvent == false)
+			{
+				if (Objectives.IsValidIndex(PrevObjIndex))
+				{
+					USuqsObjectiveState* const PrevObj = Objectives[PrevObjIndex];
+					for (USuqsTaskState* const PrevTask : PrevObj->GetTasks())
+					{
+						if (PrevTask->GetHidden() == false)
+						{
+							Progression->RaiseTaskRemoved(PrevTask);
+						}
+					}
+				}
+				Progression->RaiseCurrentObjectiveChanged(this);
+			}
+		}
+	}
+		
 }
 
 void USuqsQuestState::OverrideStatus(ESuqsQuestStatus OverrideStatus)
 {
-
+	ChangeStatus(OverrideStatus);
 }
 
 void USuqsQuestState::NotifyGateOpened(const FName& GateName)
 {
+	for (USuqsObjectiveState* Obj : Objectives)
+	{
+		Obj->NotifyGateOpened(GateName);
+	}
 
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Gate) && ResolveBarrier.Gate == GateName)
+	{
+		MaybeNotifyStatusChange();
+	}
 }
 
 void USuqsQuestState::ChangeStatus(ESuqsQuestStatus NewStatus)
 {
+	if (Status == NewStatus) return;
 
+	Status = NewStatus;
+
+	switch (NewStatus)
+	{
+	case ESuqsQuestStatus::Completed:
+		Progression->RaiseQuestCompleted(this);
+		break;
+	case ESuqsQuestStatus::Failed:
+		Progression->RaiseQuestFailed(this);
+		break;
+	case ESuqsQuestStatus::Incomplete:
+		Progression->RaiseQuestReset(this);
+		break;
+	default:
+		break;
+	}
+
+	QueueStatusChangeNotification();
 }
 
 void USuqsQuestState::QueueStatusChangeNotification()
 {
+	ResolveBarrier = Progression->GetResolveBarrierForQuest(QuestDefinition, Status);
 
+	// May immediately be satisfied
+	MaybeNotifyStatusChange();
 }
 
 bool USuqsQuestState::IsResolveBlockedOn(ESuqsResolveBarrierCondition Barrier) const
 {
-
+	return ResolveBarrier.bPending &&
+		(ResolveBarrier.Conditions & static_cast<uint32>(Barrier)) > 0;
 }
 
 void USuqsQuestState::MaybeNotifyStatusChange()
 {
+	if (ResolveBarrier.bPending == false) return;
 
+	// Can't resolve unlress completed/failed
+	if(IsCompleted() == false && IsFailed() == false) return;
+
+	bool bCleared = true;
+
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Time))
+	{
+		if (ResolveBarrier.TimeRemaining > 0)
+		{
+			bCleared = false;
+		}
+	}
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Gate))
+	{
+		if (Progression->IsGateOpen(ResolveBarrier.Gate) == false)
+		{
+			bCleared = false;
+		}
+	}
+	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Explicit))
+	{
+		bCleared = ResolveBarrier.bGrantedExplicitly;
+	}
+
+	if (bCleared)
+	{
+		Progression->ProcessQuestStatusChange(this);
+	}
 }
 
 

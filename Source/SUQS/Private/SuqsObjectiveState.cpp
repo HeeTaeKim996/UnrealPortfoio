@@ -37,6 +37,7 @@ void USuqsObjectiveState::FinishLoad()
 	NotifyTaskStatusChanged(nullptr);
 }
 
+// Called from UQuestState
 void USuqsObjectiveState::Tick(float DeltaTime)
 {
 	for (USuqsTaskState* const T : Tasks)
