@@ -81,3 +81,7 @@ DerivedDataCache/*
 # PCH etc.
 **/*.ipch
 **/*.pch
+
+
+# Temp Turn Off Git LFS
+/Content/**

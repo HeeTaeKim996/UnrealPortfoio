@@ -128,7 +128,7 @@ void USuqsTaskState::Fail(bool bIgnoreResolveBarriers)
 	ChangeStatus(ESuqsTaskStatus::Failed, bIgnoreResolveBarriers);
 }
 
-bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers)
+bool USuqsTaskState::Complete(bool bIgnoreResolveBarriers/*=false*/)
 {
 	// Already completed
 	if (Status == ESuqsTaskStatus::Completed) return true;

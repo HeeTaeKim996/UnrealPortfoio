@@ -142,7 +142,149 @@ protected:
 
 	bool bSuppressObjectiveChangeEvent = false;
 
+	bool bTitleNeedsFormatting;
+	bool bActiveDescriptionNeedsFormatting;
+	bool bCompletedDescriptionNeedsFormatting;
 
+	bool bIsLoading = false;
+
+	void Initialise(const FSuqsQuest* Def, USuqsProgression* Root);
+	void Tick(float DeltaTime);
+	void ChangeStatus(ESuqsQuestStatus NewStatus);
+	void QueueStatusChangeNotification();
+	bool IsResolveBlockedOn(ESuqsResolveBarrierCondition Barrier) const;
+	void MaybeNotifyStatusChange();
+
+	bool TitleNeedsFormatting() const;
+	bool DescriptionNeedsFormatting() const;
+
+public:
+	ESuqsQuestStatus GetStatus() const { return Status; }
+
+	const TArray<USuqsObjectiveState*>& GetObjectives() const { return Objectives; }
+	const TArray<FName>& GetActiveBranches() const { return ActiveBranches; }
+	const FSuqsResolveBarrier& GetResolveBarrier() const { return ResolveBarrier; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FName& GetIdentifier() const { return QuestDefinition->Identifier; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FText GetTitle() const;
+
+	const TArray<FName>& GetLabels() const;
+
+	bool IsPlayerVisible() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FText GetDescription() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsProgression* GetRootProgression() const { return Progression.Get(); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetBranchActive(FName Branch, bool bActive);
+
+	UFUNCTION(BlueprintCallable)
+	void ResetBranches();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsBranchActive(FName Branch);
+
+	UFUNCTION(BlueprintCallable)
+	bool CompleteTask(FName TaskID);
+
+	UFUNCTION(BlueprintCallable)
+	void ResolveTask(FName TaskID);
+
+	UFUNCTION(BlueprintCallable)
+	void FailTask(const FName& TaskID);
+
+	UFUNCTION(BlueprintCallable)
+	int ProgressTask(FName TaskID, int Delta);
+
+	void SetTaskNumberCompleted(FName TaskID, int Number);
+
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	USuqsObjectiveState* GetCurrentObjective() const;
+
+	UFUNCTION(BlueprintCallable)
+	USuqsObjectiveState* GetObjective(const FName& ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetActiveObjectives(TArray<USuqsObjectiveState*>& ActiveObjectivesOut) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsIncomplete() const { return Status == ESuqsQuestStatus::Incomplete; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsCompleted() const { return Status == ESuqsQuestStatus::Completed; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsFailed() const { return Status == ESuqsQuestStatus::Failed; }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsResolveBlocked() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveIncomplete(const FName& Identifier) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveCompleted(const FName& ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveFailed(const FName& ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetObjective(FName ObjectiveID);
+
+	UFUNCTION(BlueprintCallable)
+	USuqsTaskState* GetNextMandatoryTask() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskIncomplete(const FName& TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskCompleted(const FName& TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskFailed(const FName& TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskRelevant(const FName& TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetTask(FName TaskID);
+
+	UFUNCTION(BlueprintCallable)
+	void Reset();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetBranch(FName Branch);
+
+	UFUNCTION(BlueprintCallable)
+	void Fail();
+
+	UFUNCTION(BlueprintCallable)
+	void Complete();
+
+	UFUNCTION(BlueprintCallable)
+	void Resolve();
+
+	UFUNCTION(BlueprintCallable)
+	USuqsTaskState* GetTask(const FName& TaskID) const;
+
+	void NotifyObjectiveStatusChanged();
+
+	void OverrideStatus(ESuqsQuestStatus OverrideStatus);
+
+	void NotifyGateOpened(const FName& GateName);
+
+	void SetResolveBarrier(const FSuqsResolveBarrierStateData& Barrier);
+
+	void StartLoad();
+	void FinishLoad();
+	bool IsLoading() const { return bIsLoading; }
 };
 
 
@@ -216,8 +358,7 @@ protected:
 
 
 
-
-
+/*
 #if 0
 UENUM(BlueprintType)
 enum class ESuqsQuestStatus : uint8
@@ -322,9 +463,9 @@ struct FSuqsResolveBarrier
 	
 };
 
-/**
- * Quest state
- */
+//*
+// * Quest state
+// 
 UCLASS(BlueprintType)
 class SUQS_API USuqsQuestState : public UObject
 {
@@ -420,47 +561,47 @@ public:
 	UFUNCTION(BlueprintCallable)
     bool IsBranchActive(FName Branch);
 
-	/**
-	 * Fully complete a task. If this is the last mandatory task in an objective, also completes the objective, and
-	 * cascades upwards to the quest if that's the last mandatory objective.
-	 * @param TaskID The identifier of the task within the quest
-	 * @returns Whether the task was successfully completed
-	 */
+	//*
+	// * Fully complete a task. If this is the last mandatory task in an objective, also completes the objective, and
+	// * cascades upwards to the quest if that's the last mandatory objective.
+	// * @param TaskID The identifier of the task within the quest
+	// * @returns Whether the task was successfully completed
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool CompleteTask(FName TaskID);
 
-	/**
-	 * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
-	 * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
-	 * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
-	 * Has no effect on tasks which are incomplete.
-	 * @param TaskID The identifier of the task within the quest (required)
-	 */
+	//*
+	// * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
+	// * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
+	// * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
+	// * Has no effect on tasks which are incomplete.
+	// * @param TaskID The identifier of the task within the quest (required)
+	// 
 	UFUNCTION(BlueprintCallable)
 	void ResolveTask(FName TaskID);
 	
-	/**
-	 * Fail a task if it exists. 
-	 * @param TaskID The identifier of the task within the quest
-	 */
+	//*
+	// * Fail a task if it exists. 
+	// * @param TaskID The identifier of the task within the quest
+	// 
 	UFUNCTION(BlueprintCallable)
 	void FailTask(const FName& TaskID);
 
-	/**
-	 * Increment task progress, if it exists. Increases the number value on a task, clamping it to the min/max numbers in the quest
-	 * definition. If this increment takes the task number to the target, it completes the task as per CompleteTask.
-	 * @param TaskID The identifier of the task within the quest
-	 * @param Delta The change to make to the number on the task
-	 * @returns The number of "things" outstanding on the task after progress was applied (0 if not found)
-	 */
+	//*
+	// * Increment task progress, if it exists. Increases the number value on a task, clamping it to the min/max numbers in the quest
+	// * definition. If this increment takes the task number to the target, it completes the task as per CompleteTask.
+	// * @param TaskID The identifier of the task within the quest
+	// * @param Delta The change to make to the number on the task
+	// * @returns The number of "things" outstanding on the task after progress was applied (0 if not found)
+	// 
 	UFUNCTION(BlueprintCallable)
 	int ProgressTask(FName TaskID, int Delta);
 
-	/**
-	 * Directly set the current completed number on a specific task. An alternative to the delta version ProgressTask. 
-	 * @param TaskID The identifier of the task within the quest
-	 * @param Number The number of completed items to set the task to
-	 */
+	//*
+	// * Directly set the current completed number on a specific task. An alternative to the delta version ProgressTask. 
+	// * @param TaskID The identifier of the task within the quest
+	// * @param Number The number of completed items to set the task to
+	// 
 	void SetTaskNumberCompleted(FName TaskID, int Number);
 
 	/// Get the current objective on this quest. Will return null if quest is complete.
@@ -578,3 +719,4 @@ public:
 	bool IsLoading() const { return bIsLoading; }
 };
 #endif
+*/
