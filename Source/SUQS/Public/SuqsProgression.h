@@ -10,6 +10,512 @@
 #include "SuqsParameterProvider.h"
 #include "SuqsProgression.generated.h"
 
+UENUM(BlueprintType)
+enum class ESuqsProgressionEventType : uint8
+{
+	ActiveQuestsChanged,
+
+	QuestArchived,
+
+	QuestAccepted,
+
+	QuestCompleted,
+
+	QuestFailed,
+
+	QuestCurrentObjectiveChanged,
+
+	ObjectiveCompleted,
+
+	ObjectiveFailed,
+
+	TaskAdded,
+
+	TaskUpdated,
+
+	TaskCompleted,
+
+	TaskFailed,
+
+	TaskRemoved,
+
+	WaypointMoved,
+
+	WaypointEnabledOrDisabled,
+};
+
+
+USTRUCT(BlueprintType)
+struct FSuqsProgressionEventDetails
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadOnly)
+	ESuqsProgressionEventType EventType;
+
+	UPROPERTY(BlueprintReadOnly)
+	class USuqsQuestState* Quest;
+
+	UPROPERTY(BlueprintReadOnly)
+	class USuqsObjectiveState* Objective;
+
+	UPROPERTY(BlueprintReadOnly)
+	class USuqsTaskState* Task;
+
+	UPROPERTY(BlueprintReadOnly)
+	class USuqsWaypointComponent* Waypoint;
+
+	explicit FSuqsProgressionEventDetails(ESuqsProgressionEventType EType) : EventType(EType), Quest(nullptr), Objective(nullptr), Task(nullptr), Waypoint(nullptr) {}
+
+	FSuqsProgressionEventDetails(ESuqsProgressionEventType EventType, USuqsQuestState* Quest)
+		: EventType(EventType), Quest(Quest), Objective(nullptr), Task(nullptr), Waypoint(nullptr) {}
+
+	
+	FSuqsProgressionEventDetails(ESuqsProgressionEventType EventType, USuqsObjectiveState* Objective)
+		: EventType(EventType), Quest(Objective ? Objective->GetParentQuest() : nullptr), Objective(Objective), Task(nullptr), Waypoint(nullptr) {}
+
+	
+	FSuqsProgressionEventDetails(ESuqsProgressionEventType EventType, USuqsTaskState* Task)
+		: EventType(EventType), Quest(Task ? Task->GetParentObjective()->GetParentQuest() : nullptr), Objective(nullptr), Task(Task), Waypoint(nullptr) {}
+
+	
+	FSuqsProgressionEventDetails(ESuqsProgressionEventType EventType, USuqsWaypointComponent* Waypoint, USuqsTaskState* Task)
+		: EventType(EventType), Quest(Task ? Task->GetParentObjective()->GetParentQuest() : nullptr), Objective(nullptr), Task(Task), Waypoint(nullptr) {}
+	
+	FSuqsProgressionEventDetails() : EventType(), Quest(nullptr), Objective(nullptr), Task(nullptr), Waypoint(nullptr) {}
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProgressionEvent, const FSuqsProgressionEventDetails&, Details);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTaskUpdated, USuqsTaskState*, Task);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTaskCompleted, USuqsTaskState*, Task);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTaskFailed, USuqsTaskState*, Task);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnObjectiveCompleted, USuqsObjectiveState*, Objective);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnObjectiveFailed, USuqsObjectiveState*, Objective);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActiveQuestsListChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestCompleted, USuqsQuestState*, Quest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestFailed, USuqsQuestState*, Quest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestAccepted, USuqsQuestState*, Quest);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProgressionLoaded, USuqsProgression*, Progression);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProgressParameterProvidersChanged, USuqsProgression*, Progression);
+
+DECLARE_DELEGATE_TwoParams(FOnPreLoad, USuqsProgression*, FSuqsSaveData&);
+
+
+
+
+class USuqsWaypointComponent;
+
+
+UCLASS(BlueprintType, Blueprintable)
+class SUQS_API USuqsProgression : public UObject, public FTickableGameObject
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY()
+	TArray<UDataTable*> QuestDataTables;
+
+	UPROPERTY()
+	TMap<FName, FSuqsQuest> QuestDefinitions;
+
+	UPROPERTY()
+	TMap<FName, USuqsQuestState*> ActiveQuests;
+
+	UPROPERTY()
+	TMap<FName, USuqsQuestState*> QuestArchive;
+
+	TArray<FName> GlobalActiveBranches;
+	TSet<FName> OpenGates;
+
+	TMultiMap<FName, FName> QuestCompletionDeps;
+
+	TMultiMap<FName, FName> QuestFailureDeps;
+
+	TArray<TWeakObjectPtr<UObject>> ParameterProviders;
+
+	UPROPERTY()
+	USuqsNamedFormatParams* FormatParams;
+
+	bool bSuppressEvents = false;
+	float DefaultQuestResolveTimeDelay = 0;
+	float DefaultTaskResolveTimeDelay = 0;
+	bool bSubcribedToWaypointEvents = false;
+
+	USuqsQuestState* FindQuestState(const FName& QuestID);
+	const USuqsQuestState* FindQuestState(const FName& QuestID) const;
+	USuqsTaskState* FindTaskStatus(const FName& QuestID, const FName& TaskID);
+
+	void RebuildAllQuestData();
+	void AddQuestDefinitionInternal(const FSuqsQuest& Quest);
+	bool AutoAcceptQuests(const FName& FinishedQuestID, bool bFailed);
+	static void SaveToData(TMap<FName, USuqsQuestState*> Quests, FSuqsSaveData& Data);
+	FText FormatQuestOrTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText);
+
+	UFUNCTION()
+	void OnWaypointMoved(USuqsWaypointComponent* Waypoint);
+
+	UFUNCTION()
+	void OnWaypointEnabledChanged(USuqsWaypointComponent* Waypoint);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void InitWithQuestDataTables(TArray<UDataTable*> Tables);
+
+	UFUNCTION(BlueprintCallable)
+	void InitWithQuestDataTablesInPath(const FString& Path);
+
+	UFUNCTION(BlueprintCallable)
+	void InitWithQuestDataTablesInPaths(const TArray<FString>& Paths);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetQuestDefinitionCopy(FName QuestID, FSuqsQuest& OutQuest);
+
+	UFUNCTION(BlueprintCallable)
+	bool CreateQuestDefinition(const FSuqsQuest& NewQuest, bool bOverwriteIfExists = false);
+
+	UFUNCTION(BlueprintCallable)
+	bool DeleteQuestDefinition(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void SetDefaultProgressionTimeDelays(float QuestDelay, float TaskDelay);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnProgressionEvent OnProgressionEvent;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTaskCompleted OnTaskCompleted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTaskFailed OnTaskFailed;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnObjectiveCompleted OnObjectiveCompleted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnObjectiveFailed OnObjectiveFailed;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestCompleted OnQuestCompleted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestFailed OnQuestFailed;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTaskUpdated OnTaskUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestAccepted OnQuestAccepted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActiveQuestsListChanged OnActiveQuestsListChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnProgressionLoaded OnProgressionLoaded;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnProgressParameterProvidersChanged OnParameterProvidersChanged;
+
+	FOnPreLoad OnPreLoad;
+
+
+	UFUNCTION(BlueprintCallable)
+	const TMap<FName, FSuqsQuest>& GetQuestDefinitions(bool bForceRebuild = false);
+
+	UFUNCTION(BlueprintCallable)
+	ESuqsQuestStatus GetQuestStatus(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestAccepted(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestActive(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestIncomplete(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestCompleted(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestFailed(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetAcceptedQuestIdentifiers(TArray<FName>& AcceptedQuestIDsOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetArchivedQuestIdentifiers(TArray<FName>& ArchivedQuestIDsOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	USuqsQuestState* GetQuest(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void GetAcceptedQuests(TArray<USuqsQuestState*>& AcceptedQuestsOut) const;
+
+	UFUNCTION(BlueprintCallable)
+	void GetArchivedQuests(TArray<USuqsQuestState*>& ArchivedQuestsOut) const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	UFUNCTION(BlueprintCallable)
+	bool AcceptQuest(FName QuestID, bool bResetIfFailed = true, bool bResetIfComplete = false, bool bResetIfInProgress = false);
+
+	UFUNCTION(BlueprintCallable)
+	void ResetQuest(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveQuest(FName QuestID, bool bRemoveActive = true, bool bRemoveArchived = true);
+
+	UFUNCTION(BlueprintCallable)
+	void FailQuest(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void CompleteQuest(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void ResolveQuest(FName QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void FailTask(FName QuestID, FName TaskIdentifier);
+
+	UFUNCTION(BlueprintCallable)
+	bool CompleteTask(FName QuestID, FName TaskIdentifier);
+
+	UFUNCTION(BlueprintCallable)
+	int ProgressTask(FName QuestID, FName TaskIdentifier, int Delta);
+
+	UFUNCTION(BlueprintCallable)
+	void SetTaskNumberCompleted(FName QuestID, FName TaskIdentifier, int Number);
+
+	UFUNCTION(BlueprintCallable)
+	void ResolveTask(FName QuestID, FName TaskIdentifier);
+
+	UFUNCTION(BlueprintCallable)
+	USuqsObjectiveState* GetCurrentObjective(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveIncomplete(FName QuestID, FName ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveCompleted(FName QuestID, FName ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsObjectiveFailed(FName QuestID, FName ObjectiveID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetObjective(FName QuestID, FName ObjectiveID);
+
+
+	UFUNCTION(BlueprintCallable)
+	USuqsTaskState* GetNextMandatoryTask(FName QuestID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskIncomplete(FName QuestID, FName TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskCompleted(FName QuestID, FName TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskFailed(FName QuestID, FName TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTaskRelevant(FName QuestID, FName TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	USuqsTaskState* GetTaskState(FName QuestID, FName TaskID) const;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetTask(FName QuestID, FName TaskID);
+
+	UFUNCTION(BlueprintCallable)
+	void SetQuestBranchActive(FName QuestID, FName Branch, bool bActive);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestBranchActive(FName QuestID, FName Branch);
+
+	UFUNCTION(BlueprintCallable)
+	void SetGlobalQuestBranchActive(FName Branch, bool bActive);
+
+	UFUNCTION(BlueprintCallable)
+	void ResetGlobalQuestBranches();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsGlobalQuestBranchActive(FName Branch);
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<FName>& GetGlobalActiveQuestBranches() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetGateOpen(FName GateName, bool bOpen = true);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsGateOpen(FName GateName);
+
+	UFUNCTION(BlueprintCallable)
+	bool QuestDependenciesMet(const FName& QuestID);
+
+	UFUNCTION(BlueprintCallable)
+	void AddParameterProvider(UObject* Provider);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveParameterProvider(UObject* Provider);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveAllParameterProviders();
+
+
+
+
+
+
+	void RaiseTaskUpdated(USuqsTaskState* Task);
+
+	void RaiseTaskFailed(USuqsTaskState* Task);
+
+	void RaiseTaskCompleted(USuqsTaskState* Task);
+
+	void RaiseTaskAdded(USuqsTaskState* Task);
+
+	void RaiseTaskRemoved(USuqsTaskState* Task);
+
+	void RaiseObjectiveCompleted(USuqsObjectiveState* Objective);
+
+	void RaiseObjectiveFailed(USuqsObjectiveState* Objective);
+
+	void RaiseQuestCompleted(USuqsQuestState* Quest);
+
+	void RaiseQuestFailed(USuqsQuestState* Quest);
+
+	void RaiseQuestReset(USuqsQuestState* Quest);
+
+	void RaiseCurrentObjectiveChanged(USuqsQuestState* Quest);
+
+	FText FormatQuestText(const FName& QuestID, const FText& FormatText);
+	FText FormatTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText);
+
+	void ProcessQuestStatusChange(USuqsQuestState* Quest);
+
+	const FSuqsQuest* GetQuestDefinition(const FName& QuestID);
+
+	FSuqsResolveBarrier GetResolveBarrierForTask(const FSuqsTask* Task, ESuqsTaskStatus Status) const;
+
+	FSuqsResolveBarrier GetResolveBarrierForQuest(const FSuqsQuest* Q, ESuqsQuestStatus Status) const;
+
+	virtual void Serialize(FArchive& Ar) override;
+
+	void LoadFromData(const FSuqsSaveData& Data);
+
+	void SaveToData(FSuqsSaveData& Data) const;
+
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "SUQS")
+	static UDataTable* MakeQuestDataTableFromJSON(const FString& JsonString);
+
+	UFUNCTION(BlueprintCallable, Category = "SUQS")
+	static FString GetProgressEventDescription(const FSuqsProgressionEventDetails& Evt);
+
+	static bool GetTextNeedsFormatting(const FText& Text);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 /// Identifies the type of quest event that has occurred, for those who want to listen in to a single event source
 UENUM(BlueprintType)
 enum class ESuqsProgressionEventType : uint8
@@ -374,6 +880,21 @@ public:
 	UFUNCTION(BlueprintCallable)
     void GetArchivedQuests(TArray<USuqsQuestState*>& ArchivedQuestsOut) const;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/**
 	 * Accept a quest and track its state (if possible)
 	 * Note: you don't need to do this for quests which are set to auto-accept based on the completion of other quests.
@@ -634,3 +1155,4 @@ public:
 	/// Determine if some text needs formatting (has parameters)
 	static bool GetTextNeedsFormatting(const FText& Text);
 };
+#endif
