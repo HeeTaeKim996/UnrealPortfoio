@@ -13,7 +13,7 @@ USuqsWaypointComponent::USuqsWaypointComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	bIsCurrent = false;
 
-	SetIsReplicatedByDefault(true); // Doesn't need in Single play. But Reserved it from git code
+	SetIsReplicatedByDefault(true); // Doesn't need in Single play. But Reserved it 
 }
 
 

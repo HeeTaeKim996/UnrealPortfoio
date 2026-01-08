@@ -5,6 +5,148 @@
 #include "Internationalization/Text.h"
 #include "SuqsParameterProvider.generated.h"
 
+
+UCLASS(BlueprintType)
+class SUQS_API USuqsNamedFormatParams : public UObject
+{
+	GENERATED_BODY()
+private:
+	FFormatNamedArguments NamedArgs;
+
+public:
+	template<typename T>
+	void SetParameter(const FString& Name, const T& Value) { NamedArgs.Add(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetTextParameter(FString Name, FText Value) { SetParameter(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetIntParameter(FString Name, int32 Value) { SetParameter(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetInt64Parameter(FString Name, int64 Value) { SetParameter(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetFloatParameter(FString Name, int64 Value) { SetParameter(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetGenderParameter(FString Name, ETextGender Value) { SetParameter(Name, Value); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetAllParameters(const USuqsNamedFormatParams* SourceArgs) { NamedArgs.Empty(); NamedArgs.Append(SourceArgs->NamedArgs); }
+
+	void Empty() { NamedArgs.Empty(); }
+	FText Format(const FText& FormatText) const
+	{
+		return FText::Format(FormatText, NamedArgs);
+	}
+};
+
+UINTERFACE()
+class USuqsParameterProvider : public UInterface
+{
+	GENERATED_BODY()
+};
+
+
+
+class SUQS_API ISuqsParameterProvider
+{
+	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void GetQuestParameters(const FName& QuestID, const FName& TaskID, USuqsNamedFormatParams* Params);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 /// Convenience object to hold named parameters for compatibility with Blueprints and C++
 UCLASS(BlueprintType)
 class SUQS_API USuqsNamedFormatParams : public UObject
@@ -72,3 +214,4 @@ public:
 	void GetQuestParameters(const FName& QuestID, const FName& TaskID, USuqsNamedFormatParams* Params);
 	
 };
+#endif

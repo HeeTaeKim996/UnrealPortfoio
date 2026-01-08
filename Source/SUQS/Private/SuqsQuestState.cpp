@@ -655,7 +655,7 @@ void USuqsQuestState::MaybeNotifyStatusChange()
 
 
 
-
+/*
 #if 0
 //PRAGMA_DISABLE_OPTIMIZATION
 
@@ -1215,3 +1215,4 @@ void USuqsQuestState::MaybeNotifyStatusChange()
 
 //PRAGMA_ENABLE_OPTIMIZATION
 #endif
+*/
