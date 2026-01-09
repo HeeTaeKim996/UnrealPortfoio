@@ -514,7 +514,7 @@ public:
 
 
 
-
+/*
 #if 0
 /// Identifies the type of quest event that has occurred, for those who want to listen in to a single event source
 UENUM(BlueprintType)
@@ -651,15 +651,15 @@ DECLARE_DELEGATE_TwoParams(FOnPreLoad, USuqsProgression*, FSuqsSaveData&);
 
 class USuqsWaypointComponent;
 
-/**
- * Progression holds all the state relating to all quests and their objectives/tasks for a single player.
- * Add this somewhere that's useful to you, e.g. your PlayerState or GameInstance.
- * And of course, you'll want to include it in your save games.
- * You MUST only ever have one instance of this in your game.
- * NOTE: in multiplayer games it is not advisable to build your UI around this class directly. Only
- * use it directly on the server to change state, and use it via USuqsGameStateComponent. On
- * clients and server, use the FSuqsProgressView to drive your UI instead, which will work everywhere.
- */
+//*
+// * Progression holds all the state relating to all quests and their objectives/tasks for a single player.
+// * Add this somewhere that's useful to you, e.g. your PlayerState or GameInstance.
+// * And of course, you'll want to include it in your save games.
+// * You MUST only ever have one instance of this in your game.
+// * NOTE: in multiplayer games it is not advisable to build your UI around this class directly. Only
+// * use it directly on the server to change state, and use it via USuqsGameStateComponent. On
+// * clients and server, use the FSuqsProgressView to drive your UI instead, which will work everywhere.
+// 
 UCLASS(BlueprintType, Blueprintable)
 class SUQS_API USuqsProgression : public UObject, public FTickableGameObject
 {
@@ -732,51 +732,51 @@ public:
 	UFUNCTION(BlueprintCallable)
     void InitWithQuestDataTablesInPaths(const TArray<FString>& Paths);
 
-	/**
-	 * Get a copy of a Quest Definition. This is mostly so that you can modify it and register it
-	 * as a new runtime quest
-	 * @param QuestID The identifier of the quest
-	 * @param OutQuest Output quest copy
-	 * @return Whether the quest was found
-	 */
+	//*
+	// * Get a copy of a Quest Definition. This is mostly so that you can modify it and register it
+	// * as a new runtime quest
+	// * @param QuestID The identifier of the quest
+	// * @param OutQuest Output quest copy
+	// * @return Whether the quest was found
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool GetQuestDefinitionCopy(FName QuestID, FSuqsQuest& OutQuest);
 
 	
-	/**
-	 * Create a new runtime created quest to the system. 
-	 * @param NewQuest The new quest to add. This will be copied into the quest database. 
-	 * @param bOverwriteIfExists If a quest with this ID already exists, overwrite it if this is true.
-	 * Otherwise, report an error and do nothing.
-	 * @return Whether the quest was added
-	 * @note If you overwrite an existing quest, stored progression against it will be reset.
-	 * @note Quest definitions added at runtime will be lost by calling any of the Init..() functions, or by
-	 * forcing a quest system rebuild with the optional parameter to GetQuestDefinitions
-	 */
+	//*
+	// * Create a new runtime created quest to the system. 
+	// * @param NewQuest The new quest to add. This will be copied into the quest database. 
+	// * @param bOverwriteIfExists If a quest with this ID already exists, overwrite it if this is true.
+	// * Otherwise, report an error and do nothing.
+	// * @return Whether the quest was added
+	// * @note If you overwrite an existing quest, stored progression against it will be reset.
+	// * @note Quest definitions added at runtime will be lost by calling any of the Init..() functions, or by
+	// * forcing a quest system rebuild with the optional parameter to GetQuestDefinitions
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool CreateQuestDefinition(const FSuqsQuest& NewQuest, bool bOverwriteIfExists = false);
 
-	/**
-	 * Delete an existing quest definition from the system
-	 * @param QuestID The identifier of the quest
-	 * @return Whether the quest was removed
-	 * @note Removing a quest definition will erase any progress against it
-	 */
+	//*
+	// * Delete an existing quest definition from the system
+	// * @param QuestID The identifier of the quest
+	// * @return Whether the quest was removed
+	// * @note Removing a quest definition will erase any progress against it
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool DeleteQuestDefinition(FName QuestID);
 	
-	/**
-	 * Change the default time delays between completing / failing a quest item, and the knock-on effects of that
-	 * (the next task/objective/quest being activated).
-	 * Where one completion rolls into another, the time delays are in serial. Therefore when completing the last
-	 * task in a quest, the task delay will tick by before the objective is completed, which will complete the quest
-	 * and then there can be another delay before any dependent quests are activated.
-	 *
-	 * Objectives don't have a delay of their own since they're just groupings of tasks.
-	 * 
-	 * @param QuestDelay The time between a quest being completed/failed, and the effects on dependent quests (default 2)
-	 * @param TaskDelay The time between a task being completed/failed, and dependent effects (next task, objective complete etc) (default 2)
-	 */
+	//*
+	// * Change the default time delays between completing / failing a quest item, and the knock-on effects of that
+	// * (the next task/objective/quest being activated).
+	// * Where one completion rolls into another, the time delays are in serial. Therefore when completing the last
+	// * task in a quest, the task delay will tick by before the objective is completed, which will complete the quest
+	// * and then there can be another delay before any dependent quests are activated.
+	// *
+	// * Objectives don't have a delay of their own since they're just groupings of tasks.
+	// * 
+	// * @param QuestDelay The time between a quest being completed/failed, and the effects on dependent quests (default 2)
+	// * @param TaskDelay The time between a task being completed/failed, and dependent effects (next task, objective complete etc) (default 2)
+	// 
 	UFUNCTION(BlueprintCallable)
 	void SetDefaultProgressionTimeDelays(float QuestDelay, float TaskDelay);
 
@@ -825,13 +825,13 @@ public:
 	FOnPreLoad OnPreLoad;
 
 	
-	/**
-	 * Return the quest definitions available. These are separate to the list of accepted quests or quest archive and
-	 * represents all of the quests available.
-	 * @param bForceRebuild If true, force the internal rebuild of quest definitions. Only needed if you have changed the
-	 *   QuestDataTables property at runtime after using other methods on this instance, which is highly discouraged.
-	 * @return The quest definitions
-	 */
+	//*
+	// * Return the quest definitions available. These are separate to the list of accepted quests or quest archive and
+	// * represents all of the quests available.
+	// * @param bForceRebuild If true, force the internal rebuild of quest definitions. Only needed if you have changed the
+	// *   QuestDataTables property at runtime after using other methods on this instance, which is highly discouraged.
+	// * @return The quest definitions
+	// 
 	UFUNCTION(BlueprintCallable)
 	const TMap<FName, FSuqsQuest>& GetQuestDefinitions(bool bForceRebuild = false);
 
@@ -895,16 +895,16 @@ public:
 
 
 
-	/**
-	 * Accept a quest and track its state (if possible)
-	 * Note: you don't need to do this for quests which are set to auto-accept based on the completion of other quests.
-	 * However you will want to do it for events that you activate other ways, e.g. entering areas, talking to characters
-	 * @param QuestID The identifier of the quest
-	 * @param bResetIfFailed If this quest has failed, whether to reset it (default true)
-	 * @param bResetIfComplete If this quest has been previously completed, whether to reset it. Default false (do nothing)
-	 * @param bResetIfInProgress If this quest is already in progress, whether to reset it. If not, do nothing
-	 * @returns Whether the quest was successfully accepted
-	 */
+	//*
+	// * Accept a quest and track its state (if possible)
+	// * Note: you don't need to do this for quests which are set to auto-accept based on the completion of other quests.
+	// * However you will want to do it for events that you activate other ways, e.g. entering areas, talking to characters
+	// * @param QuestID The identifier of the quest
+	// * @param bResetIfFailed If this quest has failed, whether to reset it (default true)
+	// * @param bResetIfComplete If this quest has been previously completed, whether to reset it. Default false (do nothing)
+	// * @param bResetIfInProgress If this quest is already in progress, whether to reset it. If not, do nothing
+	// * @returns Whether the quest was successfully accepted
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool AcceptQuest(FName QuestID, bool bResetIfFailed = true, bool bResetIfComplete = false, bool bResetIfInProgress = false);
 
@@ -914,12 +914,12 @@ public:
 	UFUNCTION(BlueprintCallable)
     void ResetQuest(FName QuestID);
 
-	/**
-	 * Remove a quest from this play state entirely. This is akin to "unaccepting" a quest.
-	 * @param QuestID The identifier of the quest
-	 * @param bRemoveActive Whether active quests should be removed by this call (default true)
-	 * @param bRemoveArchived Whether archived (failed/completed) quests should be removed (default true)
-	 */
+	//*
+	// * Remove a quest from this play state entirely. This is akin to "unaccepting" a quest.
+	// * @param QuestID The identifier of the quest
+	// * @param bRemoveActive Whether active quests should be removed by this call (default true)
+	// * @param bRemoveArchived Whether archived (failed/completed) quests should be removed (default true)
+	// 
 	UFUNCTION(BlueprintCallable)
 	void RemoveQuest(FName QuestID, bool bRemoveActive = true, bool bRemoveArchived = true);
 
@@ -942,53 +942,53 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResolveQuest(FName QuestID);
 	
-	/**
-	 * Mark a task as failed. If this is a mandatory task, it will fail the objective the task is attached to.
-	   If the objective is mandatory, it will fail the quest. 
-	 * @param QuestID The ID of the quest. If None, will scan all active quests and fail any task with TaskIdentifier
-	 * @param TaskIdentifier The identifier of the task within the quest
-	 */
+	//*
+	// * Mark a task as failed. If this is a mandatory task, it will fail the objective the task is attached to.
+	//   If the objective is mandatory, it will fail the quest. 
+	// * @param QuestID The ID of the quest. If None, will scan all active quests and fail any task with TaskIdentifier
+	// * @param TaskIdentifier The identifier of the task within the quest
+	// 
 	UFUNCTION(BlueprintCallable)
     void FailTask(FName QuestID, FName TaskIdentifier);
 
-	/**
-	 * Fully complete a task. If this is the last mandatory task in an objective, also completes the objective, and
-	 * cascades upwards to the quest if that's the last mandatory objective.
-	 * @param QuestID The ID of the quest. If None, will scan all active quests and complete any task with TaskIdentifier
-	 * @param TaskIdentifier The identifier of the task within the quest (required)
-	 * @returns Whether the task was successfully completed
-	 */
+	//*
+	// * Fully complete a task. If this is the last mandatory task in an objective, also completes the objective, and
+	// * cascades upwards to the quest if that's the last mandatory objective.
+	// * @param QuestID The ID of the quest. If None, will scan all active quests and complete any task with TaskIdentifier
+	// * @param TaskIdentifier The identifier of the task within the quest (required)
+	// * @returns Whether the task was successfully completed
+	// 
 	UFUNCTION(BlueprintCallable)
 	bool CompleteTask(FName QuestID, FName TaskIdentifier);
 
-	/**
-	 * Increment task progress. Increases the number value on a task, clamping it to the min/max numbers in the quest
-	 * definition. If this increment takes the task number to the target, it completes the task as per CompleteTask.
-	 * @param QuestID The ID of the quest. If None, will scan all active quests and progress any task with TaskIdentifier
-	 * @param TaskIdentifier The identifier of the task within the quest
-	 * @param Delta The change to make to the number on the task
-	 * @returns The number of "things" outstanding on the task after progress was applied
-	 */
+	//*
+	// * Increment task progress. Increases the number value on a task, clamping it to the min/max numbers in the quest
+	// * definition. If this increment takes the task number to the target, it completes the task as per CompleteTask.
+	// * @param QuestID The ID of the quest. If None, will scan all active quests and progress any task with TaskIdentifier
+	// * @param TaskIdentifier The identifier of the task within the quest
+	// * @param Delta The change to make to the number on the task
+	// * @returns The number of "things" outstanding on the task after progress was applied
+	// 
 	UFUNCTION(BlueprintCallable)
 	int ProgressTask(FName QuestID, FName TaskIdentifier, int Delta);
 
-	/**
-	 * Directly set the current completed number on a specific task. An alternative to the delta version ProgressTask. 
-	 * @param QuestID The ID of the quest. If None, will scan all active quests and set any task with TaskIdentifier
-	 * @param TaskIdentifier The identifier of the task within the quest
-	 * @param Number The number of completed items to set the task to
-	 */
+	//*
+	// * Directly set the current completed number on a specific task. An alternative to the delta version ProgressTask. 
+	// * @param QuestID The ID of the quest. If None, will scan all active quests and set any task with TaskIdentifier
+	// * @param TaskIdentifier The identifier of the task within the quest
+	// * @param Number The number of completed items to set the task to
+	// 
 	UFUNCTION(BlueprintCallable)
 	void SetTaskNumberCompleted(FName QuestID, FName TaskIdentifier, int Number);
 
-	/**
-	 * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
-	 * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
-	 * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
-	 * Has no effect on tasks which are incomplete.
-	 * @param QuestID The ID of the quest. If None, will scan all active quests and resolve any task with TaskIdentifier
-	 * @param TaskIdentifier The identifier of the task within the quest (required)
-	 */
+	//*
+	// * Resolve the outcome of a completed/failed task; activate the next task, or complete/fail the quest if it's the last.
+	// * You do not normally need to call this, tasks resolve automatically on completion/failure by default. However if
+	// * the task definition sets "ResolveAutomatically" to false then you have to call this to resolve it.
+	// * Has no effect on tasks which are incomplete.
+	// * @param QuestID The ID of the quest. If None, will scan all active quests and resolve any task with TaskIdentifier
+	// * @param TaskIdentifier The identifier of the task within the quest (required)
+	// 
 	UFUNCTION(BlueprintCallable)
 	void ResolveTask(FName QuestID, FName TaskIdentifier);
 
@@ -1087,10 +1087,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool QuestDependenciesMet(const FName& QuestID);
 
-	/**
-	 * Add an object which can provide parameter values
-	 * @param Provider An object which implements ISuqsParameterProvider. Will be held by WEAK pointer!
-	 */
+	//*
+	// * Add an object which can provide parameter values
+	// * @param Provider An object which implements ISuqsParameterProvider. Will be held by WEAK pointer!
+	// 
 	UFUNCTION(BlueprintCallable)
 	void AddParameterProvider(UObject* Provider);	
 	UFUNCTION(BlueprintCallable)
@@ -1136,19 +1136,19 @@ public:
 	virtual TStatId GetStatId() const override;
 	// FTickableGameObject end
 
-	/**
-	 * @brief 
-	 * @param JsonString Quest definition in a JSON string
-	 * @return A quest data table suitable for adding to USuqsProgression's QuestDataTables property
-	 */
+	//*
+	// * @brief 
+	// * @param JsonString Quest definition in a JSON string
+	// * @return A quest data table suitable for adding to USuqsProgression's QuestDataTables property
+	// 
 	UFUNCTION(BlueprintCallable, Category="SUQS")
 	static UDataTable* MakeQuestDataTableFromJSON(const FString& JsonString);
 	
-	/**
-	 * @brief Helper function to get the description of a progress event 
-	 * @param Evt The event
-	 * @return A string description
-	 */
+	//*
+	// * @brief Helper function to get the description of a progress event 
+	// * @param Evt The event
+	// * @return A string description
+	// 
 	UFUNCTION(BlueprintCallable, Category="SUQS")
 	static FString GetProgressEventDescription(const FSuqsProgressionEventDetails& Evt);
 
@@ -1156,3 +1156,4 @@ public:
 	static bool GetTextNeedsFormatting(const FText& Text);
 };
 #endif
+*/
