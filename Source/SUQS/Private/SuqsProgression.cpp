@@ -787,95 +787,237 @@ bool USuqsProgression::QuestDependenciesMet(const FName& QuestID)
 
 void USuqsProgression::AddParameterProvider(UObject* Provider)
 {
-
+	if (IsValid(Provider) && Provider->Implements<USuqsParameterProvider>()) // ¡Ø Implements<T> : Check whenter Object Implemented T's Interface's Function
+	{
+		const int PrevNum = ParameterProviders.Num();
+		const int NewIdx = ParameterProviders.AddUnique(Provider);
+		if (NewIdx >= PrevNum)
+		{
+			OnParameterProvidersChanged.Broadcast(this);
+		}
+	}
+	else
+	{
+		UE_LOG(LogSUQS, Error, TEXT("Provider passed to AddFormatter is either invalid or doesn't implement ISuqsParameterProvider, ignoring."));
+	}
 }
 
 void USuqsProgression::RemoveParameterProvider(UObject* Provider)
 {
-
+	ParameterProviders.Remove(Provider);
 }
 
 void USuqsProgression::RemoveAllParameterProviders()
 {
-
+	ParameterProviders.Empty();
 }
 
 FText USuqsProgression::FormatQuestOrTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText)
 {
+	if (IsValid(FormatParams) == false)
+	{
+		FormatParams = NewObject<USuqsNamedFormatParams>();
+	}	
+	else
+	{
+		FormatParams->Empty();
+	}
 
+	for (int i = 0; i < ParameterProviders.Num(); i++)
+	{
+		const TWeakObjectPtr<UObject>& F = ParameterProviders[i];
+		if (F.IsValid())
+		{
+			ISuqsParameterProvider::Execute_GetQuestParameters(F.Get(), QuestID, TaskID, FormatParams);
+		}
+		else
+		{
+			ParameterProviders.RemoveAt(i);
+			i--;
+		}
+	}
+
+	return FormatParams->Format(FormatText);
 }
 
 FText USuqsProgression::FormatQuestText(const FName& QuestID, const FText& FormatText)
 {
-
+	static FName NoTaskID;
+	return FormatQuestOrTaskText(QuestID, NoTaskID, FormatText);
 }
 
 FText USuqsProgression::FormatTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText)
 {
-
+	return FormatQuestOrTaskText(QuestID, TaskID, FormatText);
 }
 
 bool USuqsProgression::GetTextNeedsFormatting(const FText& Text)
 {
+	TArray<FString> Params;
+	FText::GetFormatPatternParameters(Text, Params); // ¡Ø Text '{Hello} - {World} -> Params Add  'Hello' && 'World
 
+	return Params.Num() > 0;
 }
 
 void USuqsProgression::RaiseTaskUpdated(USuqsTaskState* Task)
 {
+	if (bSuppressEvents == false)
+	{
+		OnTaskUpdated.Broadcast(Task);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::TaskUpdated, Task));
 
+		const TArray<USuqsWaypointComponent*>& Waypoints = Task->GetWaypoints(false);
+		for (USuqsWaypointComponent* const W : Waypoints)
+		{
+			W->SetIsCurrent(Task->IsIncomplete());
+		}
+	}
 }
 
 void USuqsProgression::RaiseTaskCompleted(USuqsTaskState* Task)
 {
-	
+	if (bSuppressEvents == false)
+	{
+		OnTaskCompleted.Broadcast(Task);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::TaskCompleted, Task));
+	}
+
+	const TArray<USuqsWaypointComponent*>& Waypoints = Task->GetWaypoints(false);
+	for (USuqsWaypointComponent* const W : Waypoints)
+	{
+		W->SetIsCurrent(false);
+	}
 }
 
 void USuqsProgression::RaiseTaskAdded(USuqsTaskState* Task)
 {
+	if (bSuppressEvents == false)
+	{
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::TaskAdded, Task));
+	}
+
+	const TArray<USuqsWaypointComponent*>& Waypoints = Task->GetWaypoints(false);
+	for (USuqsWaypointComponent* W : Waypoints)
+	{
+		W->SetIsCurrent(true);
+
+		if(bSubcribedToWaypointEvents == false)
+		{
+			const UGameInstance* GI = UGameplayStatics::GetGameInstance(W);
+			if (IsValid(GI))
+			{
+				USuqsWaypointSubsystem* Suqs = GI->GetSubsystem<USuqsWaypointSubsystem>();
+				Suqs->OnAnyWaypointMoved.AddDynamic(this, &USuqsProgression::OnWaypointMoved);
+				Suqs->OnAnyWaypointEnabledChanged.AddDynamic(this, &USuqsProgression::OnWaypointEnabledChanged);
+				bSubcribedToWaypointEvents = true;
+			}
+		}
+	}
 
 }
 
 void USuqsProgression::RaiseTaskRemoved(USuqsTaskState* Task)
 {
+	if (bSuppressEvents == false)
+	{
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::TaskRemoved, Task));
+	}
 
+	const TArray<USuqsWaypointComponent*>& Waypoints = Task->GetWaypoints(false);
+	for (USuqsWaypointComponent* W : Waypoints)
+	{
+		W->SetIsCurrent(false);
+	}
 }
 
 void USuqsProgression::RaiseTaskFailed(USuqsTaskState* Task)
 {
+	if (bSuppressEvents == false)
+	{
+		OnTaskFailed.Broadcast(Task);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::TaskFailed, Task));
+	}
 
-	
+	const TArray<USuqsWaypointComponent*>& Waypoints = Task->GetWaypoints(false);
+	for (USuqsWaypointComponent* W : Waypoints)
+	{
+		W->SetIsCurrent(false);
+	}	
 }
 
 
 void USuqsProgression::RaiseObjectiveCompleted(USuqsObjectiveState* Objective)
 {
-
+	if (bSuppressEvents == false)
+	{
+		OnObjectiveCompleted.Broadcast(Objective);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::ObjectiveCompleted, Objective));
+	}
 }
 
 void USuqsProgression::RaiseObjectiveFailed(USuqsObjectiveState* Objective)
 {
-
+	if (bSuppressEvents == false)
+	{
+		OnObjectiveFailed.Broadcast(Objective);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::ObjectiveFailed, Objective));
+	}
 }
 
 
 void USuqsProgression::RaiseQuestCompleted(USuqsQuestState* Quest)
 {
-
+	if (bSuppressEvents == false)
+	{
+		OnQuestCompleted.Broadcast(Quest);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::QuestCompleted, Quest));
+	}
 }
 
 void USuqsProgression::RaiseQuestFailed(USuqsQuestState* Quest)
 {
-
+	if (bSuppressEvents == false)
+	{
+		OnQuestFailed.Broadcast(Quest);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::QuestFailed, Quest));
+	}
 }
 
 void USuqsProgression::RaiseQuestReset(USuqsQuestState* Quest)
 {
+	const int NumRemoved = QuestArchive.Remove(Quest->GetIdentifier());
+	ActiveQuests.Add(Quest->GetIdentifier(), Quest);
 
+	if (bSuppressEvents == false)
+	{
+		OnQuestAccepted.Broadcast(Quest);
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::QuestAccepted, Quest));
+
+		if (NumRemoved > 0)
+		{
+			OnActiveQuestsListChanged.Broadcast();
+			OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::ActiveQuestsChanged));
+		}
+	}
 }
 
 void USuqsProgression::RaiseCurrentObjectiveChanged(USuqsQuestState* Quest)
 {
+	if (bSuppressEvents == false)
+	{
+		OnProgressionEvent.Broadcast(FSuqsProgressionEventDetails(ESuqsProgressionEventType::QuestCurrentObjectiveChanged, Quest));
+		
 
+		if (const USuqsObjectiveState* Obj = Quest->GetCurrentObjective())
+		{
+			TArray<USuqsTaskState*> Tasks;
+			Obj->GetAllRelevantTasks(Tasks);
+			for (USuqsTaskState* T : Tasks)
+			{
+				RaiseTaskAdded(T);
+			}
+		}
+	}
 }
 
 void USuqsProgression::ProcessQuestStatusChange(USuqsQuestState* Quest)
