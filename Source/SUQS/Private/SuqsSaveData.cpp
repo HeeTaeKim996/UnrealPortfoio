@@ -272,7 +272,7 @@ void FSuqsSaveData::Serialize(FArchive& Ar)
 
 
 
-
+/*
 #if 0
 constexpr int CurrentFileVersion = 2;
 
@@ -447,3 +447,4 @@ void FSuqsSaveData::Serialize(FArchive& Ar)
 		SaveToArchive(Ar);
 }
 #endif
+*/
