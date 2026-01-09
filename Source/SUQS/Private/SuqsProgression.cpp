@@ -677,38 +677,112 @@ bool USuqsProgression::IsQuestBranchActive(FName QuestID, FName Branch)
 
 void USuqsProgression::SetGlobalQuestBranchActive(FName Branch, bool bActive)
 {
+	if (Branch.IsNone()) return;
 
+	bool bChanged = false;
+	if (bActive)
+	{
+		if (GlobalActiveBranches.Contains(Branch))
+		{
+			GlobalActiveBranches.Add(Branch);
+			bChanged = true;
+		}
+	}
+	else
+	{
+		bChanged = GlobalActiveBranches.Remove(Branch) > 0;
+	}
+
+	if (bChanged)
+	{
+		TArray<USuqsQuestState*> ListCopy;
+		ActiveQuests.GenerateValueArray(ListCopy);
+		for (USuqsQuestState* Q : ListCopy)
+		{
+			Q->SetBranchActive(Branch, bActive);
+		}
+	}
 }
 
 void USuqsProgression::ResetGlobalQuestBranches()
 {
+	for (const FName& Branch : GlobalActiveBranches)
+	{
+		TArray<USuqsQuestState*> ListCopy;
+		ActiveQuests.GenerateValueArray(ListCopy);
+		for (USuqsQuestState* Q : ListCopy)
+		{
+			Q->SetBranchActive(Branch, false);
+		}
+	}
 
+	GlobalActiveBranches.Empty();
 }
 
 bool USuqsProgression::IsGlobalQuestBranchActive(FName Branch)
 {
-	
+	if (Branch.IsNone()) return;
+
+	return GlobalActiveBranches.Contains(Branch);
 }
 
 const TArray<FName>& USuqsProgression::GetGlobalActiveQuestBranches() const
 {
-
+	return GlobalActiveBranches;
 }
 
 void USuqsProgression::SetGateOpen(FName GateName, bool bOpen)
 {
+	if (GateName.IsNone()) return;
 
+	if (bOpen)
+	{
+		bool bWasAlreadyPresent;
+		OpenGates.Add(GateName, &bWasAlreadyPresent);
+		if (bWasAlreadyPresent == false)
+		{
+			TArray<USuqsQuestState*> ActiveQuestList;
+			ActiveQuests.GenerateValueArray(ActiveQuestList);
+			for (USuqsQuestState* Quest : ActiveQuestList)
+			{
+				Quest->NotifyGateOpened(GateName);
+			}
+		}
+	}
+	else
+	{
+		OpenGates.Remove(GateName); 
+	}
 }
 
 bool USuqsProgression::IsGateOpen(FName GateName)
 {
+	if (GateName.IsNone()) return true;
 
+	return OpenGates.Contains(GateName);
 }
 
 bool USuqsProgression::QuestDependenciesMet(const FName& QuestID)
 {
-
-	
+	if (const FSuqsQuest* QuestDef = QuestDefinitions.Find(QuestID))
+	{
+		for (const FName& RequiredCompletedID : QuestDef->PrerequisiteQuests)
+		{
+			if (IsQuestCompleted(RequiredCompletedID) == false)
+			{
+				return false;
+			}
+		}
+		for (const FName& RequiredFailedID : QuestDef->PrerequisiteQuestFailures)
+		{
+			if (IsQuestFailed(RequiredFailedID) == false)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 void USuqsProgression::AddParameterProvider(UObject* Provider)
