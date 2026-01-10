@@ -1485,7 +1485,7 @@ void USuqsProgression::OnWaypointEnabledChanged(USuqsWaypointComponent* Waypoint
 
 
 
-
+/*
 #if 0
 #define SuqsCurrentDataVersion 1
 
@@ -2817,3 +2817,4 @@ void USuqsProgression::OnWaypointEnabledChanged(USuqsWaypointComponent* Waypoint
 }
 //PRAGMA_ENABLE_OPTIMIZATION
 #endif
+*/

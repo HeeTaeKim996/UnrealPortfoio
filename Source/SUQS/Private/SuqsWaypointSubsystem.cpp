@@ -4,6 +4,260 @@
 
 void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
 {
+	TArray<USuqsWaypointComponent*>& List = WaypointsByQuest.FindOrAdd(Waypoint->GetQuestID());
+
+	bool bInserted = false;
+	bool bExistingTask = false;
+
+	for (int i = 0; i < List.Num(); i++)
+	{
+		const USuqsWaypointComponent* Curr = List[i];
+
+		if (Curr == Waypoint)
+		{
+			bInserted = true;
+		}
+
+		if (Curr->GetTaskID() == Waypoint->GetTaskID())
+		{
+			bExistingTask = true;
+		}
+
+		if (bExistingTask &&
+			(Curr->GetSequenceIndex() > Waypoint->GetSequenceIndex() || Curr->GetTaskID() != Waypoint->GetTaskID())
+			// Upeer is Insertion of 1) ATask.lessNum(inserted) - ATask.UpperNum		2) ATask.LastNum - ATask(inserted) - BTask.first 
+			)
+		{
+			List.Insert(Waypoint, i);
+			bInserted = true;
+			break;
+		}
+	}
+
+
+	if (bInserted == false)
+		// Upper is Insertion of : ATask... CTask. NewTask(inserted) - (blank)
+	{
+		List.Add(Waypoint);
+		bInserted = true;
+	}
+
+	if (bInserted)
+	{
+		if (Progression.IsValid())
+		{
+			Waypoint->SetIsCurrent(Progression->IsTaskRelevant(Waypoint->GetQuestID(), Waypoint->GetTaskID()));
+		}
+		Waypoint->OnWaypointMoved.AddDynamic(this, &USuqsWaypointSubsystem::OnWaypointMoved);
+		Waypoint->OnWaypointEnabledChanged.AddDynamic(this, &USuqsWaypointSubsystem::OnWaypointEnabledChanged);
+		Waypoint->OnWaypointIsCurrentChanged.AddDynamic(this, &USuqsWaypointSubsystem::OnWaypointIsCurrentChanged);
+	}
+}
+
+void USuqsWaypointSubsystem::UnregisterWaypoint(USuqsWaypointComponent* Waypoint)
+{
+	TArray<USuqsWaypointComponent*>* const pList = WaypointsByQuest.Find(Waypoint->GetQuestID());
+	if (pList)
+	{
+		pList->RemoveSingle(Waypoint);
+		Waypoint->OnWaypointMoved.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointMoved);
+		Waypoint->OnWaypointEnabledChanged.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointEnabledChanged);
+		Waypoint->OnWaypointIsCurrentChanged.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointIsCurrentChanged);
+	}
+}
+
+USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled)
+{
+	TArray<USuqsWaypointComponent*>* const pList = WaypointsByQuest.Find(QuestID);
+	if (pList)
+	{
+		for (USuqsWaypointComponent* W : *pList)
+		{
+			if (W->GetTaskID() == TaskID &&
+				(bOnlyEnabled == false || W->IsEnabled())
+				)
+			{
+				return W;
+			}
+		}
+	}
+	return nullptr;
+}
+
+bool USuqsWaypointSubsystem::GetWaypoints(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled, TArray<USuqsWaypointComponent*>& OutWaypoints)
+{
+	TArray<USuqsWaypointComponent*>* const pList = WaypointsByQuest.Find(QuestID);
+	bool bAnyFound = false;
+	if (pList)
+	{
+		bool bFoundTask = false;
+		for (USuqsWaypointComponent* W : *pList)
+		{
+			if (W->GetTaskID() == TaskID)
+			{
+				bFoundTask = true;
+				if (bOnlyEnabled == false || W->IsEnabled())
+				{
+					OutWaypoints.Add(W);
+					bAnyFound = true;
+				}
+			}
+			else if (bFoundTask)
+			{
+				break;
+			}
+		}
+	}
+	return bAnyFound;
+}
+
+void USuqsWaypointSubsystem::SetProgression(USuqsProgression* Prog)
+{
+	if (Progression.IsValid())
+	{
+		Progression->OnProgressionLoaded.RemoveDynamic(this, &USuqsWaypointSubsystem::OnProgressionLoaded);
+	}
+
+	Progression = Prog;
+
+	if (IsValid(Prog))
+	{
+		Prog->OnProgressionLoaded.AddDynamic(this, &USuqsWaypointSubsystem::OnProgressionLoaded);
+	}
+}
+
+void USuqsWaypointSubsystem::OnProgressionLoaded(USuqsProgression* Prog)
+{
+	if (Progression.Get() == Prog)
+	{
+		for (const TPair<FName, TArray<USuqsWaypointComponent*>>& Pair : WaypointsByQuest)
+		{
+			const TArray<USuqsWaypointComponent*>& Waypoints = Pair.Value;
+			for (USuqsWaypointComponent* W : Waypoints)
+			{
+				W->SetIsCurrent(Progression->IsTaskRelevant(W->GetQuestID(), W->GetTaskID()));
+			}
+		}
+	}
+}
+
+void USuqsWaypointSubsystem::OnWaypointMoved(USuqsWaypointComponent* Waypoint)
+{
+	OnAnyWaypointMoved.Broadcast(Waypoint);
+}
+
+void USuqsWaypointSubsystem::OnWaypointEnabledChanged(USuqsWaypointComponent* Waypoint)
+{
+	OnAnyWaypointEnabledChanged.Broadcast(Waypoint);
+}
+
+void USuqsWaypointSubsystem::OnWaypointIsCurrentChanged(USuqsWaypointComponent* Waypoint)
+{
+	OnAnyWaypointIsCurrentChanged.Broadcast(Waypoint);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
+{
 	auto& List = WaypointsByQuest.FindOrAdd(Waypoint->GetQuestID());
 
 	// group by task, then if there's >1 waypoint for a single task, order by sequence index for later convenience
@@ -16,7 +270,7 @@ void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
 		// Avoid duplicates
 		if (Curr == Waypoint)
 			bInserted = true;
-		
+
 		if (Curr->GetTaskID() == Waypoint->GetTaskID())
 		{
 			bExistingTask = true;
@@ -27,7 +281,7 @@ void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
 		//  or if we're on the same task and our sequence index is before this one
 		if (bExistingTask &&
 			(Curr->GetSequenceIndex() > Waypoint->GetSequenceIndex() ||
-			Curr->GetTaskID() != Waypoint->GetTaskID()))
+				Curr->GetTaskID() != Waypoint->GetTaskID()))
 		{
 			List.Insert(Waypoint, i);
 			bInserted = true;
@@ -66,14 +320,14 @@ void USuqsWaypointSubsystem::UnregisterWaypoint(USuqsWaypointComponent* Waypoint
 		Waypoint->OnWaypointMoved.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointMoved);
 		Waypoint->OnWaypointEnabledChanged.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointEnabledChanged);
 		Waypoint->OnWaypointIsCurrentChanged.RemoveDynamic(this, &USuqsWaypointSubsystem::OnWaypointIsCurrentChanged);
-		
+
 	}
-	
+
 }
 
 USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FName& QuestID,
-                                                            const FName& TaskID,
-                                                            bool bOnlyEnabled)
+	const FName& TaskID,
+	bool bOnlyEnabled)
 {
 	const auto pList = WaypointsByQuest.Find(QuestID);
 	if (pList)
@@ -92,9 +346,9 @@ USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FName& QuestID
 }
 
 bool USuqsWaypointSubsystem::GetWaypoints(const FName& QuestID,
-                                          const FName& TaskID,
-                                          bool bOnlyEnabled,
-                                          TArray<USuqsWaypointComponent*>& OutWaypoints)
+	const FName& TaskID,
+	bool bOnlyEnabled,
+	TArray<USuqsWaypointComponent*>& OutWaypoints)
 {
 	const auto pList = WaypointsByQuest.Find(QuestID);
 	bool bAnyFound = false;
@@ -130,9 +384,9 @@ void USuqsWaypointSubsystem::SetProgression(USuqsProgression* Prog)
 {
 	if (Progression.IsValid())
 		Progression->OnProgressionLoaded.RemoveDynamic(this, &USuqsWaypointSubsystem::OnProgressionLoaded);
-	
+
 	Progression = Prog;
-	
+
 	if (IsValid(Prog))
 		Prog->OnProgressionLoaded.AddDynamic(this, &USuqsWaypointSubsystem::OnProgressionLoaded);
 }
@@ -170,3 +424,4 @@ void USuqsWaypointSubsystem::OnWaypointIsCurrentChanged(USuqsWaypointComponent* 
 	// Just relay
 	OnAnyWaypointIsCurrentChanged.Broadcast(Waypoint);
 }
+#endif
