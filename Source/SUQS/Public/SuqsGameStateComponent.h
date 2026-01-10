@@ -10,13 +10,171 @@
 
 class USuqsProgression;
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSuqsOnProgressViewChanged, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, Progress);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSuqsOnProgressViewChangedWithDiff, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, ProgressSnapshot, const FSuqsProgressViewDiff&, ProgressDiff);
-/**
- * Actor component that should be created on your GameState actor. You don't need to use this, you
- * can use USuqsProgression directly if you'd prefer. But this component is required if you intend
- * to use SUQS in multiplayer.
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSuqsOnProgressViewChangedWithDiff, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, ProgressSnapshot,
+	const FSuqsProgressViewDiff&, ProgressDiff);
+
+
+
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class SUQS_API USuqsGameStateComponent : public UActorComponent
+{
+	GENERATED_BODY()
+protected:
+	UPROPERTY()
+	USuqsProgression* ServerProgression = nullptr;
+
+	bool bServerPendingChanges = false;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Progress)
+	FSuqsProgressView ProgressView;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIncludeCompletedObjectives = false;
+
+	FSuqsProgressView PreviousProgressView;
+	FSuqsProgressViewDiff ProgressDiff;
+
+	UFUNCTION()
+	void OnProgressionEvent(const FSuqsProgressionEventDetails& Details);
+
+	void InitServerProgress();
+	void FireChangedEvent();
+
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FSuqsOnProgressViewChanged OnProgressChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FSuqsOnProgressViewChangedWithDiff OnProgressChangedWithDiff;
+
+	USuqsGameStateComponent();
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	USuqsProgression* GetServerProgression();
+
+	bool GetIncludeCompletedObjectives() const
+	{
+		return bIncludeCompletedObjectives;
+	}
+
+	void SetIncludeCompletedObjectives(const bool bInclude)
+	{
+		bIncludeCompletedObjectives = bInclude;
+	}
+
+	UFUNCTION(BlueprintPure)
+	const FSuqsProgressView& GetProgress() const { return ProgressView; }
+
+	UFUNCTION()
+	void OnRep_Progress();
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSuqsOnProgressViewChanged, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, Progress);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSuqsOnProgressViewChangedWithDiff, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, ProgressSnapshot, 
+	const FSuqsProgressViewDiff&, ProgressDiff);
+//*
+// * Actor component that should be created on your GameState actor. You don't need to use this, you
+// * can use USuqsProgression directly if you'd prefer. But this component is required if you intend
+// * to use SUQS in multiplayer.
+// 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SUQS_API USuqsGameStateComponent : public UActorComponent
 {
@@ -93,3 +251,5 @@ public:
 		ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
 };
+#endif
+*/
