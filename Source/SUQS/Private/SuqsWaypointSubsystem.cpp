@@ -2,6 +2,8 @@
 #include "SuqsProgression.h"
 #include "SuqsWaypointComponent.h"
 
+
+
 void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
 {
 	TArray<USuqsWaypointComponent*>& List = WaypointsByQuest.FindOrAdd(Waypoint->GetQuestID());
@@ -254,7 +256,7 @@ void USuqsWaypointSubsystem::OnWaypointIsCurrentChanged(USuqsWaypointComponent* 
 
 
 
-
+/*
 #if 0
 void USuqsWaypointSubsystem::RegisterWaypoint(USuqsWaypointComponent* Waypoint)
 {
@@ -425,3 +427,4 @@ void USuqsWaypointSubsystem::OnWaypointIsCurrentChanged(USuqsWaypointComponent* 
 	OnAnyWaypointIsCurrentChanged.Broadcast(Waypoint);
 }
 #endif
+*/
