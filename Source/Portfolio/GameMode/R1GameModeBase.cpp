@@ -6,6 +6,7 @@
 #include "System/Subsystem/SaveGame/SaveDataManager.h"
 #include "System/Subsystem/SaveGame/SaveData/MainSaveData.h"
 #include "GameFramework/PlayerStart.h"
+#include "System/MainGameStateBase.h"
 
 void AR1GameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -13,6 +14,19 @@ void AR1GameModeBase::InitGame(const FString& MapName, const FString& Options, F
 
 	UInventoryManager* InventoryManager = UInventoryManager::Get(GetWorld());
 	InventoryManager->AddDefaultItems();
+
+
+
+}
+
+void AR1GameModeBase::InitGameState()
+{
+	Super::InitGameState();
+
+	AMainGameStateBase* GS = GetGameState<AMainGameStateBase>();
+	ensureAlwaysMsgf(GS, TEXT("GS is not MainGameStteBase"));
+
+	GS->Initialize_SuqsGameStateComponent();
 }
 
 AActor* AR1GameModeBase::ChoosePlayerStart_Implementation(AController* Player)
