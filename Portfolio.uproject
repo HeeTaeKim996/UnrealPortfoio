@@ -28,7 +28,11 @@
 		},
 		{
 			"Name": "SUQS",
-			"Type": "Runtime"
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [

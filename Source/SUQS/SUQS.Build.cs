@@ -15,6 +15,7 @@ public class SUQS : ModuleRules
 
         PrivateIncludePaths.AddRange(
             new string[] {
+				"SUQS"
             }
             );
 

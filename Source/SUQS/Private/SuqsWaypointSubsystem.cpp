@@ -1,6 +1,7 @@
 ﻿#include "SuqsWaypointSubsystem.h"
 #include "SuqsProgression.h"
 #include "SuqsWaypointComponent.h"
+#include "QuestActorSubsystem.h"
 
 
 
@@ -127,6 +128,8 @@ void USuqsWaypointSubsystem::SetProgression(USuqsProgression* Prog)
 		Prog->OnProgressionLoaded.AddDynamic(this, &USuqsWaypointSubsystem::OnProgressionLoaded);
 	}
 }
+
+
 
 void USuqsWaypointSubsystem::OnProgressionLoaded(USuqsProgression* Prog)
 {
