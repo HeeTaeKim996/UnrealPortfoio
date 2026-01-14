@@ -31,7 +31,7 @@ void FSuqsResolveBarrierStateData::LoadFromArchive(FArchive& Ar, int FileVersion
 {
 	Conditions = B.Conditions;
 	TimeRemaining = B.TimeRemaining;
-	Gate = B.Gate.IsNone() ? "" : B.Gate.ToString();
+	Gate = B.Gate.IsValid() ? B.Gate.ToString() : "";
 	bGrantedExplicitly = B.bGrantedExplicitly;
 	bPending = B.bPending;
 	return *this;

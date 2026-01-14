@@ -45,7 +45,7 @@ public:
 	const FSuqsResolveBarrier& GetResolveBarrier() const { return ResolveBarrier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FName& GetIdentifier() const { return TaskDefinition->Identifier; }
+	const FGameplayTag& GetIdentifier() const { return TaskDefinition->Identifier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsMandatory() const { return TaskDefinition->bMandatory; }
@@ -113,7 +113,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsResolveBlocked() const;
 
-	void NotifyGateOpened(const FName& GateName);
+	void NotifyGateOpened(const FGameplayTag& GateName);
 
 	bool IsHiddenOnCompleteOrFail() const;
 

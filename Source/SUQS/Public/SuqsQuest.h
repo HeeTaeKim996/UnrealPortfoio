@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
 #include "SuqsQuest.generated.h"
 
 #if 1
@@ -11,10 +12,10 @@ struct SUQS_API FSuqsTask
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	FName Identifier;
+	FGameplayTag Identifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	TArray<FName> Labels;
+	TArray<FGameplayTag> Labels;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	FText Title;
@@ -38,7 +39,7 @@ public:
 	float ResolveDelay = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	FName ResolveGate;
+	FGameplayTag ResolveGate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	bool bAlwaysVisible = false;
@@ -52,7 +53,7 @@ struct SUQS_API FSuqsObjective
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
-	FName Identifier;
+	FGameplayTag Identifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	FText Title;
@@ -73,12 +74,12 @@ public:
 	bool bContinueOnFail = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
-	FName Branch;
+	FGameplayTag Branch;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	TArray<FSuqsTask> Tasks;
 
-	const FSuqsTask* FindTask(const FName& Identifier) const;
+	const FSuqsTask* FindTask(const FGameplayTag& Identifier) const;
 };
 
 
@@ -88,10 +89,10 @@ struct SUQS_API FSuqsQuest : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FName Identifier;
+	FGameplayTag Identifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	TArray<FName> Labels;
+	TArray<FGameplayTag> Labels;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	bool bPlayerVisible = true;
@@ -109,13 +110,13 @@ public:
 	bool AutoAccept = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	TArray<FName> PrerequisiteQuests;
+	TArray<FGameplayTag> PrerequisiteQuests;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	TArray<FName> PrerequisiteQuestFailures;
+	TArray<FGameplayTag> PrerequisiteQuestFailures;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	TArray<FName> DefaultActiveBranches;
+	TArray<FGameplayTag> DefaultActiveBranches;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	bool bResolveAutomatically = true;
@@ -124,12 +125,12 @@ public:
 	float ResolveDelay = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FName ResolveGate;
+	FGameplayTag ResolveGate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	TArray<FSuqsObjective> Objectives;
 
-	const FSuqsObjective* FindObjective(const FName& Identifier) const;
+	const FSuqsObjective* FindObjective(const FGameplayTag& Identifier) const;
 };
 
 

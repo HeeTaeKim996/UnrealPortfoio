@@ -8,6 +8,7 @@
 #include "SuqsSaveData.h"
 #include "SuqsTaskState.h"
 #include "SuqsParameterProvider.h"
+#include "GameplayTagContainer.h"
 #include "SuqsProgression.generated.h"
 
 UENUM(BlueprintType)
@@ -119,20 +120,20 @@ protected:
 	TArray<UDataTable*> QuestDataTables;
 
 	UPROPERTY()
-	TMap<FName, FSuqsQuest> QuestDefinitions;
+	TMap<FGameplayTag, FSuqsQuest> QuestDefinitions;
 
 	UPROPERTY()
-	TMap<FName, USuqsQuestState*> ActiveQuests;
+	TMap<FGameplayTag, USuqsQuestState*> ActiveQuests;
 
 	UPROPERTY()
-	TMap<FName, USuqsQuestState*> QuestArchive;
+	TMap<FGameplayTag, USuqsQuestState*> QuestArchive;
 
-	TArray<FName> GlobalActiveBranches;
-	TSet<FName> OpenGates;
+	TArray<FGameplayTag> GlobalActiveBranches;
+	TSet<FGameplayTag> OpenGates;
 
-	TMultiMap<FName, FName> QuestCompletionDeps;
+	TMultiMap<FGameplayTag, FGameplayTag> QuestCompletionDeps;
 
-	TMultiMap<FName, FName> QuestFailureDeps;
+	TMultiMap<FGameplayTag, FGameplayTag> QuestFailureDeps;
 
 	TArray<TWeakObjectPtr<UObject>> ParameterProviders;
 
@@ -144,15 +145,15 @@ protected:
 	float DefaultTaskResolveTimeDelay = 0;
 	bool bSubcribedToWaypointEvents = false;
 
-	USuqsQuestState* FindQuestState(const FName& QuestID);
-	const USuqsQuestState* FindQuestState(const FName& QuestID) const;
-	USuqsTaskState* FindTaskStatus(const FName& QuestID, const FName& TaskID);
+	USuqsQuestState* FindQuestState(const FGameplayTag& QuestID);
+	const USuqsQuestState* FindQuestState(const FGameplayTag& QuestID) const;
+	USuqsTaskState* FindTaskStatus(const FGameplayTag& QuestID, const FGameplayTag& TaskID);
 
 	void RebuildAllQuestData();
 	void AddQuestDefinitionInternal(const FSuqsQuest& Quest);
-	bool AutoAcceptQuests(const FName& FinishedQuestID, bool bFailed);
-	static void SaveToData(TMap<FName, USuqsQuestState*> Quests, FSuqsSaveData& Data);
-	FText FormatQuestOrTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText);
+	bool AutoAcceptQuests(const FGameplayTag& FinishedQuestID, bool bFailed);
+	static void SaveToData(TMap<FGameplayTag, USuqsQuestState*> Quests, FSuqsSaveData& Data);
+	FText FormatQuestOrTaskText(const FGameplayTag& QuestID, const FGameplayTag& TaskID, const FText& FormatText);
 
 	UFUNCTION()
 	void OnWaypointMoved(USuqsWaypointComponent* Waypoint);
@@ -171,13 +172,13 @@ public:
 	void InitWithQuestDataTablesInPaths(const TArray<FString>& Paths);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetQuestDefinitionCopy(FName QuestID, FSuqsQuest& OutQuest);
+	bool GetQuestDefinitionCopy(FGameplayTag QuestID, FSuqsQuest& OutQuest);
 
 	UFUNCTION(BlueprintCallable)
 	bool CreateQuestDefinition(const FSuqsQuest& NewQuest, bool bOverwriteIfExists = false);
 
 	UFUNCTION(BlueprintCallable)
-	bool DeleteQuestDefinition(FName QuestID);
+	bool DeleteQuestDefinition(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
 	void SetDefaultProgressionTimeDelays(float QuestDelay, float TaskDelay);
@@ -222,34 +223,34 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	const TMap<FName, FSuqsQuest>& GetQuestDefinitions(bool bForceRebuild = false);
+	const TMap<FGameplayTag, FSuqsQuest>& GetQuestDefinitions(bool bForceRebuild = false);
 
 	UFUNCTION(BlueprintCallable)
-	ESuqsQuestStatus GetQuestStatus(FName QuestID) const;
+	ESuqsQuestStatus GetQuestStatus(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestAccepted(FName QuestID) const;
+	bool IsQuestAccepted(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestActive(FName QuestID) const;
+	bool IsQuestActive(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestIncomplete(FName QuestID) const;
+	bool IsQuestIncomplete(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestCompleted(FName QuestID) const;
+	bool IsQuestCompleted(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestFailed(FName QuestID) const;
+	bool IsQuestFailed(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	void GetAcceptedQuestIdentifiers(TArray<FName>& AcceptedQuestIDsOut) const;
+	void GetAcceptedQuestIdentifiers(TArray<FGameplayTag>& AcceptedQuestIDsOut) const;
 
 	UFUNCTION(BlueprintCallable)
-	void GetArchivedQuestIdentifiers(TArray<FName>& ArchivedQuestIDsOut) const;
+	void GetArchivedQuestIdentifiers(TArray<FGameplayTag>& ArchivedQuestIDsOut) const;
 
 	UFUNCTION(BlueprintCallable)
-	USuqsQuestState* GetQuest(FName QuestID);
+	USuqsQuestState* GetQuest(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
 	void GetAcceptedQuests(TArray<USuqsQuestState*>& AcceptedQuestsOut) const;
@@ -272,101 +273,101 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	bool AcceptQuest(FName QuestID, bool bResetIfFailed = true, bool bResetIfComplete = false, bool bResetIfInProgress = false);
+	bool AcceptQuest(FGameplayTag QuestID, bool bResetIfFailed = true, bool bResetIfComplete = false, bool bResetIfInProgress = false);
 
 	UFUNCTION(BlueprintCallable)
-	void ResetQuest(FName QuestID);
+	void ResetQuest(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
-	void RemoveQuest(FName QuestID, bool bRemoveActive = true, bool bRemoveArchived = true);
+	void RemoveQuest(FGameplayTag QuestID, bool bRemoveActive = true, bool bRemoveArchived = true);
 
 	UFUNCTION(BlueprintCallable)
-	void FailQuest(FName QuestID);
+	void FailQuest(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
-	void CompleteQuest(FName QuestID);
+	void CompleteQuest(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
-	void ResolveQuest(FName QuestID);
+	void ResolveQuest(FGameplayTag QuestID);
 
 	UFUNCTION(BlueprintCallable)
-	void FailTask(FName QuestID, FName TaskIdentifier);
+	void FailTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier);
 
 	UFUNCTION(BlueprintCallable)
-	bool CompleteTask(FName QuestID, FName TaskIdentifier);
+	bool CompleteTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier);
 
 	UFUNCTION(BlueprintCallable)
-	int ProgressTask(FName QuestID, FName TaskIdentifier, int Delta);
+	int ProgressTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Delta);
 
 	UFUNCTION(BlueprintCallable)
-	void SetTaskNumberCompleted(FName QuestID, FName TaskIdentifier, int Number);
+	void SetTaskNumberCompleted(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Number);
 
 	UFUNCTION(BlueprintCallable)
-	void ResolveTask(FName QuestID, FName TaskIdentifier);
+	void ResolveTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier);
 
 	UFUNCTION(BlueprintCallable)
-	USuqsObjectiveState* GetCurrentObjective(FName QuestID) const;
+	USuqsObjectiveState* GetCurrentObjective(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveIncomplete(FName QuestID, FName ObjectiveID) const;
+	bool IsObjectiveIncomplete(FGameplayTag QuestID, FGameplayTag ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveCompleted(FName QuestID, FName ObjectiveID) const;
+	bool IsObjectiveCompleted(FGameplayTag QuestID, FGameplayTag ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveFailed(FName QuestID, FName ObjectiveID) const;
+	bool IsObjectiveFailed(FGameplayTag QuestID, FGameplayTag ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
-	void ResetObjective(FName QuestID, FName ObjectiveID);
+	void ResetObjective(FGameplayTag QuestID, FGameplayTag ObjectiveID);
 
 
 	UFUNCTION(BlueprintCallable)
-	USuqsTaskState* GetNextMandatoryTask(FName QuestID) const;
+	USuqsTaskState* GetNextMandatoryTask(FGameplayTag QuestID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskIncomplete(FName QuestID, FName TaskID) const;
+	bool IsTaskIncomplete(FGameplayTag QuestID, FGameplayTag TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskCompleted(FName QuestID, FName TaskID) const;
+	bool IsTaskCompleted(FGameplayTag QuestID, FGameplayTag TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskFailed(FName QuestID, FName TaskID) const;
+	bool IsTaskFailed(FGameplayTag QuestID, FGameplayTag TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskRelevant(FName QuestID, FName TaskID) const;
+	bool IsTaskRelevant(FGameplayTag QuestID, FGameplayTag TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	USuqsTaskState* GetTaskState(FName QuestID, FName TaskID) const;
+	USuqsTaskState* GetTaskState(FGameplayTag QuestID, FGameplayTag TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	void ResetTask(FName QuestID, FName TaskID);
+	void ResetTask(FGameplayTag QuestID, FGameplayTag TaskID);
 
 	UFUNCTION(BlueprintCallable)
-	void SetQuestBranchActive(FName QuestID, FName Branch, bool bActive);
+	void SetQuestBranchActive(FGameplayTag QuestID, FGameplayTag Branch, bool bActive);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestBranchActive(FName QuestID, FName Branch);
+	bool IsQuestBranchActive(FGameplayTag QuestID, FGameplayTag Branch);
 
 	UFUNCTION(BlueprintCallable)
-	void SetGlobalQuestBranchActive(FName Branch, bool bActive);
+	void SetGlobalQuestBranchActive(FGameplayTag Branch, bool bActive);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetGlobalQuestBranches();
 
 	UFUNCTION(BlueprintCallable)
-	bool IsGlobalQuestBranchActive(FName Branch);
+	bool IsGlobalQuestBranchActive(FGameplayTag Branch);
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<FName>& GetGlobalActiveQuestBranches() const;
+	const TArray<FGameplayTag>& GetGlobalActiveQuestBranches() const;
 
 	UFUNCTION(BlueprintCallable)
-	void SetGateOpen(FName GateName, bool bOpen = true);
+	void SetGateOpen(FGameplayTag GateName, bool bOpen = true);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsGateOpen(FName GateName);
+	bool IsGateOpen(FGameplayTag GateName);
 
 	UFUNCTION(BlueprintCallable)
-	bool QuestDependenciesMet(const FName& QuestID);
+	bool QuestDependenciesMet(const FGameplayTag& QuestID);
 
 	UFUNCTION(BlueprintCallable)
 	void AddParameterProvider(UObject* Provider);
@@ -404,12 +405,12 @@ public:
 
 	void RaiseCurrentObjectiveChanged(USuqsQuestState* Quest);
 
-	FText FormatQuestText(const FName& QuestID, const FText& FormatText);
-	FText FormatTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText);
+	FText FormatQuestText(const FGameplayTag& QuestID, const FText& FormatText);
+	FText FormatTaskText(const FGameplayTag& QuestID, const FGameplayTag& TaskID, const FText& FormatText);
 
 	void ProcessQuestStatusChange(USuqsQuestState* Quest);
 
-	const FSuqsQuest* GetQuestDefinition(const FName& QuestID);
+	const FSuqsQuest* GetQuestDefinition(const FGameplayTag& QuestID);
 
 	FSuqsResolveBarrier GetResolveBarrierForTask(const FSuqsTask* Task, ESuqsTaskStatus Status) const;
 

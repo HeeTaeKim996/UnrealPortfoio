@@ -68,11 +68,12 @@ void USuqsWaypointComponent::SetEnabled(bool bNewEnabled)
 }
 
 // Act for RE initialize
-void USuqsWaypointComponent::Initialise(FName InQuestID, FName InTaskID, uint8 InSequenceIndex)
+void USuqsWaypointComponent::Initialise(FGameplayTagContainer InQuestID, FGameplayTagContainer InTaskID, 
+	uint8 InSequenceIndex)
 {
 	if (GetOwnerRole() == ROLE_Authority) // ※ ROLE_Authority : Server. Desont need in Single Play
 	{
-		if (InQuestID.IsNone() == false && InTaskID.IsNone() == false)
+		if (InQuestID.IsValid()  && InTaskID.IsValid())
 		{
 			if (bIsRegistered)
 			{
@@ -112,7 +113,7 @@ void USuqsWaypointComponent::Register()
 {
 	if (GetOwnerRole() == ROLE_Authority && bIsRegistered == false)
 	{
-		if (QuestID.IsNone() == false && TaskID.IsNone() == false && IsValid(GetWorld()))
+		if (QuestID.IsValid() && TaskID.IsValid() && IsValid(GetWorld()))
 		{
 			const UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
 			if (IsValid(GI))

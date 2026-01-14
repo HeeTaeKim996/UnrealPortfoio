@@ -11,6 +11,7 @@
 #include "SuqsWaypointComponent.h"
 #include "SuqsWaypointSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameplayTagsManager.h"
 
 #include "../Custom/QuestActor/QuestActorSubsystem.h" // Custom
 
@@ -51,7 +52,7 @@ void USuqsProgression::InitWithQuestDataTablesInPaths(const TArray<FString>& Pat
 	InitWithQuestDataTables(DataTables);
 }
 
-bool USuqsProgression::GetQuestDefinitionCopy(FName QuestID, FSuqsQuest& OutQuest)
+bool USuqsProgression::GetQuestDefinitionCopy(FGameplayTag QuestID, FSuqsQuest& OutQuest)
 {
 	FSuqsQuest* const QDef = QuestDefinitions.Find(QuestID);
 	if (QDef)
@@ -65,7 +66,7 @@ bool USuqsProgression::GetQuestDefinitionCopy(FName QuestID, FSuqsQuest& OutQues
 
 bool USuqsProgression::CreateQuestDefinition(const FSuqsQuest& NewQuest, bool bOverwriteIfExists)
 {
-	if (NewQuest.Identifier.IsNone())
+	if (NewQuest.Identifier.IsValid() == false)
 	{
 		UE_LOG(LogSUQS, Error, TEXT("CreateQuestDefinition : Identifier is None"));
 		return false;
@@ -89,7 +90,7 @@ bool USuqsProgression::CreateQuestDefinition(const FSuqsQuest& NewQuest, bool bO
 	return true;
 }
 
-bool USuqsProgression::DeleteQuestDefinition(FName QuestID)
+bool USuqsProgression::DeleteQuestDefinition(FGameplayTag QuestID)
 {
 	RemoveQuest(QuestID, true, true);
 
@@ -152,7 +153,7 @@ void USuqsProgression::RebuildAllQuestData()
 void USuqsProgression::AddQuestDefinitionInternal(const FSuqsQuest& Quest)
 {
 	// Just Check task IDs are unique
-	TSet<FName> TaskIDSet;
+	TSet<FGameplayTag> TaskIDSet;
 	for (const FSuqsObjective& Objective : Quest.Objectives)
 	{
 		for (const FSuqsTask& Task : Objective.Tasks)
@@ -171,11 +172,11 @@ void USuqsProgression::AddQuestDefinitionInternal(const FSuqsQuest& Quest)
 
 	if (Quest.AutoAccept)
 	{
-		for (const FName& CompletedQuest : Quest.PrerequisiteQuests)
+		for (const FGameplayTag& CompletedQuest : Quest.PrerequisiteQuests)
 		{
 			QuestCompletionDeps.Add(CompletedQuest, Quest.Identifier);
 		}
-		for (const FName& FailedQuest : Quest.PrerequisiteQuestFailures)
+		for (const FGameplayTag& FailedQuest : Quest.PrerequisiteQuestFailures)
 		{
 			QuestFailureDeps.Add(FailedQuest, Quest.Identifier);
 		}
@@ -183,7 +184,7 @@ void USuqsProgression::AddQuestDefinitionInternal(const FSuqsQuest& Quest)
 
 }
 
-const TMap<FName, FSuqsQuest>& USuqsProgression::GetQuestDefinitions(bool bForceRebuild)
+const TMap<FGameplayTag, FSuqsQuest>& USuqsProgression::GetQuestDefinitions(bool bForceRebuild)
 {
 	if (bForceRebuild)
 	{
@@ -192,7 +193,7 @@ const TMap<FName, FSuqsQuest>& USuqsProgression::GetQuestDefinitions(bool bForce
 	return QuestDefinitions;
 }
 
-ESuqsQuestStatus USuqsProgression::GetQuestStatus(FName QuestID) const
+ESuqsQuestStatus USuqsProgression::GetQuestStatus(FGameplayTag QuestID) const
 {
 	const USuqsQuestState* State = FindQuestState(QuestID);
 
@@ -206,14 +207,14 @@ ESuqsQuestStatus USuqsProgression::GetQuestStatus(FName QuestID) const
 	}
 }
 
-USuqsQuestState* USuqsProgression::GetQuest(FName QuestID)
+USuqsQuestState* USuqsProgression::GetQuest(FGameplayTag QuestID)
 {
 	USuqsQuestState* State = FindQuestState(QuestID);
 	return State;
 }
 
 
-USuqsQuestState* USuqsProgression::FindQuestState(const FName& QuestID)
+USuqsQuestState* USuqsProgression::FindQuestState(const FGameplayTag& QuestID)
 {
 	USuqsQuestState* const* PQ = ActiveQuests.Find(QuestID);
 	if (PQ)
@@ -228,12 +229,12 @@ USuqsQuestState* USuqsProgression::FindQuestState(const FName& QuestID)
 	return nullptr;
 }
 
-const USuqsQuestState* USuqsProgression::FindQuestState(const FName& QuestID) const
+const USuqsQuestState* USuqsProgression::FindQuestState(const FGameplayTag& QuestID) const
 {
 	return const_cast<USuqsProgression*>(this)->FindQuestState(QuestID);
 }
 
-USuqsTaskState* USuqsProgression::FindTaskStatus(const FName& QuestID, const FName& TaskID)
+USuqsTaskState* USuqsProgression::FindTaskStatus(const FGameplayTag& QuestID, const FGameplayTag& TaskID)
 {
 	USuqsQuestState* Q = FindQuestState(QuestID);
 	if (Q)
@@ -244,12 +245,12 @@ USuqsTaskState* USuqsProgression::FindTaskStatus(const FName& QuestID, const FNa
 }
 
 
-void USuqsProgression::GetAcceptedQuestIdentifiers(TArray<FName>& AcceptedQuestIDsOut) const
+void USuqsProgression::GetAcceptedQuestIdentifiers(TArray<FGameplayTag>& AcceptedQuestIDsOut) const
 {
 	ActiveQuests.GenerateKeyArray(AcceptedQuestIDsOut);
 }
 
-void USuqsProgression::GetArchivedQuestIdentifiers(TArray<FName>& ArchivedQuestIDsOut) const
+void USuqsProgression::GetArchivedQuestIdentifiers(TArray<FGameplayTag>& ArchivedQuestIDsOut) const
 {
 	QuestArchive.GenerateKeyArray(ArchivedQuestIDsOut);
 }
@@ -265,7 +266,7 @@ void USuqsProgression::GetArchivedQuests(TArray<USuqsQuestState*>& ArchivedQuest
 	QuestArchive.GenerateValueArray(ArchivedQuestsOut);
 }
 
-bool USuqsProgression::AcceptQuest(FName QuestID, bool bResetIfFailed, bool bResetIfComplete, bool bResetIfInProgress)
+bool USuqsProgression::AcceptQuest(FGameplayTag QuestID, bool bResetIfFailed, bool bResetIfComplete, bool bResetIfInProgress)
 {
 	const FSuqsQuest* QDef = QuestDefinitions.Find(QuestID);
 	if (QDef)
@@ -324,7 +325,7 @@ bool USuqsProgression::AcceptQuest(FName QuestID, bool bResetIfFailed, bool bRes
 				RaiseCurrentObjectiveChanged(Quest);
 			}
 
-			for (const FName& Branch : GlobalActiveBranches)
+			for (const FGameplayTag& Branch : GlobalActiveBranches)
 			{
 				Quest->SetBranchActive(Branch, true);
 			}
@@ -340,10 +341,10 @@ bool USuqsProgression::AcceptQuest(FName QuestID, bool bResetIfFailed, bool bRes
 }
 
 
-bool USuqsProgression::AutoAcceptQuests(const FName& FinishedQuestID, bool bFailed)
+bool USuqsProgression::AutoAcceptQuests(const FGameplayTag& FinishedQuestID, bool bFailed)
 {
 	bool bAnyAccepted = false;
-	TArray<FName> DependantQuestIDs;
+	TArray<FGameplayTag> DependantQuestIDs;
 	if (bFailed)
 	{
 		QuestFailureDeps.MultiFind(FinishedQuestID, DependantQuestIDs);
@@ -352,7 +353,7 @@ bool USuqsProgression::AutoAcceptQuests(const FName& FinishedQuestID, bool bFail
 	{
 		QuestCompletionDeps.MultiFind(FinishedQuestID, DependantQuestIDs);
 	}
-	for (const FName& DepQuestID : DependantQuestIDs)
+	for (const FGameplayTag& DepQuestID : DependantQuestIDs)
 	{
 		if (IsQuestAccepted(DepQuestID) == false && QuestDependenciesMet(DepQuestID))
 		{
@@ -363,7 +364,7 @@ bool USuqsProgression::AutoAcceptQuests(const FName& FinishedQuestID, bool bFail
 	return bAnyAccepted;
 }
 
-void USuqsProgression::ResetQuest(FName QuestID)
+void USuqsProgression::ResetQuest(FGameplayTag QuestID)
 {
 	USuqsQuestState* Q = FindQuestState(QuestID);
 	if (Q)
@@ -372,7 +373,7 @@ void USuqsProgression::ResetQuest(FName QuestID)
 	}
 }
 
-void USuqsProgression::RemoveQuest(FName QuestID, bool bRemoveActive, bool bRemoveArchived)
+void USuqsProgression::RemoveQuest(FGameplayTag QuestID, bool bRemoveActive, bool bRemoveArchived)
 {
 	if (bRemoveActive)
 	{
@@ -384,7 +385,7 @@ void USuqsProgression::RemoveQuest(FName QuestID, bool bRemoveActive, bool bRemo
 	}
 }
 
-void USuqsProgression::FailQuest(FName QuestID)
+void USuqsProgression::FailQuest(FGameplayTag QuestID)
 {
 	USuqsQuestState* Q = FindQuestState(QuestID);
 	if (Q)
@@ -393,7 +394,7 @@ void USuqsProgression::FailQuest(FName QuestID)
 	}
 }
 
-void USuqsProgression::CompleteQuest(FName QuestID)
+void USuqsProgression::CompleteQuest(FGameplayTag QuestID)
 {
 	USuqsQuestState* Q = FindQuestState(QuestID);
 	if (Q)
@@ -402,7 +403,7 @@ void USuqsProgression::CompleteQuest(FName QuestID)
 	}
 }
 
-void USuqsProgression::ResolveQuest(FName QuestID)
+void USuqsProgression::ResolveQuest(FGameplayTag QuestID)
 {
 	USuqsQuestState* Q = FindQuestState(QuestID);
 	if (Q)
@@ -411,11 +412,11 @@ void USuqsProgression::ResolveQuest(FName QuestID)
 	}
 }
 
-void USuqsProgression::FailTask(FName QuestID, FName TaskIdentifier)
+void USuqsProgression::FailTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier)
 {
-	if (QuestID.IsNone())
+	if (QuestID.IsValid() == false)
 	{
-		for (const TPair<FName, USuqsQuestState*>& Pair : ActiveQuests)
+		for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : ActiveQuests)
 		{
 			Pair.Value->FailTask(TaskIdentifier);
 		}
@@ -431,12 +432,12 @@ void USuqsProgression::FailTask(FName QuestID, FName TaskIdentifier)
 }
 
 
-bool USuqsProgression::CompleteTask(FName QuestID, FName TaskIdentifier)
+bool USuqsProgression::CompleteTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier)
 {
-	if (QuestID.IsNone())
+	if (QuestID.IsValid() == false)
 	{
 		bool bCompleted = false;
-		for (const TPair<FName, USuqsQuestState*>& Pair : ActiveQuests)
+		for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : ActiveQuests)
 		{
 			bCompleted = Pair.Value->CompleteTask(TaskIdentifier) || bCompleted;
 		}
@@ -457,12 +458,12 @@ bool USuqsProgression::CompleteTask(FName QuestID, FName TaskIdentifier)
 	return false;
 }
 
-int USuqsProgression::ProgressTask(FName QuestID, FName TaskIdentifier, int Delta)
+int USuqsProgression::ProgressTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Delta)
 {
-	if (QuestID.IsNone())
+	if (QuestID.IsValid() == false)
 	{
 		int MaxLeft = 0;
-		for (const TPair<FName, USuqsQuestState*>& Pair : ActiveQuests)
+		for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : ActiveQuests)
 		{
 			MaxLeft = std::max(Pair.Value->ProgressTask(TaskIdentifier, Delta), MaxLeft);
 		}
@@ -480,13 +481,13 @@ int USuqsProgression::ProgressTask(FName QuestID, FName TaskIdentifier, int Delt
 
 }
 
-void USuqsProgression::SetTaskNumberCompleted(FName QuestID, FName TaskIdentifier, int Number)
+void USuqsProgression::SetTaskNumberCompleted(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Number)
 {
-	if (QuestID.IsNone())
+	if (QuestID.IsValid() == false)
 	{
 		int MaxLeft = 0; // @@ Useless. maybe typo?
 
-		for (const TPair<FName, USuqsQuestState*>& Pair : ActiveQuests)
+		for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : ActiveQuests)
 		{
 			Pair.Value->SetTaskNumberCompleted(TaskIdentifier, Number);
 		}
@@ -501,11 +502,11 @@ void USuqsProgression::SetTaskNumberCompleted(FName QuestID, FName TaskIdentifie
 	}
 }
 
-void USuqsProgression::ResolveTask(FName QuestID, FName TaskIdentifier)
+void USuqsProgression::ResolveTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier)
 {
-	if (QuestID.IsNone())
+	if (QuestID.IsValid() == false)
 	{
-		for (const TPair<FName, USuqsQuestState*>& Pair : ActiveQuests)
+		for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : ActiveQuests)
 		{
 			Pair.Value->ResolveTask(TaskIdentifier);
 		}
@@ -520,7 +521,7 @@ void USuqsProgression::ResolveTask(FName QuestID, FName TaskIdentifier)
 	}
 }
 
-USuqsObjectiveState* USuqsProgression::GetCurrentObjective(FName QuestID) const
+USuqsObjectiveState* USuqsProgression::GetCurrentObjective(FGameplayTag QuestID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -529,7 +530,7 @@ USuqsObjectiveState* USuqsProgression::GetCurrentObjective(FName QuestID) const
 	return nullptr;
 }
 
-bool USuqsProgression::IsQuestAccepted(FName QuestID) const
+bool USuqsProgression::IsQuestAccepted(FGameplayTag QuestID) const
 {
 	if (FindQuestState(QuestID))
 	{
@@ -538,12 +539,12 @@ bool USuqsProgression::IsQuestAccepted(FName QuestID) const
 	return false;
 }
 
-bool USuqsProgression::IsQuestActive(FName QuestID) const
+bool USuqsProgression::IsQuestActive(FGameplayTag QuestID) const
 {
 	return ActiveQuests.Find(QuestID) != nullptr;
 }
 
-bool USuqsProgression::IsQuestIncomplete(FName QuestID) const
+bool USuqsProgression::IsQuestIncomplete(FGameplayTag QuestID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -552,7 +553,7 @@ bool USuqsProgression::IsQuestIncomplete(FName QuestID) const
 	return true;
 }
 
-bool USuqsProgression::IsQuestCompleted(FName QuestID) const
+bool USuqsProgression::IsQuestCompleted(FGameplayTag QuestID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -561,7 +562,7 @@ bool USuqsProgression::IsQuestCompleted(FName QuestID) const
 	return false;
 }
 
-bool USuqsProgression::IsQuestFailed(FName QuestID) const
+bool USuqsProgression::IsQuestFailed(FGameplayTag QuestID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -570,7 +571,7 @@ bool USuqsProgression::IsQuestFailed(FName QuestID) const
 	return false;
 }
 
-bool USuqsProgression::IsObjectiveIncomplete(FName QuestID, FName ObjectiveID) const
+bool USuqsProgression::IsObjectiveIncomplete(FGameplayTag QuestID, FGameplayTag ObjectiveID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -579,7 +580,7 @@ bool USuqsProgression::IsObjectiveIncomplete(FName QuestID, FName ObjectiveID) c
 	return false;
 }
 
-bool USuqsProgression::IsObjectiveCompleted(FName QuestID, FName ObjectiveID) const
+bool USuqsProgression::IsObjectiveCompleted(FGameplayTag QuestID, FGameplayTag ObjectiveID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -588,7 +589,7 @@ bool USuqsProgression::IsObjectiveCompleted(FName QuestID, FName ObjectiveID) co
 	return false;
 }
 
-bool USuqsProgression::IsObjectiveFailed(FName QuestID, FName ObjectiveID) const
+bool USuqsProgression::IsObjectiveFailed(FGameplayTag QuestID, FGameplayTag ObjectiveID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -597,7 +598,7 @@ bool USuqsProgression::IsObjectiveFailed(FName QuestID, FName ObjectiveID) const
 	return false;
 }
 
-void USuqsProgression::ResetObjective(FName QuestID, FName ObjectiveID)
+void USuqsProgression::ResetObjective(FGameplayTag QuestID, FGameplayTag ObjectiveID)
 {
 	if (USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -605,7 +606,7 @@ void USuqsProgression::ResetObjective(FName QuestID, FName ObjectiveID)
 	}
 }
 
-USuqsTaskState* USuqsProgression::GetNextMandatoryTask(FName QuestID) const
+USuqsTaskState* USuqsProgression::GetNextMandatoryTask(FGameplayTag QuestID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -615,7 +616,7 @@ USuqsTaskState* USuqsProgression::GetNextMandatoryTask(FName QuestID) const
 }
 
 
-bool USuqsProgression::IsTaskIncomplete(FName QuestID, FName TaskID) const
+bool USuqsProgression::IsTaskIncomplete(FGameplayTag QuestID, FGameplayTag TaskID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -624,7 +625,7 @@ bool USuqsProgression::IsTaskIncomplete(FName QuestID, FName TaskID) const
 	return true;
 }
 
-bool USuqsProgression::IsTaskCompleted(FName QuestID, FName TaskID) const
+bool USuqsProgression::IsTaskCompleted(FGameplayTag QuestID, FGameplayTag TaskID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -633,7 +634,7 @@ bool USuqsProgression::IsTaskCompleted(FName QuestID, FName TaskID) const
 	return false;
 }
 
-bool USuqsProgression::IsTaskFailed(FName QuestID, FName TaskID) const
+bool USuqsProgression::IsTaskFailed(FGameplayTag QuestID, FGameplayTag TaskID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -642,7 +643,7 @@ bool USuqsProgression::IsTaskFailed(FName QuestID, FName TaskID) const
 	return false;
 }
 
-bool USuqsProgression::IsTaskRelevant(FName QuestID, FName TaskID) const
+bool USuqsProgression::IsTaskRelevant(FGameplayTag QuestID, FGameplayTag TaskID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -651,7 +652,7 @@ bool USuqsProgression::IsTaskRelevant(FName QuestID, FName TaskID) const
 	return false;
 }
 
-USuqsTaskState* USuqsProgression::GetTaskState(FName QuestID, FName TaskID) const
+USuqsTaskState* USuqsProgression::GetTaskState(FGameplayTag QuestID, FGameplayTag TaskID) const
 {
 	if (const USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -660,7 +661,7 @@ USuqsTaskState* USuqsProgression::GetTaskState(FName QuestID, FName TaskID) cons
 	return nullptr;
 }
 
-void USuqsProgression::ResetTask(FName QuestID, FName TaskID)
+void USuqsProgression::ResetTask(FGameplayTag QuestID, FGameplayTag TaskID)
 {
 	if (USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -668,7 +669,7 @@ void USuqsProgression::ResetTask(FName QuestID, FName TaskID)
 	}
 }
 
-void USuqsProgression::SetQuestBranchActive(FName QuestID, FName Branch, bool bActive)
+void USuqsProgression::SetQuestBranchActive(FGameplayTag QuestID, FGameplayTag Branch, bool bActive)
 {
 	if (USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -677,7 +678,7 @@ void USuqsProgression::SetQuestBranchActive(FName QuestID, FName Branch, bool bA
 }
 
 
-bool USuqsProgression::IsQuestBranchActive(FName QuestID, FName Branch)
+bool USuqsProgression::IsQuestBranchActive(FGameplayTag QuestID, FGameplayTag Branch)
 {
 	if (USuqsQuestState* Q = FindQuestState(QuestID))
 	{
@@ -686,9 +687,9 @@ bool USuqsProgression::IsQuestBranchActive(FName QuestID, FName Branch)
 	return false;
 }
 
-void USuqsProgression::SetGlobalQuestBranchActive(FName Branch, bool bActive)
+void USuqsProgression::SetGlobalQuestBranchActive(FGameplayTag Branch, bool bActive)
 {
-	if (Branch.IsNone()) return;
+	if (Branch.IsValid() == false) return;
 
 	bool bChanged = false;
 	if (bActive)
@@ -717,7 +718,7 @@ void USuqsProgression::SetGlobalQuestBranchActive(FName Branch, bool bActive)
 
 void USuqsProgression::ResetGlobalQuestBranches()
 {
-	for (const FName& Branch : GlobalActiveBranches)
+	for (const FGameplayTag& Branch : GlobalActiveBranches)
 	{
 		TArray<USuqsQuestState*> ListCopy;
 		ActiveQuests.GenerateValueArray(ListCopy);
@@ -730,21 +731,21 @@ void USuqsProgression::ResetGlobalQuestBranches()
 	GlobalActiveBranches.Empty();
 }
 
-bool USuqsProgression::IsGlobalQuestBranchActive(FName Branch)
+bool USuqsProgression::IsGlobalQuestBranchActive(FGameplayTag Branch)
 {
-	if (Branch.IsNone()) return true;
+	if (Branch.IsValid() == false) return true;
 
 	return GlobalActiveBranches.Contains(Branch);
 }
 
-const TArray<FName>& USuqsProgression::GetGlobalActiveQuestBranches() const
+const TArray<FGameplayTag>& USuqsProgression::GetGlobalActiveQuestBranches() const
 {
 	return GlobalActiveBranches;
 }
 
-void USuqsProgression::SetGateOpen(FName GateName, bool bOpen)
+void USuqsProgression::SetGateOpen(FGameplayTag GateName, bool bOpen)
 {
-	if (GateName.IsNone()) return;
+	if (GateName.IsValid() == false) return;
 
 	if (bOpen)
 	{
@@ -766,25 +767,25 @@ void USuqsProgression::SetGateOpen(FName GateName, bool bOpen)
 	}
 }
 
-bool USuqsProgression::IsGateOpen(FName GateName)
+bool USuqsProgression::IsGateOpen(FGameplayTag GateName)
 {
-	if (GateName.IsNone()) return true;
+	if (GateName.IsValid() == false) return true;
 
 	return OpenGates.Contains(GateName);
 }
 
-bool USuqsProgression::QuestDependenciesMet(const FName& QuestID)
+bool USuqsProgression::QuestDependenciesMet(const FGameplayTag& QuestID)
 {
 	if (const FSuqsQuest* QuestDef = QuestDefinitions.Find(QuestID))
 	{
-		for (const FName& RequiredCompletedID : QuestDef->PrerequisiteQuests)
+		for (const FGameplayTag& RequiredCompletedID : QuestDef->PrerequisiteQuests)
 		{
 			if (IsQuestCompleted(RequiredCompletedID) == false)
 			{
 				return false;
 			}
 		}
-		for (const FName& RequiredFailedID : QuestDef->PrerequisiteQuestFailures)
+		for (const FGameplayTag& RequiredFailedID : QuestDef->PrerequisiteQuestFailures)
 		{
 			if (IsQuestFailed(RequiredFailedID) == false)
 			{
@@ -823,7 +824,7 @@ void USuqsProgression::RemoveAllParameterProviders()
 	ParameterProviders.Empty();
 }
 
-FText USuqsProgression::FormatQuestOrTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText)
+FText USuqsProgression::FormatQuestOrTaskText(const FGameplayTag& QuestID, const FGameplayTag& TaskID, const FText& FormatText)
 {
 	if (IsValid(FormatParams) == false)
 	{
@@ -851,13 +852,13 @@ FText USuqsProgression::FormatQuestOrTaskText(const FName& QuestID, const FName&
 	return FormatParams->Format(FormatText);
 }
 
-FText USuqsProgression::FormatQuestText(const FName& QuestID, const FText& FormatText)
+FText USuqsProgression::FormatQuestText(const FGameplayTag& QuestID, const FText& FormatText)
 {
-	static FName NoTaskID;
+	static FGameplayTag NoTaskID = FGameplayTag::EmptyTag;
 	return FormatQuestOrTaskText(QuestID, NoTaskID, FormatText);
 }
 
-FText USuqsProgression::FormatTaskText(const FName& QuestID, const FName& TaskID, const FText& FormatText)
+FText USuqsProgression::FormatTaskText(const FGameplayTag& QuestID, const FGameplayTag& TaskID, const FText& FormatText)
 {
 	return FormatQuestOrTaskText(QuestID, TaskID, FormatText);
 }
@@ -1048,7 +1049,7 @@ void USuqsProgression::ProcessQuestStatusChange(USuqsQuestState* Quest)
 	}
 }
 
-const FSuqsQuest* USuqsProgression::GetQuestDefinition(const FName& QuestID)
+const FSuqsQuest* USuqsProgression::GetQuestDefinition(const FGameplayTag& QuestID)
 {
 	return QuestDefinitions.Find(QuestID);
 }
@@ -1071,7 +1072,7 @@ FSuqsResolveBarrier USuqsProgression::GetResolveBarrierForTask(const FSuqsTask* 
 			Barrier.Conditions |= static_cast<int>(ESuqsResolveBarrierCondition::Time);
 			Barrier.TimeRemaining = Task->ResolveDelay;
 		}
-		if (Task->ResolveGate.IsNone() == false)
+		if (Task->ResolveGate.IsValid())
 		{
 			Barrier.Conditions |= static_cast<int>(ESuqsResolveBarrierCondition::Gate);
 			Barrier.Gate = Task->ResolveGate;
@@ -1099,7 +1100,7 @@ FSuqsResolveBarrier USuqsProgression::GetResolveBarrierForQuest(const FSuqsQuest
 		Barrier.Conditions |= static_cast<int>(ESuqsResolveBarrierCondition::Time);
 		Barrier.TimeRemaining = Quest->ResolveDelay;
 	}
-	if (Quest->ResolveGate.IsNone() == false)
+	if (Quest->ResolveGate.IsValid())
 	{
 		Barrier.Conditions |= static_cast<int>(ESuqsResolveBarrierCondition::Gate);
 		Barrier.Gate = Quest->ResolveGate;
@@ -1182,7 +1183,7 @@ void USuqsProgression::LoadFromData(const FSuqsSaveData& Data)
 
 	for (const FSuqsQuestStateData& QData : Data.QuestData)
 	{
-		if(const FSuqsQuest* QDef = GetQuestDefinition(FName(QData.Identifier)))
+		if(const FSuqsQuest* QDef = GetQuestDefinition(UGameplayTagsManager::Get().RequestGameplayTag(FName(QData.Identifier), false)))
 		{
 			USuqsQuestState* Q = NewObject<USuqsQuestState>(GetOuter());
 			Q->Initialise(QDef, this);
@@ -1190,12 +1191,12 @@ void USuqsProgression::LoadFromData(const FSuqsSaveData& Data)
 
 			for (FString Branch : QData.ActiveBranches)
 			{
-				Q->SetBranchActive(FName(Branch), true);
+				Q->SetBranchActive(UGameplayTagsManager::Get().RequestGameplayTag(FName(Branch), false), true);
 			}
 
 			for (const FSuqsTaskStateData& TData : QData.TaskData)
 			{
-				if (USuqsTaskState* T = Q->GetTask(FName(TData.Identifier)))
+				if (USuqsTaskState* T = Q->GetTask(UGameplayTagsManager::Get().RequestGameplayTag(FName(TData.Identifier), false)  ))
 				{
 					T->SetNumber(TData.Number);
 					T->SetTimeRemaining(TData.TimeRemaining);
@@ -1227,11 +1228,11 @@ void USuqsProgression::LoadFromData(const FSuqsSaveData& Data)
 
 	for (FString Branch : Data.GlobalActiveBranches)
 	{
-		SetGlobalQuestBranchActive(FName(Branch), true);
+		SetGlobalQuestBranchActive(UGameplayTagsManager::Get().RequestGameplayTag(FName(Branch), false), true);
 	}
 	for (FString Gate : Data.OpenGates)
 	{
-		SetGateOpen(FName(Gate), true);
+		SetGateOpen(UGameplayTagsManager::Get().RequestGameplayTag(FName(Gate), false), true);
 	}
 
 	bSuppressEvents = false;
@@ -1244,11 +1245,11 @@ void USuqsProgression::SaveToData(FSuqsSaveData& Data) const
 	Data.GlobalActiveBranches.Empty();
 	Data.OpenGates.Empty();
 
-	for (FName Branch : GlobalActiveBranches)
+	for (FGameplayTag Branch : GlobalActiveBranches)
 	{
 		Data.GlobalActiveBranches.Add(Branch.ToString());
 	}
-	for (FName Gate : OpenGates)
+	for (FGameplayTag Gate : OpenGates)
 	{
 		Data.OpenGates.Add(Gate.ToString());
 	}
@@ -1256,9 +1257,9 @@ void USuqsProgression::SaveToData(FSuqsSaveData& Data) const
 	SaveToData(QuestArchive, Data);
 }
 
-void USuqsProgression::SaveToData(TMap<FName, USuqsQuestState*> Quests, FSuqsSaveData& Data)
+void USuqsProgression::SaveToData(TMap<FGameplayTag, USuqsQuestState*> Quests, FSuqsSaveData& Data)
 {
-	for (const TPair<FName, USuqsQuestState*>& Pair : Quests)
+	for (const TPair<FGameplayTag, USuqsQuestState*>& Pair : Quests)
 	{
 		const USuqsQuestState* Q = Pair.Value;
 		FSuqsQuestStateData& QData = Data.QuestData.Emplace_GetRef();
@@ -1282,7 +1283,7 @@ void USuqsProgression::SaveToData(TMap<FName, USuqsQuestState*> Quests, FSuqsSav
 			;
 		}
 		
-		for (const FName& Branch : Q->GetActiveBranches())
+		for (const FGameplayTag& Branch : Q->GetActiveBranches())
 		{
 			QData.ActiveBranches.Add(Branch.ToString());
 		}

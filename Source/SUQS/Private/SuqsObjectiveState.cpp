@@ -262,7 +262,7 @@ void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedT
 	}
 }
 
-void USuqsObjectiveState::NotifyGateOpened(const FName& GateName)
+void USuqsObjectiveState::NotifyGateOpened(const FGameplayTag& GateName)
 {
 	for (USuqsTaskState* const Task : Tasks)
 	{

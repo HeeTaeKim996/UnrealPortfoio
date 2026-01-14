@@ -1,6 +1,6 @@
 #include "SuqsQuest.h"
 
-const FSuqsTask* FSuqsObjective::FindTask(const FName& Id) const
+const FSuqsTask* FSuqsObjective::FindTask(const FGameplayTag& Id) const
 {
 	for (const FSuqsTask& Task : Tasks)
 	{
@@ -13,7 +13,7 @@ const FSuqsTask* FSuqsObjective::FindTask(const FName& Id) const
 	return nullptr;
 }
 
-const FSuqsObjective* FSuqsQuest::FindObjective(const FName& Id) const
+const FSuqsObjective* FSuqsQuest::FindObjective(const FGameplayTag& Id) const
 {
 	for (const FSuqsObjective& Obj : Objectives)
 	{

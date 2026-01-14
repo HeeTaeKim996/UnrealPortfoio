@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "GameplayTagContainer.h"
 #include "SuqsWaypointComponent.generated.h"
 
 
 class USuqsWaypointComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSuqsOnWaypointMoved, USuqsWaypointComponent*, Waypoint);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSuqsOnWaypointEnabledChanged, USuqsWaypointComponent*, Waypoint);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSuqsOnWaypointIsCurrentChanged, USuqsWaypointComponent*, Waypoint);
@@ -32,10 +34,10 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual FName GetQuestID() const { return QuestID; }
+	virtual FGameplayTag GetQuestID() const { return QuestID; }
 
 	UFUNCTION(BlueprintCallable)
-	virtual FName GetTaskID() const { return TaskID; }
+	virtual FGameplayTag GetTaskID() const { return TaskID; }
 
 	UFUNCTION(BlueprintCallable)
 	virtual uint8 GetSequenceIndex() const { return SequenceIndex; }
@@ -47,7 +49,7 @@ public:
 	virtual void SetEnabled(bool bNewEnabled);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Initialise(FName InQuestID, FName InTaskID, uint8 InSequenceIndex = 0);
+	virtual void Initialise(FGameplayTag InQuestID, FGameplayTag InTaskID, uint8 InSequenceIndex = 0);
 
 
 
@@ -72,10 +74,10 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintGetter = GetQuestID, Category = "Waypoint")
-	FName QuestID;
+	FGameplayTag QuestID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintGetter = GetTaskID, Category = "Waypoint")
-	FName TaskID;
+	FGameplayTag TaskID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintGetter = GetSequenceIndex, Category = "Waypoint")
 	uint8 SequenceIndex = 0;

@@ -269,7 +269,7 @@ bool USuqsTaskState::IsResolveBlocked() const
 
 }
 
-void USuqsTaskState::NotifyGateOpened(const FName& GateName)
+void USuqsTaskState::NotifyGateOpened(const FGameplayTag& GateName)
 {
 	if (IsResolveBlockedOn(ESuqsResolveBarrierCondition::Gate) && ResolveBarrier.Gate == GateName)
 	{

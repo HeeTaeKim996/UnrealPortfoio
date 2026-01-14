@@ -4,8 +4,55 @@
 #include "SuqsProgression.h"
 #include "SuqsTaskState.h"
 #include "Suqs.h"
+#include "GameplayTagsManager.h"
 
 //PRAGMA_DISABLE_OPTIMIZATION
+
+
+
+
+
+
+FSuqsResolveBarrier& FSuqsResolveBarrier::operator = (const FSuqsResolveBarrierStateData& B)
+{
+	Conditions = B.Conditions;
+	TimeRemaining = B.TimeRemaining;
+	Gate = UGameplayTagsManager::Get().RequestGameplayTag(FName(*B.Gate), false);
+	bGrantedExplicitly = B.bGrantedExplicitly;
+	bPending = B.bPending;
+	return *this;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void USuqsQuestState::Initialise(const FSuqsQuest* Def, USuqsProgression* Root)
 {
@@ -35,6 +82,8 @@ void USuqsQuestState::Initialise(const FSuqsQuest* Def, USuqsProgression* Root)
 	ResetBranches();
 
 	NotifyObjectiveStatusChanged();
+
+
 }
 
 void USuqsQuestState::Tick(float DeltaTime)
@@ -54,7 +103,7 @@ void USuqsQuestState::Tick(float DeltaTime)
 }
 
 
-USuqsTaskState* USuqsQuestState::GetTask(const FName& Identifier) const
+USuqsTaskState* USuqsQuestState::GetTask(const FGameplayTag& Identifier) const
 {
 	USuqsTaskState* const* ppT = FastTaskLookup.Find(Identifier); // ¡Ø T* const* : (T* const) 's Pointer
 	if (ppT)
@@ -65,9 +114,9 @@ USuqsTaskState* USuqsQuestState::GetTask(const FName& Identifier) const
 }
 
 
-void USuqsQuestState::SetBranchActive(FName Branch, bool bActive)
+void USuqsQuestState::SetBranchActive(FGameplayTag Branch, bool bActive)
 {
-	if (Branch.IsNone()) return;
+	if (Branch.IsValid() == false) return;
 
 	bool bChanged = false;
 	if (bActive)
@@ -98,14 +147,14 @@ void USuqsQuestState::ResetBranches()
 	}
 }
 
-bool USuqsQuestState::IsBranchActive(FName Branch)
+bool USuqsQuestState::IsBranchActive(FGameplayTag Branch)
 {
-	if (Branch.IsNone()) return true;
+	if (Branch.IsValid() == false) return true;
 
 	return ActiveBranches.Contains(Branch);
 }
 
-bool USuqsQuestState::CompleteTask(FName TaskID)
+bool USuqsQuestState::CompleteTask(FGameplayTag TaskID)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -115,7 +164,7 @@ bool USuqsQuestState::CompleteTask(FName TaskID)
 	return false;
 }
 
-void USuqsQuestState::ResolveTask(FName TaskID)
+void USuqsQuestState::ResolveTask(FGameplayTag TaskID)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -123,7 +172,7 @@ void USuqsQuestState::ResolveTask(FName TaskID)
 	}
 }
 
-void USuqsQuestState::FailTask(const FName& TaskID)
+void USuqsQuestState::FailTask(const FGameplayTag& TaskID)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -131,7 +180,7 @@ void USuqsQuestState::FailTask(const FName& TaskID)
 	}
 }
 
-int USuqsQuestState::ProgressTask(FName TaskID, int Delta)
+int USuqsQuestState::ProgressTask(FGameplayTag TaskID, int Delta)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -142,7 +191,7 @@ int USuqsQuestState::ProgressTask(FName TaskID, int Delta)
 	return 0;
 }
 
-void USuqsQuestState::SetTaskNumberCompleted(FName TaskID, int Number)
+void USuqsQuestState::SetTaskNumberCompleted(FGameplayTag TaskID, int Number)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -162,7 +211,7 @@ FText USuqsQuestState::GetTitle() const
 	}
 }
 
-const TArray<FName>& USuqsQuestState::GetLabels() const
+const TArray<FGameplayTag>& USuqsQuestState::GetLabels() const
 {
 	return QuestDefinition->Labels;
 }
@@ -200,7 +249,7 @@ USuqsObjectiveState* USuqsQuestState::GetCurrentObjective() const
 	return nullptr;
 }
 
-USuqsObjectiveState* USuqsQuestState::GetObjective(const FName& Identifier) const
+USuqsObjectiveState* USuqsQuestState::GetObjective(const FGameplayTag& Identifier) const
 {
 	for (USuqsObjectiveState* O : Objectives)
 	{
@@ -233,7 +282,7 @@ bool USuqsQuestState::IsResolveBlocked() const
 		ResolveBarrier.bPending;
 }
 
-bool USuqsQuestState::IsObjectiveIncomplete(const FName& Identifier) const
+bool USuqsQuestState::IsObjectiveIncomplete(const FGameplayTag& Identifier) const
 {
 	if (USuqsObjectiveState* O = GetObjective(Identifier))
 	{
@@ -243,7 +292,7 @@ bool USuqsQuestState::IsObjectiveIncomplete(const FName& Identifier) const
 	return false;
 }
 
-bool USuqsQuestState::IsObjectiveCompleted(const FName& Identifier) const
+bool USuqsQuestState::IsObjectiveCompleted(const FGameplayTag& Identifier) const
 {
 	if (USuqsObjectiveState* O = GetObjective(Identifier))
 	{
@@ -253,7 +302,7 @@ bool USuqsQuestState::IsObjectiveCompleted(const FName& Identifier) const
 }
 
 
-bool USuqsQuestState::IsObjectiveFailed(const FName& Identifier) const
+bool USuqsQuestState::IsObjectiveFailed(const FGameplayTag& Identifier) const
 {
 	if (USuqsObjectiveState* O = GetObjective(Identifier))
 	{
@@ -262,7 +311,7 @@ bool USuqsQuestState::IsObjectiveFailed(const FName& Identifier) const
 	return false;
 }
 
-void USuqsQuestState::ResetObjective(FName Identifier)
+void USuqsQuestState::ResetObjective(FGameplayTag Identifier)
 {
 	if (USuqsObjectiveState* O = GetObjective(Identifier))
 	{
@@ -280,7 +329,7 @@ USuqsTaskState* USuqsQuestState::GetNextMandatoryTask() const
 }
 
 
-bool USuqsQuestState::IsTaskIncomplete(const FName& TaskID) const
+bool USuqsQuestState::IsTaskIncomplete(const FGameplayTag& TaskID) const
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -289,7 +338,7 @@ bool USuqsQuestState::IsTaskIncomplete(const FName& TaskID) const
 	return false;
 }
 
-bool USuqsQuestState::IsTaskCompleted(const FName& TaskID) const
+bool USuqsQuestState::IsTaskCompleted(const FGameplayTag& TaskID) const
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -298,7 +347,7 @@ bool USuqsQuestState::IsTaskCompleted(const FName& TaskID) const
 	return false;
 }
 
-bool USuqsQuestState::IsTaskFailed(const FName& TaskID) const
+bool USuqsQuestState::IsTaskFailed(const FGameplayTag& TaskID) const
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -307,7 +356,7 @@ bool USuqsQuestState::IsTaskFailed(const FName& TaskID) const
 	return false;
 }
 
-bool USuqsQuestState::IsTaskRelevant(const FName& TaskID) const
+bool USuqsQuestState::IsTaskRelevant(const FGameplayTag& TaskID) const
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -317,7 +366,7 @@ bool USuqsQuestState::IsTaskRelevant(const FName& TaskID) const
 	
 }
 
-void USuqsQuestState::ResetTask(FName TaskID)
+void USuqsQuestState::ResetTask(FGameplayTag TaskID)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
@@ -342,7 +391,7 @@ void USuqsQuestState::Reset()
 	Progression->RaiseCurrentObjectiveChanged(this);
 }
 
-void USuqsQuestState::ResetBranch(FName Branch)
+void USuqsQuestState::ResetBranch(FGameplayTag Branch)
 {
 	for (USuqsObjectiveState* Obj : Objectives)
 	{
@@ -475,7 +524,7 @@ void USuqsQuestState::OverrideStatus(ESuqsQuestStatus OverrideStatus)
 	ChangeStatus(OverrideStatus);
 }
 
-void USuqsQuestState::NotifyGateOpened(const FName& GateName)
+void USuqsQuestState::NotifyGateOpened(const FGameplayTag& GateName)
 {
 	for (USuqsObjectiveState* Obj : Objectives)
 	{

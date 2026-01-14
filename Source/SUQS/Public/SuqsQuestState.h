@@ -5,7 +5,7 @@
 #include "SuqsQuest.h"
 #include "SuqsSaveData.h"
 #include "UObject/Object.h"
-
+#include "GameplayTagContainer.h"
 #include "SuqsQuestState.generated.h"
 
 
@@ -53,7 +53,7 @@ struct FSuqsResolveBarrier
 	float TimeRemaining;
 
 	UPROPERTY(BlueprintReadOnly)
-	FName Gate;
+	FGameplayTag Gate;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bGrantedExplicitly;
@@ -64,12 +64,12 @@ struct FSuqsResolveBarrier
 	FSuqsResolveBarrier() :
 		Conditions(0),
 		TimeRemaining(0),
-		Gate(FName()),
+		Gate(FGameplayTag::EmptyTag),
 		bGrantedExplicitly(false),
 		bPending(false)
 	{}
 
-	FSuqsResolveBarrier(int32 InBarriers, float InTimeRemaining, const FName& InGate, bool bInGrantedExplicitly, bool bInPending) :
+	FSuqsResolveBarrier(int32 InBarriers, float InTimeRemaining, const FGameplayTag& InGate, bool bInGrantedExplicitly, bool bInPending) :
 		Conditions(InBarriers),
 		TimeRemaining(InTimeRemaining),
 		Gate(InGate),
@@ -77,15 +77,8 @@ struct FSuqsResolveBarrier
 		bPending(bInPending)
 	{}
 
-	FSuqsResolveBarrier& operator = (const FSuqsResolveBarrierStateData& B)
-	{
-		Conditions = B.Conditions;
-		TimeRemaining = B.TimeRemaining;
-		Gate = FName(B.Gate);
-		bGrantedExplicitly = B.bGrantedExplicitly;
-		bPending = B.bPending;
-		return *this;
-	}
+	FSuqsResolveBarrier& operator = (const FSuqsResolveBarrierStateData& B);
+
 
 	friend bool operator == (const FSuqsResolveBarrier & A, const FSuqsResolveBarrier & B)
 	{
@@ -126,7 +119,7 @@ protected:
 	TArray<USuqsObjectiveState*> Objectives;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
-	TArray<FName> ActiveBranches;
+	TArray<FGameplayTag> ActiveBranches;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest Status")
 	int CurrentObjectiveIndex = -1; // -1 Protocol Quest is completed
@@ -135,7 +128,7 @@ protected:
 	FSuqsResolveBarrier ResolveBarrier;
 
 	UPROPERTY()
-	TMap<FName, USuqsTaskState*> FastTaskLookup;
+	TMap<FGameplayTag, USuqsTaskState*> FastTaskLookup;
 
 	const FSuqsQuest* QuestDefinition;
 	TWeakObjectPtr<USuqsProgression> Progression;
@@ -162,16 +155,16 @@ public:
 	ESuqsQuestStatus GetStatus() const { return Status; }
 
 	const TArray<USuqsObjectiveState*>& GetObjectives() const { return Objectives; }
-	const TArray<FName>& GetActiveBranches() const { return ActiveBranches; }
+	const TArray<FGameplayTag>& GetActiveBranches() const { return ActiveBranches; }
 	const FSuqsResolveBarrier& GetResolveBarrier() const { return ResolveBarrier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FName& GetIdentifier() const { return QuestDefinition->Identifier; }
+	const FGameplayTag& GetIdentifier() const { return QuestDefinition->Identifier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FText GetTitle() const;
 
-	const TArray<FName>& GetLabels() const;
+	const TArray<FGameplayTag>& GetLabels() const;
 
 	bool IsPlayerVisible() const;
 
@@ -182,34 +175,34 @@ public:
 	USuqsProgression* GetRootProgression() const { return Progression.Get(); }
 
 	UFUNCTION(BlueprintCallable)
-	void SetBranchActive(FName Branch, bool bActive);
+	void SetBranchActive(FGameplayTag Branch, bool bActive);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetBranches();
 
 	UFUNCTION(BlueprintCallable)
-	bool IsBranchActive(FName Branch);
+	bool IsBranchActive(FGameplayTag Branch);
 
 	UFUNCTION(BlueprintCallable)
-	bool CompleteTask(FName TaskID);
+	bool CompleteTask(FGameplayTag TaskID);
 
 	UFUNCTION(BlueprintCallable)
-	void ResolveTask(FName TaskID);
+	void ResolveTask(FGameplayTag TaskID);
 
 	UFUNCTION(BlueprintCallable)
-	void FailTask(const FName& TaskID);
+	void FailTask(const FGameplayTag& TaskID);
 
 	UFUNCTION(BlueprintCallable)
-	int ProgressTask(FName TaskID, int Delta);
+	int ProgressTask(FGameplayTag TaskID, int Delta);
 
-	void SetTaskNumberCompleted(FName TaskID, int Number);
+	void SetTaskNumberCompleted(FGameplayTag TaskID, int Number);
 
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	USuqsObjectiveState* GetCurrentObjective() const;
 
 	UFUNCTION(BlueprintCallable)
-	USuqsObjectiveState* GetObjective(const FName& ObjectiveID) const;
+	USuqsObjectiveState* GetObjective(const FGameplayTag& ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
 	void GetActiveObjectives(TArray<USuqsObjectiveState*>& ActiveObjectivesOut) const;
@@ -227,40 +220,40 @@ public:
 	bool IsResolveBlocked() const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveIncomplete(const FName& Identifier) const;
+	bool IsObjectiveIncomplete(const FGameplayTag& Identifier) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveCompleted(const FName& ObjectiveID) const;
+	bool IsObjectiveCompleted(const FGameplayTag& ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsObjectiveFailed(const FName& ObjectiveID) const;
+	bool IsObjectiveFailed(const FGameplayTag& ObjectiveID) const;
 
 	UFUNCTION(BlueprintCallable)
-	void ResetObjective(FName ObjectiveID);
+	void ResetObjective(FGameplayTag ObjectiveID);
 
 	UFUNCTION(BlueprintCallable)
 	USuqsTaskState* GetNextMandatoryTask() const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskIncomplete(const FName& TaskID) const;
+	bool IsTaskIncomplete(const FGameplayTag& TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskCompleted(const FName& TaskID) const;
+	bool IsTaskCompleted(const FGameplayTag& TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskFailed(const FName& TaskID) const;
+	bool IsTaskFailed(const FGameplayTag& TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTaskRelevant(const FName& TaskID) const;
+	bool IsTaskRelevant(const FGameplayTag& TaskID) const;
 
 	UFUNCTION(BlueprintCallable)
-	void ResetTask(FName TaskID);
+	void ResetTask(FGameplayTag TaskID);
 
 	UFUNCTION(BlueprintCallable)
 	void Reset();
 
 	UFUNCTION(BlueprintCallable)
-	void ResetBranch(FName Branch);
+	void ResetBranch(FGameplayTag Branch);
 
 	UFUNCTION(BlueprintCallable)
 	void Fail();
@@ -272,13 +265,13 @@ public:
 	void Resolve();
 
 	UFUNCTION(BlueprintCallable)
-	USuqsTaskState* GetTask(const FName& TaskID) const;
+	USuqsTaskState* GetTask(const FGameplayTag& TaskID) const;
 
 	void NotifyObjectiveStatusChanged();
 
 	void OverrideStatus(ESuqsQuestStatus OverrideStatus);
 
-	void NotifyGateOpened(const FName& GateName);
+	void NotifyGateOpened(const FGameplayTag& GateName);
 
 	void SetResolveBarrier(const FSuqsResolveBarrierStateData& Barrier);
 

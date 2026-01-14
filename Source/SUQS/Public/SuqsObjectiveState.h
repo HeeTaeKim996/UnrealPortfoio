@@ -4,6 +4,7 @@
 
 #include "SuqsQuestState.h"
 #include "UObject/Object.h"
+#include "GameplayTagContainer.h"
 #include "SuqsObjectiveState.generated.h"
 
 
@@ -52,7 +53,7 @@ public:
 	const TArray<USuqsTaskState*>& GetTasks() { return Tasks; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FName& GetIdentifier() const { return ObjectiveDefinition->Identifier; }
+	const FGameplayTag& GetIdentifier() const { return ObjectiveDefinition->Identifier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	const FText& GetTitle() const { return ObjectiveDefinition->Title; }
@@ -64,7 +65,7 @@ public:
 	USuqsProgression* GetRootProgression() const { return Progression.Get(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FName& GetBranch() const { return ObjectiveDefinition->Branch; }
+	const FGameplayTag& GetBranch() const { return ObjectiveDefinition->Branch; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool AreTasksSequential() const { return ObjectiveDefinition->bSequentialTasks; }
@@ -118,7 +119,7 @@ public:
 	bool IsOnActiveBranch() const;
 
 	void NotifyTaskStatusChanged(const USuqsTaskState* ChangedTaskOrNull);
-	void NotifyGateOpened(const FName& GateName);
+	void NotifyGateOpened(const FGameplayTag& GateName);
 	void FinishLoad();
 };
 
