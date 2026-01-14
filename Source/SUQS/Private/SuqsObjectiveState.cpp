@@ -1,7 +1,7 @@
 #include "SuqsObjectiveState.h"
 #include "SuqsProgression.h"
 #include "SuqsTaskState.h"
-
+#include "Suqs.h"
 
 void USuqsObjectiveState::Initialise(const FSuqsObjective* ObjDef, USuqsQuestState* QuestState, USuqsProgression* Root)
 {
@@ -240,6 +240,10 @@ void USuqsObjectiveState::NotifyTaskStatusChanged(const USuqsTaskState* ChangedT
 			}
 		}
 	}
+
+
+
+	
 
 
 	if (MandatoryTasksFailed > 0 &&

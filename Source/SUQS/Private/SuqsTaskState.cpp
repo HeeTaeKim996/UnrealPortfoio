@@ -168,6 +168,10 @@ void USuqsTaskState::Resolve()
 
 int USuqsTaskState::Progress(int Delta)
 {
+	//ensureAlwaysMsgf(false, TEXT("Check"));
+
+
+
 	SetNumber(Number + Delta);
 
 	return GetNumberOutstanding();
@@ -249,6 +253,7 @@ void USuqsTaskState::Reset()
 	Number = 0;
 	TimeRemaining = TaskDefinition->TimeLimit;
 	ChangeStatus(ESuqsTaskStatus::NotStarted);
+	
 
 	if (bRaiseUpdate)
 	{

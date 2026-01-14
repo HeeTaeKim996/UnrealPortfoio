@@ -6,6 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "QuestActorComponent.generated.h"
 
+class USuqsTaskState;
+class UQuestNotifier;
+
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUQS_API UQuestActorComponent : public UActorComponent
@@ -17,31 +21,33 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+private:
+	void Register();
+	void Unregister();
+
+	void SleepOwner();
+	void WakeupOwner();
 
 public:
-	bool IsQuesetComponentActive();
+	bool IsSleeping() { return bIsSleeping; }
 
-	const FName& GetQuestID() const { return QuestID; }
-	const FName& GetTaskID() const { return TaskID; }
-	const uint8 GetSequenceIndex() const { return SequenceIndex; }
+	
+public:
+	void OnTaskUpdated(const USuqsTaskState* TaskState);
+	void OnTaskCompleted(const USuqsTaskState* TaskState);
+	void OnTaskFailed(const USuqsTaskState* TaskState);
+	void OnTaskAdded(const USuqsTaskState* TaskState);
+	void OnTaskRemoved(const USuqsTaskState* TaskState);
 
 
-	void SetIsCurrent(bool bNeewIsCurrent);
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName QuestID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName TaskID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	uint8 SequenceIndex = 0;
-		
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	bool bEnabled = true;
 
 protected:
-	UPROPERTY()
-	bool bIsCurrent = false;
+	UPROPERTY(EditAnywhere, Instanced, BlueprintReadWrite, Category = "Config")
+	TArray<TObjectPtr<UQuestNotifier>> QuestNotifiers;
+
+protected:
+	bool bIsSleeping;
+	bool bWasActorTickEnabled;
 };

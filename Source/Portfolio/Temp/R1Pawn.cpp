@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
+
 AR1Pawn::AR1Pawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -43,5 +44,6 @@ void AR1Pawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	
 }
 

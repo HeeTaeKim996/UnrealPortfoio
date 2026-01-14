@@ -3,6 +3,7 @@
 #include "SuqsObjectiveState.h"
 #include "SuqsProgression.h"
 #include "SuqsTaskState.h"
+#include "Suqs.h"
 
 //PRAGMA_DISABLE_OPTIMIZATION
 
@@ -134,6 +135,7 @@ int USuqsQuestState::ProgressTask(FName TaskID, int Delta)
 {
 	if (USuqsTaskState* T = GetTask(TaskID))
 	{
+		LogMsg(TEXT("SuqsQuestState.cpp : IS This Second?"));
 		return T->Progress(Delta);
 	}
 
@@ -460,6 +462,7 @@ void USuqsQuestState::NotifyObjectiveStatusChanged()
 						}
 					}
 				}
+
 				Progression->RaiseCurrentObjectiveChanged(this);
 			}
 		}

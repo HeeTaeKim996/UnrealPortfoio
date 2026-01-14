@@ -12,6 +12,8 @@
 #include "SuqsWaypointSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "../Custom/QuestActor/QuestActorSubsystem.h" // Custom
+
 #define SuqsCurrentDataVersion 1
 // @@@ SuqsSaveData.h's three type version is 2. dont know whether need to correct it.
 
@@ -138,6 +140,12 @@ void USuqsProgression::RebuildAllQuestData()
 	{
 		USuqsWaypointSubsystem* WaypointsSubsys = GI->GetSubsystem<USuqsWaypointSubsystem>();
 		WaypointsSubsys->SetProgression(this);
+
+		{ // Custom
+
+			UQuestActorSubsystem* QuestActorSubsystem = GI->GetSubsystem<UQuestActorSubsystem>();
+			QuestActorSubsystem->SetProgression(this);
+		}
 	}
 }
 
@@ -916,7 +924,6 @@ void USuqsProgression::RaiseTaskAdded(USuqsTaskState* Task)
 			}
 		}
 	}
-
 }
 
 void USuqsProgression::RaiseTaskRemoved(USuqsTaskState* Task)

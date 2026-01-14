@@ -8,6 +8,7 @@
 
 class USuqsGameStateComponent;
 class USuqsProgression;
+class UDataTable;
 
 UCLASS()
 class PORTFOLIO_API AMainGameStateBase : public AGameStateBase
@@ -20,6 +21,10 @@ public:
 	void Initialize_SuqsGameStateComponent();
 	void TempSaveSuqsData();
 
+public:
+	USuqsGameStateComponent* GetSuqsGameStateComponent();
+
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<USuqsGameStateComponent> SuqsGameStateComponent;
@@ -31,7 +36,5 @@ protected:
 	TArray<UDataTable*> TempTables; 
 
 	UPROPERTY()
-	TObjectPtr<USuqsProgression> MainProgression;
-
-	
+	TObjectPtr<USuqsProgression> MainProgression; // Temp
 };

@@ -8,6 +8,7 @@
 #include "System/Subsystem/FieldMonsterManager/FieldMonsterManager.h"
 #include "AI/FieldMonster/FieldMonsterController.h"
 #include "BrainComponent.h"
+#include "MainLogger.h"
 
 AFieldMonster::AFieldMonster()
 	: Super()
@@ -37,27 +38,30 @@ void AFieldMonster::BeginPlay()
 
 	if (StreamingLevel.IsNull())
 	{
-		const FString Msg = FString::Printf(TEXT("FieldMonster[%s]'s Streaming Level is Not assigned"), *GetName());
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, Msg);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+		{
+			FString Msg = FString::Printf(TEXT("FieldMonster[%s]'s Streaming Level is Not assigned"), *GetName());
+			MsgLog(FString("FieldMonster.cpp"), Msg);
+		}
 	}
 	else
 	{
 #if 1
 		const FSoftObjectPath& LevelPath_Debug = StreamingLevel.ToSoftObjectPath();
 
-		const FString Msg = FString::Printf(TEXT("FieldMonster.cpp : LevelAsset [%s]"),
-			*LevelPath_Debug.GetLongPackageName());
+		{
+			const FString Msg = FString::Printf(TEXT("FieldMonster.cpp : LevelAsset [%s]"),
+				*LevelPath_Debug.GetLongPackageName());
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, Msg);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+			MsgLog(FString("FieldMonster.cpp"), Msg);
+		}
 
-		const FString CurrWorldMsg = FString::Printf(TEXT("FieldMonster.cpp : CurrentLevel [%s]"),
-			*GetLevel()->GetOutermost()->GetName());
+		{
+			const FString CurrWorldMsg = FString::Printf(TEXT("CurrentLevel [%s]"),
+				*GetLevel()->GetOutermost()->GetName());
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, CurrWorldMsg);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *CurrWorldMsg);
+			MsgLog(FString("FieldMonster.cpp"), CurrWorldMsg);
+		}
+
 #endif
 		LandLevelName = GetLevel()->GetOutermost()->GetFName();
 

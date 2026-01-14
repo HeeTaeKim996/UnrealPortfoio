@@ -4,47 +4,62 @@
 #include "Custom/QuestActor/QuestActorSubsystem.h"
 #include "Public/SuqsProgression.h"
 #include "QuestActorComponent.h"
+#include "QuestNotifier.h"
 
 
-void UQuestActorSubsystem ::SetProgression(USuqsProgression* InProg)
+
+void UQuestActorSubsystem::SetProgression(USuqsProgression* InProg)
 {
-	if (Progression.IsValid())
+	if (CurrProgression.IsValid())
 	{
-		// TODO : Unregister Delegates
+		CurrProgression->OnProgressionEvent.RemoveDynamic(this, &UQuestActorSubsystem::OnProgressionEvent);
+		CurrProgression->OnObjectiveCompleted.RemoveDynamic(this, &UQuestActorSubsystem::OnObjectiveCompleted);
+		CurrProgression->OnObjectiveFailed.RemoveDynamic(this, &UQuestActorSubsystem::OnObjectiveFailed);
+		CurrProgression->OnActiveQuestsListChanged.RemoveDynamic(this, &UQuestActorSubsystem::OnActiveQuestsListChanged);
+		CurrProgression->OnQuestCompleted.RemoveDynamic(this, &UQuestActorSubsystem::OnQuestCompleted);
+		CurrProgression->OnQuestAccepted.RemoveDynamic(this, &UQuestActorSubsystem::OnQuestAccepted);
+		CurrProgression->OnProgressionLoaded.RemoveDynamic(this, &UQuestActorSubsystem::OnProgressionLoaded);
+		CurrProgression->OnParameterProvidersChanged.RemoveDynamic(this, &UQuestActorSubsystem::OnProgressParameterProvidersChanged);
 	}
 
-	Progression = InProg;
+	CurrProgression = InProg;
 
 	if (IsValid(InProg))
 	{
-		// TODO Register Delegates
+		CurrProgression->OnProgressionEvent.AddDynamic(this, &UQuestActorSubsystem::OnProgressionEvent);
+		CurrProgression->OnObjectiveCompleted.AddDynamic(this, &UQuestActorSubsystem::OnObjectiveCompleted);
+		CurrProgression->OnObjectiveFailed.AddDynamic(this, &UQuestActorSubsystem::OnObjectiveFailed);
+		CurrProgression->OnActiveQuestsListChanged.AddDynamic(this, &UQuestActorSubsystem::OnActiveQuestsListChanged);
+		CurrProgression->OnQuestCompleted.AddDynamic(this, &UQuestActorSubsystem::OnQuestCompleted);
+		CurrProgression->OnQuestAccepted.AddDynamic(this, &UQuestActorSubsystem::OnQuestAccepted);
+		CurrProgression->OnProgressionLoaded.AddDynamic(this, &UQuestActorSubsystem::OnProgressionLoaded);
+		CurrProgression->OnParameterProvidersChanged.AddDynamic(this, &UQuestActorSubsystem::OnProgressParameterProvidersChanged);
 	}
 }
 
-void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestActorComponent* QuestActorComponent)
+void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent)
 {
-	TArray<UQuestActorComponent*>& List = QuestActorComponentsByQuest.FindOrAdd(QuestActorComponent->GetQuestID());
+
 
 	bool bInserted = false;
-	bool bExistingTask = false;
+
+	const FName QuestID = QuestActorComponent->GetQuestID();
+	const FName TaskID = QuestActorComponent->GetTaskID();
+
+	TArray<UQuestNotifier*>& List = QuestActorComponentsByQuest.FindOrAdd(QuestID);
 
 	for (int i = 0; i < List.Num(); i++)
 	{
-		const UQuestActorComponent* Curr = List[i];
+		const UQuestNotifier* Curr = List[i];
 
 		if (Curr == QuestActorComponent)
 		{
 			bInserted = true;
+			break;
 		}
 
-		if (Curr->GetTaskID() == QuestActorComponent->GetTaskID())
-		{
-			bExistingTask = true;
-		}
 
-		if (bExistingTask &&
-			(Curr->GetSequenceIndex() > QuestActorComponent->GetSequenceIndex() || Curr->GetTaskID() != QuestActorComponent->GetTaskID())
-			)
+		if (Curr->GetTaskID() == TaskID)
 		{
 			List.Insert(QuestActorComponent, i);
 			bInserted = true;
@@ -58,18 +73,22 @@ void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestActorComponent* Que
 		bInserted = true;
 	}
 
-	if (bInserted)
+
+	if (CurrProgression.IsValid())
 	{
-		if (Progression.IsValid())
+		bool IsTaskRelevant = CurrProgression->IsTaskRelevant(QuestID, TaskID);
+		if (IsTaskRelevant)
 		{
-			QuestActorComponent->SetIsCurrent(Progression->IsTaskRelevant(QuestActorComponent->GetQuestID(), QuestActorComponent->GetTaskID()));
+			QuestActorComponent->SetIsRelevant(true, CurrProgression->GetTaskState(QuestID, TaskID));
 		}
+		QuestActorComponent->SetIsRelevant(false, nullptr);
 	}
+
 }
 
-void UQuestActorSubsystem::UnregisterQuestActorComponent(UQuestActorComponent* QuestActorComponent)
+void UQuestActorSubsystem::UnregisterQuestActorComponent(UQuestNotifier* QuestActorComponent)
 {
-	TArray<UQuestActorComponent*>* const pList = QuestActorComponentsByQuest.Find(QuestActorComponent->GetQuestID());
+	TArray<UQuestNotifier*>* const pList = QuestActorComponentsByQuest.Find(QuestActorComponent->GetQuestID());
 	if (pList)
 	{
 		pList->RemoveSingle(QuestActorComponent);
@@ -77,16 +96,14 @@ void UQuestActorSubsystem::UnregisterQuestActorComponent(UQuestActorComponent* Q
 
 }
 
-UQuestActorComponent* UQuestActorSubsystem::GetQuestActorComponent(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled)
+UQuestNotifier* UQuestActorSubsystem::GetQuestActorComponent(const FName& QuestID, const FName& TaskID)
 {
-	TArray<UQuestActorComponent*>* const pList = QuestActorComponentsByQuest.Find(QuestID);
+	TArray<UQuestNotifier*>* const pList = QuestActorComponentsByQuest.Find(QuestID);
 	if (pList)
 	{
-		for (UQuestActorComponent* C : *pList)
+		for (UQuestNotifier* C : *pList)
 		{
-			if (C->GetTaskID() == TaskID &&
-				(bOnlyEnabled == false || C->IsQuesetComponentActive())
-				)
+			if (C->GetTaskID() == TaskID)
 			{
 				return C;
 			}
@@ -95,25 +112,23 @@ UQuestActorComponent* UQuestActorSubsystem::GetQuestActorComponent(const FName& 
 	return nullptr;
 }
 
-bool UQuestActorSubsystem::GetQuestActorComponents(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled, TArray<UQuestActorComponent*>& OutQuestActorComponents)
+bool UQuestActorSubsystem::GetQuestActorComponents(const FName& QuestID, const FName& TaskID, TArray<UQuestNotifier*>& OutQuestActorComponents)
 {
 	OutQuestActorComponents.Empty();
 
-	TArray<UQuestActorComponent*>* const pList = QuestActorComponentsByQuest.Find(QuestID);
+	TArray<UQuestNotifier*>* const pList = QuestActorComponentsByQuest.Find(QuestID);
 	bool bAnyFound = false;
 	if (pList)
 	{
 		bool bFoundTask = false;
-		for (UQuestActorComponent* C : *pList)
+		for (UQuestNotifier* C : *pList)
 		{
 			if (C->GetTaskID() == TaskID)
 			{
 				bFoundTask = true;
-				if (bOnlyEnabled == false || C->IsQuesetComponentActive())
-				{
-					OutQuestActorComponents.Add(C);
-					bAnyFound = true;
-				}
+				bAnyFound = true;
+
+				OutQuestActorComponents.Add(C);
 			}
 			else if (bFoundTask)
 			{
@@ -123,3 +138,165 @@ bool UQuestActorSubsystem::GetQuestActorComponents(const FName& QuestID, const F
 	}
 	return bAnyFound;
 }
+
+FName UQuestActorSubsystem::GetQuestIdFromTask(USuqsTaskState* Task)
+{
+	if (USuqsObjectiveState* Objective = Task->GetParentObjective())
+	{
+		if (USuqsQuestState* Quest = Objective->GetParentQuest())
+		{
+			return Quest->GetIdentifier();
+		}
+	}
+
+	return FName();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void UQuestActorSubsystem::OnProgressionEvent(const FSuqsProgressionEventDetails& Details)
+{
+	if (Details.EventType == ESuqsProgressionEventType::TaskUpdated)
+	{
+		OnTaskUpdated(Details.Task);
+	}
+	else if (Details.EventType == ESuqsProgressionEventType::TaskCompleted)
+	{
+		OnTaskCompleted(Details.Task);
+	}
+	else if (Details.EventType == ESuqsProgressionEventType::TaskAdded)
+	{
+		OnTaskAdded(Details.Task);
+	}
+	else if (Details.EventType == ESuqsProgressionEventType::TaskRemoved)
+	{
+		OnTaskRemoved(Details.Task);
+	}
+	else if (Details.EventType == ESuqsProgressionEventType::TaskFailed)
+	{
+		OnTaskFailed(Details.Task);
+	}
+}
+
+void UQuestActorSubsystem::OnTaskUpdated(USuqsTaskState* Task)
+{
+	TArray<UQuestNotifier*> QuestActorComponents;
+	if (GetQuestActorComponents(GetQuestIdFromTask(Task), Task->GetIdentifier(), QuestActorComponents))
+	{
+		for (UQuestNotifier* QC : QuestActorComponents)
+		{
+			QC->OnTaskUpdated(Task);
+		}
+	}
+}
+
+void UQuestActorSubsystem::OnTaskCompleted(USuqsTaskState* Task)
+{
+	TArray<UQuestNotifier*> QuestActorComponents;
+	if (GetQuestActorComponents(GetQuestIdFromTask(Task), Task->GetIdentifier(), QuestActorComponents))
+	{
+		for (UQuestNotifier* QC : QuestActorComponents)
+		{
+			QC->OnTaskCompleted(Task);
+		}
+	}
+}
+
+void UQuestActorSubsystem::OnTaskFailed(USuqsTaskState* Task)
+{
+	TArray<UQuestNotifier*> QuestActorComponents;
+	if (GetQuestActorComponents(GetQuestIdFromTask(Task), Task->GetIdentifier(), QuestActorComponents))
+	{
+		for (UQuestNotifier* QC : QuestActorComponents)
+		{
+			QC->OnTaskFailed(Task);
+		}
+	}
+}
+
+void UQuestActorSubsystem::OnTaskAdded(USuqsTaskState* Task)
+{
+	TArray<UQuestNotifier*> QuestActorComponents;
+	if (GetQuestActorComponents(GetQuestIdFromTask(Task), Task->GetIdentifier(), QuestActorComponents))
+	{
+		for (UQuestNotifier* QC : QuestActorComponents)
+		{
+			QC->OnTaskAdded(Task);
+		}
+	}
+}
+
+void UQuestActorSubsystem::OnTaskRemoved(USuqsTaskState* Task)
+{
+	TArray<UQuestNotifier*> QuestActorComponents;
+	if (GetQuestActorComponents(GetQuestIdFromTask(Task), Task->GetIdentifier(), QuestActorComponents))
+	{
+		for (UQuestNotifier* QC : QuestActorComponents)
+		{
+			QC->OnTaskRemoved(Task);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void UQuestActorSubsystem::OnObjectiveCompleted(USuqsObjectiveState* Objective)
+{
+}
+
+void UQuestActorSubsystem::OnObjectiveFailed(USuqsObjectiveState* Objective)
+{
+}
+
+void UQuestActorSubsystem::OnActiveQuestsListChanged()
+{
+
+}
+
+void UQuestActorSubsystem::OnQuestCompleted(USuqsQuestState* Quest)
+{
+}
+
+void UQuestActorSubsystem::OnQuestFailed(USuqsQuestState* Quest)
+{
+}
+
+
+void UQuestActorSubsystem::OnQuestAccepted(USuqsQuestState* Quest)
+{
+
+}
+
+void UQuestActorSubsystem::OnProgressionLoaded(USuqsProgression* Progression)
+{
+
+}
+
+void UQuestActorSubsystem::OnProgressParameterProvidersChanged(USuqsProgression* Progression)
+{
+
+}
+

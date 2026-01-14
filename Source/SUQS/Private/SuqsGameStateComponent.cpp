@@ -3,6 +3,7 @@
 #include "SuqsProgression.h"
 #include "Net/UnrealNetwork.h"
 
+
 USuqsGameStateComponent::USuqsGameStateComponent()
 	: Super()
 {
@@ -57,6 +58,16 @@ void USuqsGameStateComponent::FireChangedEvent()
 	}
 }
 
+void USuqsGameStateComponent::StartQuest(FName QuestID, bool bResetIfFailed, bool bResetIfComplete, bool bResetIfInProgress)
+{
+	ServerProgression->AcceptQuest(QuestID, bResetIfFailed, bResetIfComplete, bResetIfInProgress);
+}
+
+int USuqsGameStateComponent::ProgressTask(FName QuestID, FName TaskIdentifier, int Delta)
+{
+	return ServerProgression->ProgressTask(QuestID, TaskIdentifier, Delta);
+}
+
 USuqsProgression* USuqsGameStateComponent::GetServerProgression()
 {
 	checkf(GetOwner()->HasAuthority(), TEXT("You cannot call GetServerProgression from a client")) // In Single Game, always false
@@ -73,6 +84,7 @@ void USuqsGameStateComponent::OnProgressionEvent(const FSuqsProgressionEventDeta
 	// To merge multiple change events in a tick we just mark this as dirty
 	bServerPendingChanges = true;
 }
+
 
 void USuqsGameStateComponent::OnRep_Progress()
 {

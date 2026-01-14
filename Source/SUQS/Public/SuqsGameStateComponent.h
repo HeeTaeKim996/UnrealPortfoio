@@ -8,7 +8,15 @@
 #include "Components/ActorComponent.h"
 #include "SuqsGameStateComponent.generated.h"
 
+
+
+
+
 class USuqsProgression;
+class USuqsGameStateComponent;
+struct FSuqsProgressView;
+struct FSuqsProgressViewDiff;
+struct FSuqsProgressionEventDetails;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSuqsOnProgressViewChanged, USuqsGameStateComponent*, SuqsComp, const FSuqsProgressView&, Progress);
@@ -41,6 +49,13 @@ protected:
 
 	void InitServerProgress();
 	void FireChangedEvent();
+
+
+public:
+	void StartQuest(FName QuestID, bool bResetIfFailed = false, bool bResetIfComplete = false,
+		bool bResetIfInProgress = false);
+
+	int ProgressTask(FName QuestID, FName TaskIdentifier, int Delta = 1);
 
 
 public:

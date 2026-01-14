@@ -19,6 +19,7 @@
 #include "AbilitySystem/Abilities/BaseAttackAbility.h"
 #include "Structures/TraceHitInfo.h"
 #include "Data/GE/Data_InitializeGEs.h"
+#include "MainLogger.h"
 
 AR1Player::AR1Player() : Super()
 {

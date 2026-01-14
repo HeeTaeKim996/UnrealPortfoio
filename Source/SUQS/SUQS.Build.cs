@@ -25,8 +25,10 @@ public class SUQS : ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"UMG"
-			}
+				"UMG",
+
+                "Portfolio" // Temp for Test
+            }
 			);
 			
 		

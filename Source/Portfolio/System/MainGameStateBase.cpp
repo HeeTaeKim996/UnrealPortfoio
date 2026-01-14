@@ -2,9 +2,9 @@
 
 
 #include "System/MainGameStateBase.h"
-#include "SUQS/Public/SuqsGameStateComponent.h"
 #include "SUQS/Public/SuqsProgression.h"
 #include "Serialization/Archive.h"
+#include "SUQS/Public/SuqsGameStateComponent.h"
 
 AMainGameStateBase::AMainGameStateBase()
 	: Super()
@@ -51,4 +51,9 @@ void AMainGameStateBase::TempSaveSuqsData()
 		TEXT("SuqsProgression.sav")
 	);
 	FFileHelper::SaveArrayToFile(BinaryData, *SaveFilePath);
+}
+
+USuqsGameStateComponent* AMainGameStateBase::GetSuqsGameStateComponent()
+{
+	return SuqsGameStateComponent;
 }
