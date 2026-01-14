@@ -9,17 +9,8 @@
 #include "Public/SuqsTaskState.h"
 
 #include "QuestNotifier.h"
-
-
-
-#define TempMessage(x)												\
-do {																\
-	if (GEngine)													\
-	{																\
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, x); \
-	}																\
-	UE_LOG(LogSUQS, Warning, TEXT("%s"), x);						\
-} while (0)															\
+#include "SuqsLogger.h"
+													\
 
 
 
@@ -116,26 +107,26 @@ void UQuestActorComponent::WakeupOwner()
 
 void UQuestActorComponent::OnTaskUpdated(const USuqsTaskState* TaskState)
 {
-	TempMessage(TEXT("QuestActorComponent.cpp : TaskUpdated"));
+	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskUpdated"));
 }
 void UQuestActorComponent::OnTaskCompleted(const USuqsTaskState* TaskState)
 {
-	TempMessage(TEXT("QuestActorComponent.cpp : TaskCompleted"));
+	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskCompleted"));
 }
 void UQuestActorComponent::OnTaskFailed(const USuqsTaskState* TaskState)
 {
-	TempMessage(TEXT("QuestActorComponent.cpp : TaskFailed"));
+	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskFailed"));
 }
 
 void UQuestActorComponent::OnTaskAdded(const USuqsTaskState* TaskState)
 {
-	TempMessage(TEXT("QuestActorComponent.cpp : TaskAdded"));
+	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskAdded"));
 
 	WakeupOwner();
 }
 void UQuestActorComponent::OnTaskRemoved(const USuqsTaskState* TaskState)
 {
-	TempMessage(TEXT("QuestActorComponent.cpp : TaskRemoved"));
+	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskRemoved"));
 }
 
 
