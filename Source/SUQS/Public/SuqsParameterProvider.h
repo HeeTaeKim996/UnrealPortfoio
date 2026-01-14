@@ -145,7 +145,7 @@ public:
 
 
 
-
+/*
 #if 0
 /// Convenience object to hold named parameters for compatibility with Blueprints and C++
 UCLASS(BlueprintType)
@@ -191,27 +191,28 @@ class USuqsParameterProvider : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * Interface for an object to fulfil if it wants to substitute parameter values into quest text.
- * You can include ordered or named parameters in quest text, and when they're detected, any requests for
- * that text will cause a request to be issued to all of the implementors of this interface which are registered
- * with the USuqsProgression instance.
- */
+//*
+// * Interface for an object to fulfil if it wants to substitute parameter values into quest text.
+// * You can include ordered or named parameters in quest text, and when they're detected, any requests for
+// * that text will cause a request to be issued to all of the implementors of this interface which are registered
+// * with the USuqsProgression instance.
+// 
 class SUQS_API ISuqsParameterProvider
 {
 	GENERATED_BODY()
 
 public:
 	
-	/**
-	 * Callback to provide named parameters for a given top-level Quest title or description. This callback will
-	 * only be called if named parameters are needed. 
-	 * @param QuestID The quest ID; will always be provided
-	 * @param TaskID The task ID: may be None if this is for the root quest, or a task ID if it's for a specific task
-	 * @param Params Use this object to set the named parameters you need
-	 */
+	//*
+	// * Callback to provide named parameters for a given top-level Quest title or description. This callback will
+	// * only be called if named parameters are needed. 
+	// * @param QuestID The quest ID; will always be provided
+	// * @param TaskID The task ID: may be None if this is for the root quest, or a task ID if it's for a specific task
+	// * @param Params Use this object to set the named parameters you need
+	// 
 	UFUNCTION(BlueprintNativeEvent)
 	void GetQuestParameters(const FName& QuestID, const FName& TaskID, USuqsNamedFormatParams* Params);
 	
 };
 #endif
+*/

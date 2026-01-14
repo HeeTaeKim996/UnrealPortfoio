@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "GameplayTagContainer.h"
 #include "SuqsWaypointSubsystem.generated.h"
 
 class USuqsProgression;
@@ -17,7 +18,7 @@ class USuqsWaypointSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 protected:
-	TMap<FName, TArray<USuqsWaypointComponent*>> WaypointsByQuest;
+	TMap<FGameplayTag, TArray<USuqsWaypointComponent*>> WaypointsByQuest;
 	TWeakObjectPtr<USuqsProgression> Progression;
 
 
@@ -36,9 +37,11 @@ public:
 
 	void SetProgression(USuqsProgression* Prog);
 
-	USuqsWaypointComponent* GetWaypoint(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled);
+	USuqsWaypointComponent* GetWaypoint(const FGameplayTag& QuestID, const FGameplayTag& TaskID, 
+		bool bOnlyEnabled);
 
-	bool GetWaypoints(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled, TArray<USuqsWaypointComponent*>& OutWaypoints);
+	bool GetWaypoints(const FGameplayTag& QuestID, const FGameplayTag& TaskID, bool bOnlyEnabled, 
+		TArray<USuqsWaypointComponent*>& OutWaypoints);
 
 protected:
 	UFUNCTION()

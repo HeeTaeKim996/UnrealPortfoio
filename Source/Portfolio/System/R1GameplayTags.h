@@ -121,4 +121,29 @@ namespace R1Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_Cooldown);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_StaminaRegen);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_SetByCaller_MitigatedStaminaRegen);
+
+
+
+	/*-------------------
+			Quest
+	--------------------*/
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_FirstQuest);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_FirstQuest_FirstObject_FirstTask);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_FirstQuest_FirstObject_SecondTask);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_FirstQuest_SecondObject_FirstTask);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_SecondQuest);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Main_SecondQuest_FirstObject_FirstTask);
+
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Sub);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Branch);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Quest_Label);
+
 }

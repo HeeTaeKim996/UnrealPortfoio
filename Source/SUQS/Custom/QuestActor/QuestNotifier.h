@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "GameplayTagContainer.h"
 #include "QuestNotifier.generated.h"
 
 class USuqsTaskState;
@@ -33,8 +34,8 @@ public:
 
 public:
 	void SetIsRelevant(bool bNewIsRelevant, const USuqsTaskState* Task);
-	FName GetQuestID() const { return QuestID; }
-	FName GetTaskID() const { return TaskID; }
+	FGameplayTag GetQuestID() const { return QuestID; }
+	FGameplayTag GetTaskID() const { return TaskID; }
 
 
 
@@ -48,10 +49,10 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName QuestID;
+	FGameplayTag QuestID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName TaskID;
+	FGameplayTag TaskID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	uint8 TempSequenceIndex = 0;

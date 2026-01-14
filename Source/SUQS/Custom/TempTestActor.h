@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
 #include "TempTestActor.generated.h"
 
 class UQuestActorComponent;
@@ -40,8 +41,8 @@ protected:
 	TObjectPtr<UShapeComponent> Trigger;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName QuestID;
+	FGameplayTag QuestID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
-	FName TaskID;
+	FGameplayTag TaskID;
 };

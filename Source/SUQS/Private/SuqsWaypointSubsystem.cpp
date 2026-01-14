@@ -69,7 +69,8 @@ void USuqsWaypointSubsystem::UnregisterWaypoint(USuqsWaypointComponent* Waypoint
 	}
 }
 
-USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled)
+USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FGameplayTag& QuestID, const FGameplayTag& TaskID, 
+	bool bOnlyEnabled)
 {
 	TArray<USuqsWaypointComponent*>* const pList = WaypointsByQuest.Find(QuestID);
 	if (pList)
@@ -87,7 +88,8 @@ USuqsWaypointComponent* USuqsWaypointSubsystem::GetWaypoint(const FName& QuestID
 	return nullptr;
 }
 
-bool USuqsWaypointSubsystem::GetWaypoints(const FName& QuestID, const FName& TaskID, bool bOnlyEnabled, TArray<USuqsWaypointComponent*>& OutWaypoints)
+bool USuqsWaypointSubsystem::GetWaypoints(const FGameplayTag& QuestID, const FGameplayTag& TaskID, 
+	bool bOnlyEnabled, TArray<USuqsWaypointComponent*>& OutWaypoints)
 {
 	TArray<USuqsWaypointComponent*>* const pList = WaypointsByQuest.Find(QuestID);
 	bool bAnyFound = false;
@@ -136,7 +138,7 @@ void USuqsWaypointSubsystem::OnProgressionLoaded(USuqsProgression* Prog)
 {
 	if (Progression.Get() == Prog)
 	{
-		for (const TPair<FName, TArray<USuqsWaypointComponent*>>& Pair : WaypointsByQuest)
+		for (const TPair<FGameplayTag, TArray<USuqsWaypointComponent*>>& Pair : WaypointsByQuest)
 		{
 			const TArray<USuqsWaypointComponent*>& Waypoints = Pair.Value;
 			for (USuqsWaypointComponent* W : Waypoints)

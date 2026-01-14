@@ -27,6 +27,8 @@ public class SUQS : ModuleRules
 				"Engine",
 				"UMG",
 
+				"GameplayTags",
+
                 "Portfolio" // Temp for Test
             }
 			);

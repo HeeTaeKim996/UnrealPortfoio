@@ -3,6 +3,7 @@
 
 #include "SuqsProgression.h"
 
+
 FSuqsTaskStateView::FSuqsTaskStateView(): CompletedNumber(0), bHidden(false)
 {
 }
@@ -46,7 +47,7 @@ void FSuqsQuestStateView::FromUObject(USuqsQuestState* State, bool bIncludeCompl
 	}
 	else
 	{
-		CurrentObjectiveIdentifier = NAME_None;
+		CurrentObjectiveIdentifier = FGameplayTag::EmptyTag;
 		CurrentObjectiveDescription = FText::GetEmpty();
 	}
 
@@ -303,7 +304,7 @@ void USuqsProgressViewHelpers::GetProgressViewDifferencesBP(const FSuqsProgressV
 	bWasDifferent = GetProgressViewDifferences(Before, After, Differences);
 }
 
-void USuqsProgressViewHelpers::GetQuestStateFromProgressView(const FSuqsProgressView& ProgressView, FName QuestID, FSuqsQuestStateView& Quest,
+void USuqsProgressViewHelpers::GetQuestStateFromProgressView(const FSuqsProgressView& ProgressView, FGameplayTag QuestID, FSuqsQuestStateView& Quest,
 	bool& bWasFound)
 {
 	for (const FSuqsQuestStateView& Q : ProgressView.ActiveQuests)
@@ -319,8 +320,8 @@ void USuqsProgressViewHelpers::GetQuestStateFromProgressView(const FSuqsProgress
 	bWasFound = false;
 }
 
-void USuqsProgressViewHelpers::GetTaskStateFromProgressView(const FSuqsProgressView& ProgressView, FName QuestID, FName TaskID, FSuqsQuestStateView& Quest,
-	FSuqsTaskStateView& Task, bool& bWasFound)
+void USuqsProgressViewHelpers::GetTaskStateFromProgressView(const FSuqsProgressView& ProgressView, FGameplayTag QuestID, FGameplayTag TaskID, 
+	FSuqsQuestStateView& Quest, FSuqsTaskStateView& Task, bool& bWasFound)
 {
 	GetQuestStateFromProgressView(ProgressView, QuestID, Quest, bWasFound);
 	if (bWasFound)

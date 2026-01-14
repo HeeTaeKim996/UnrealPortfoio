@@ -6,6 +6,7 @@
 #include "SuqsProgression.h"
 #include "SuqsProgressView.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTagContainer.h"
 #include "SuqsGameStateComponent.generated.h"
 
 
@@ -52,10 +53,10 @@ protected:
 
 
 public:
-	void StartQuest(FName QuestID, bool bResetIfFailed = false, bool bResetIfComplete = false,
+	void StartQuest(FGameplayTag QuestID, bool bResetIfFailed = false, bool bResetIfComplete = false,
 		bool bResetIfInProgress = false);
 
-	int ProgressTask(FName QuestID, FName TaskIdentifier, int Delta = 1);
+	int ProgressTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Delta = 1);
 
 
 public:

@@ -58,12 +58,12 @@ void USuqsGameStateComponent::FireChangedEvent()
 	}
 }
 
-void USuqsGameStateComponent::StartQuest(FName QuestID, bool bResetIfFailed, bool bResetIfComplete, bool bResetIfInProgress)
+void USuqsGameStateComponent::StartQuest(FGameplayTag QuestID, bool bResetIfFailed, bool bResetIfComplete, bool bResetIfInProgress)
 {
 	ServerProgression->AcceptQuest(QuestID, bResetIfFailed, bResetIfComplete, bResetIfInProgress);
 }
 
-int USuqsGameStateComponent::ProgressTask(FName QuestID, FName TaskIdentifier, int Delta)
+int USuqsGameStateComponent::ProgressTask(FGameplayTag QuestID, FGameplayTag TaskIdentifier, int Delta)
 {
 	return ServerProgression->ProgressTask(QuestID, TaskIdentifier, Delta);
 }

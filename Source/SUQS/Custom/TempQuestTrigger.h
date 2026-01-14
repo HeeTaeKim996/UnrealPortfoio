@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
 #include "TempQuestTrigger.generated.h"
 
 UCLASS()
@@ -26,7 +27,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config");
-	FName QuestID;
+	FGameplayTag QuestID;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Trigger")

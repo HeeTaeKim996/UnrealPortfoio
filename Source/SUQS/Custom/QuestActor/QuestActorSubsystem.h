@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "GameplayTagContainer.h"
 #include "QuestActorSubsystem.generated.h"
 
 class USuqsProgression;
@@ -23,7 +24,7 @@ class SUQS_API UQuestActorSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 protected:
-	TMap<FName, TArray<UQuestNotifier*>> QuestActorComponentsByQuest;
+	TMap<FGameplayTag, TArray<UQuestNotifier*>> QuestActorComponentsByQuest;
 	TWeakObjectPtr<USuqsProgression> CurrProgression;
 
 public:
@@ -32,10 +33,11 @@ public:
 	void RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent);
 	void UnregisterQuestActorComponent(UQuestNotifier* QuestActorComponent);
 
-	UQuestNotifier* GetQuestActorComponent(const FName& QuestID, const FName& TaskID);
+	UQuestNotifier* GetQuestActorComponent(const FGameplayTag& QuestID, const FGameplayTag& TaskID);
 
-	bool GetQuestActorComponents(const FName& QuestID, const FName& TaskID, TArray<UQuestNotifier*>& OutQuestActorComponents);
-	FName GetQuestIdFromTask(USuqsTaskState* Task);
+	bool GetQuestActorComponents(const FGameplayTag& QuestID, const FGameplayTag& TaskID, 
+		TArray<UQuestNotifier*>& OutQuestActorComponents);
+	FGameplayTag GetQuestIdFromTask(USuqsTaskState* Task);
 	
 
 protected:

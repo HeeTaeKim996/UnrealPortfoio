@@ -840,7 +840,8 @@ FText USuqsProgression::FormatQuestOrTaskText(const FGameplayTag& QuestID, const
 		const TWeakObjectPtr<UObject>& F = ParameterProviders[i];
 		if (F.IsValid())
 		{
-			ISuqsParameterProvider::Execute_GetQuestParameters(F.Get(), QuestID, TaskID, FormatParams);
+			ISuqsParameterProvider::Execute_GetQuestParameters(F.Get(), QuestID.GetTagName(), 
+				TaskID.GetTagName(), FormatParams);
 		}
 		else
 		{

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SuqsTaskState.h"
 #include "UObject/Object.h"
+#include "GameplayTagContainer.h"
 #include "SuqsProgressView.generated.h"
 
 
@@ -16,7 +17,7 @@ struct SUQS_API FSuqsTaskStateView
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	FName Identifier;
+	FGameplayTag Identifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	FText Title;
@@ -59,10 +60,10 @@ struct SUQS_API FSuqsQuestStateView
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FName Identifier;
+	FGameplayTag Identifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	TArray<FName> Labels;
+	TArray<FGameplayTag> Labels;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FText Title;
@@ -74,7 +75,7 @@ struct SUQS_API FSuqsQuestStateView
 	ESuqsQuestStatus Status = ESuqsQuestStatus::Incomplete;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FName CurrentObjectiveIdentifier;
+	FGameplayTag CurrentObjectiveIdentifier;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FText CurrentObjectiveDescription;
@@ -143,10 +144,10 @@ struct SUQS_API FSuqsProgressViewDiffEntry
 	ESuqsProgressViewDiffChangeType ChangeType = ESuqsProgressViewDiffChangeType::Added;
 
 	UPROPERTY(BlueprintReadOnly)
-	FName QuestID = NAME_None;
+	FGameplayTag QuestID = FGameplayTag::EmptyTag;
 
 	UPROPERTY(BlueprintReadOnly)
-	FName TaskID = NAME_None;
+	FGameplayTag TaskID = FGameplayTag::EmptyTag;
 };
 
 
@@ -174,10 +175,10 @@ public:
 	static void GetProgressViewDifferencesBP(const FSuqsProgressView& Before, const FSuqsProgressView& After, FSuqsProgressViewDiff& Differences, bool& bWasDifferent);
 
 	UFUNCTION(BlueprintCallable, Category = "SUQS")
-	static void GetQuestStateFromProgressView(const FSuqsProgressView& ProgressView, FName QuestID, FSuqsQuestStateView& Quest, bool& bWasFound);
+	static void GetQuestStateFromProgressView(const FSuqsProgressView& ProgressView, FGameplayTag QuestID, FSuqsQuestStateView& Quest, bool& bWasFound);
 
 	UFUNCTION(BlueprintCallable, Category = "SUQS")
-	static void GetTaskStateFromProgressView(const FSuqsProgressView& ProgressView, FName QuestID, FName TaskID, FSuqsQuestStateView& Quest, FSuqsTaskStateView& Task,
+	static void GetTaskStateFromProgressView(const FSuqsProgressView& ProgressView, FGameplayTag QuestID, FGameplayTag TaskID, FSuqsQuestStateView& Quest, FSuqsTaskStateView& Task,
 		bool& bWasFound);
 };
 

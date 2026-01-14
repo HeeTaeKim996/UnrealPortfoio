@@ -120,6 +120,30 @@ namespace R1Tags
 	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_Cooldown, "Data.SetByCaller.Cooldown");
 	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_StaminaRegen, "Data.SetByCaller.StaminaRegen");
 	UE_DEFINE_GAMEPLAY_TAG(Data_SetByCaller_MitigatedStaminaRegen, "Data.SetByCaller.MitigatedStaminaRegen");
+
+
+
+
+	/*-------------------
+			Quest
+	--------------------*/
+	UE_DEFINE_GAMEPLAY_TAG(Quest, "Quest");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main, "Quest.Main");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_FirstQuest, "Quest.Main.FirstQuest");
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_FirstQuest_FirstObject_FirstTask, "Quest.Main.FirstQuest.FirstObject.FirstTask");
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_FirstQuest_FirstObject_SecondTask, "Quest.Main.FirstQuest.FirstObject.SecondTask");
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_FirstQuest_SecondObject_FirstTask, "Quest.Main.FirstQuest.SecondObject.FirstTask");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_SecondQuest, "Quest.Main.SecondQuest");
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Main_SecondQuest_FirstObject_FirstTask, "Quest.Main.SecondQuest.FirstObject.FirstTask");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Sub, "Quest.Sub");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Branch, "Quest.Branch");
+
+	UE_DEFINE_GAMEPLAY_TAG(Quest_Label, "Quest.Label");
 }
 
 

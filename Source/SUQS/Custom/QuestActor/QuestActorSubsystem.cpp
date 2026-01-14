@@ -43,8 +43,8 @@ void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestNotifier* QuestActo
 
 	bool bInserted = false;
 
-	const FName QuestID = QuestActorComponent->GetQuestID();
-	const FName TaskID = QuestActorComponent->GetTaskID();
+	const FGameplayTag QuestID = QuestActorComponent->GetQuestID();
+	const FGameplayTag TaskID = QuestActorComponent->GetTaskID();
 
 	TArray<UQuestNotifier*>& List = QuestActorComponentsByQuest.FindOrAdd(QuestID);
 
@@ -96,7 +96,7 @@ void UQuestActorSubsystem::UnregisterQuestActorComponent(UQuestNotifier* QuestAc
 
 }
 
-UQuestNotifier* UQuestActorSubsystem::GetQuestActorComponent(const FName& QuestID, const FName& TaskID)
+UQuestNotifier* UQuestActorSubsystem::GetQuestActorComponent(const FGameplayTag& QuestID, const FGameplayTag& TaskID)
 {
 	TArray<UQuestNotifier*>* const pList = QuestActorComponentsByQuest.Find(QuestID);
 	if (pList)
@@ -112,7 +112,8 @@ UQuestNotifier* UQuestActorSubsystem::GetQuestActorComponent(const FName& QuestI
 	return nullptr;
 }
 
-bool UQuestActorSubsystem::GetQuestActorComponents(const FName& QuestID, const FName& TaskID, TArray<UQuestNotifier*>& OutQuestActorComponents)
+bool UQuestActorSubsystem::GetQuestActorComponents(const FGameplayTag& QuestID, const FGameplayTag& TaskID, 
+	TArray<UQuestNotifier*>& OutQuestActorComponents)
 {
 	OutQuestActorComponents.Empty();
 
@@ -139,7 +140,7 @@ bool UQuestActorSubsystem::GetQuestActorComponents(const FName& QuestID, const F
 	return bAnyFound;
 }
 
-FName UQuestActorSubsystem::GetQuestIdFromTask(USuqsTaskState* Task)
+FGameplayTag UQuestActorSubsystem::GetQuestIdFromTask(USuqsTaskState* Task)
 {
 	if (USuqsObjectiveState* Objective = Task->GetParentObjective())
 	{
@@ -149,7 +150,7 @@ FName UQuestActorSubsystem::GetQuestIdFromTask(USuqsTaskState* Task)
 		}
 	}
 
-	return FName();
+	return FGameplayTag::EmptyTag;
 }
 
 

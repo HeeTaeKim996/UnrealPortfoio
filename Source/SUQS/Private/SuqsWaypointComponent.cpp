@@ -68,7 +68,7 @@ void USuqsWaypointComponent::SetEnabled(bool bNewEnabled)
 }
 
 // Act for RE initialize
-void USuqsWaypointComponent::Initialise(FGameplayTagContainer InQuestID, FGameplayTagContainer InTaskID, 
+void USuqsWaypointComponent::Initialise(FGameplayTag InQuestID, FGameplayTag InTaskID,
 	uint8 InSequenceIndex)
 {
 	if (GetOwnerRole() == ROLE_Authority) // ※ ROLE_Authority : Server. Desont need in Single Play

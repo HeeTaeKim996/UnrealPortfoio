@@ -12,7 +12,7 @@ struct SUQS_API FSuqsTask
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	FGameplayTag Identifier;
+	FGameplayTag Identifier = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	TArray<FGameplayTag> Labels;
@@ -39,7 +39,7 @@ public:
 	float ResolveDelay = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
-	FGameplayTag ResolveGate;
+	FGameplayTag ResolveGate = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Task")
 	bool bAlwaysVisible = false;
@@ -53,7 +53,7 @@ struct SUQS_API FSuqsObjective
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
-	FGameplayTag Identifier;
+	FGameplayTag Identifier = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	FText Title;
@@ -74,7 +74,7 @@ public:
 	bool bContinueOnFail = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
-	FGameplayTag Branch;
+	FGameplayTag Branch = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	TArray<FSuqsTask> Tasks;
@@ -89,7 +89,7 @@ struct SUQS_API FSuqsQuest : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FGameplayTag Identifier;
+	FGameplayTag Identifier = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	TArray<FGameplayTag> Labels;
@@ -125,7 +125,7 @@ public:
 	float ResolveDelay = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	FGameplayTag ResolveGate;
+	FGameplayTag ResolveGate = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	TArray<FSuqsObjective> Objectives;
