@@ -20,7 +20,7 @@ public class Portfolio : ModuleRules
 
 			/*Plugins*/
 			"ModuleTest" /*TEST*/, "MeleeTrace"/* Prevent Hitch Problem In HitDetection*/,
-			"SUQS"/*Quest System*/,
+			"SUQS"/*Quest System*/, "SPUD" /*FArchive based Save System*/, 
 
 		}); // ※ Moduel Doesnt Change Engine Codes. But Add Module's dll
 

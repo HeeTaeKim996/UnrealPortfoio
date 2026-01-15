@@ -34,7 +34,16 @@
 				"Engine",
 				"CoreUObject"
 			]
-		}
+		},
+				{
+			"Name": "SPUD",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
+		},
 	],
 	"Plugins": [
 		{
