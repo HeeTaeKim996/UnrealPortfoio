@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
+#include "QuestActor/QuestActorInterface.h"
 #include "TempTestActor.generated.h"
 
 class UQuestActorComponent;
 
 UCLASS()
-class SUQS_API ATempTestActor : public AActor
+class SUQS_API ATempTestActor : public AActor, public IQuestActorInterface
 {
 	GENERATED_BODY()
 	
@@ -22,6 +23,16 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+
+public:
+	virtual void QuestActor_OnRegister(const FQuestActor_RegisterInfo& BeginPlayInfo) override;
+	virtual void QuestActor_Update(const FQuestActor_UpdateInfo& UpdateInfo) override;
+	virtual void QuestActor_Complete(const FQuestActor_CompleteInfo& CompleteInfo) override;
+	virtual void QuestActor_Fail(const FQuestActor_FailInfo& FailInfo) override;
+	virtual void QuestActor_TaskAdded(const FQuestActor_TaskAddedInfo& TaskAddedInfo) override;
+	virtual void QuestActor_TaskRemoved(const FQuestActor_TaskRemovedInfo& RegisterInfo) override;
+
 
 
 protected:

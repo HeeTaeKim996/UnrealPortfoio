@@ -20,7 +20,7 @@ ATempTestActor::ATempTestActor()
 void ATempTestActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &ATempTestActor::OnTriggerBeginOverlap);
 }
 
@@ -31,8 +31,53 @@ void ATempTestActor::Tick(float DeltaTime)
 
 }
 
+void ATempTestActor::QuestActor_OnRegister(const FQuestActor_RegisterInfo& RegisterInfo)
+{
+	for (const USuqsTaskState* TaskStates : RegisterInfo.RelevantTasks)
+	{
+		if (TaskStates->GetQuestIdentifier() == QuestID &&
+			TaskStates->GetIdentifier() == TaskID)
+		{
+			return;
+		}
+	}
+	
+	QuestActorComponent->SleepOwner();
+}
 
-void ATempTestActor::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+void ATempTestActor::QuestActor_Update(const FQuestActor_UpdateInfo& UpdateInfo)
+{
+}
+
+void ATempTestActor::QuestActor_Complete(const FQuestActor_CompleteInfo& CompleteInfo)
+{
+}
+
+void ATempTestActor::QuestActor_Fail(const FQuestActor_FailInfo& FailInfo)
+{
+}
+
+void ATempTestActor::QuestActor_TaskAdded(const FQuestActor_TaskAddedInfo& TaskAddedInfo)
+{
+	const USuqsTaskState* TaskState = TaskAddedInfo.AddedTask;
+
+	if (TaskState->GetQuestIdentifier() == QuestID &&
+		TaskState->GetIdentifier() == TaskID)
+	{
+		QuestActorComponent->WakeupOwner();
+	}
+}
+
+void ATempTestActor::QuestActor_TaskRemoved(const FQuestActor_TaskRemovedInfo& TaskRemovedInfo)
+{
+}
+
+
+
+
+
+
+void ATempTestActor::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AMainGameStateBase* MainGameStateBase = GetWorld()->GetGameState<AMainGameStateBase>();

@@ -111,6 +111,18 @@ void USuqsTaskState::MaybeNotifyParentStatusChange()
 
 
 
+const FGameplayTag& USuqsTaskState::GetQuestIdentifier() const
+{
+	if (USuqsObjectiveState* ObjectiveState = GetParentObjective())
+	{
+		if (USuqsQuestState* QuestState = ObjectiveState->GetParentQuest())
+		{
+			return QuestState->GetIdentifier();
+		}
+	}
+	return FGameplayTag::EmptyTag;
+}
+
 FText USuqsTaskState::GetTitle() const
 {
 	if (bTitleNeedsFormatting)

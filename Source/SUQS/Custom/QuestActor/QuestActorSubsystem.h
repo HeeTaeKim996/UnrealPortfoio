@@ -30,7 +30,7 @@ protected:
 public:
 	void SetProgression(USuqsProgression* InProg);
 
-	void RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent);
+	const USuqsTaskState* RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent, bool& bIsRelevant);
 	void UnregisterQuestActorComponent(UQuestNotifier* QuestActorComponent);
 
 	UQuestNotifier* GetQuestActorComponent(const FGameplayTag& QuestID, const FGameplayTag& TaskID);

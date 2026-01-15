@@ -37,7 +37,8 @@ void UQuestActorSubsystem::SetProgression(USuqsProgression* InProg)
 	}
 }
 
-void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent)
+const USuqsTaskState* UQuestActorSubsystem::RegisterQuestActorComponent(UQuestNotifier* QuestActorComponent, 
+	bool& bIsRelevant)
 {
 
 
@@ -79,11 +80,16 @@ void UQuestActorSubsystem::RegisterQuestActorComponent(UQuestNotifier* QuestActo
 		bool IsTaskRelevant = CurrProgression->IsTaskRelevant(QuestID, TaskID);
 		if (IsTaskRelevant)
 		{
-			QuestActorComponent->SetIsRelevant(true, CurrProgression->GetTaskState(QuestID, TaskID));
+			bIsRelevant = true;
 		}
-		QuestActorComponent->SetIsRelevant(false, nullptr);
+		else
+		{
+			bIsRelevant = false;
+		}
+		return CurrProgression->GetTaskState(QuestID, TaskID);
 	}
 
+	return nullptr;
 }
 
 void UQuestActorSubsystem::UnregisterQuestActorComponent(UQuestNotifier* QuestActorComponent)

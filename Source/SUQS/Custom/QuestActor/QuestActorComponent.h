@@ -27,6 +27,7 @@ private:
 	void Register();
 	void Unregister();
 
+public:
 	void SleepOwner();
 	void WakeupOwner();
 

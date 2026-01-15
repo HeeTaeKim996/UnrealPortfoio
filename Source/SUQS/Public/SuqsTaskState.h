@@ -48,6 +48,9 @@ public:
 	const FGameplayTag& GetIdentifier() const { return TaskDefinition->Identifier; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FGameplayTag& GetQuestIdentifier() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsMandatory() const { return TaskDefinition->bMandatory; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)

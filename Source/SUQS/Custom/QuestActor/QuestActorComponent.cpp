@@ -10,7 +10,7 @@
 
 #include "QuestNotifier.h"
 #include "SuqsLogger.h"
-													\
+#include "QuestActorInterface.h"
 
 
 
@@ -43,19 +43,25 @@ void UQuestActorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UQuestActorComponent::Register()
 {
-	bool bIsAnyRelevant = false;
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TasksRegistered"));
+
+	TArray<const USuqsTaskState*> RelevantTasks;
+
 	for (UQuestNotifier* QuestNotifier : QuestNotifiers)
 	{
-		QuestNotifier->Initialize_Notifier(this);
-		if (QuestNotifier->IsNotifierRelevant() == true)
+		
+		if (const USuqsTaskState* RelevantTask = QuestNotifier->Initialize_Notifier(this))
 		{
-			bIsAnyRelevant = true;
+			RelevantTasks.Add(RelevantTask);
 		}
 	}
 
-	if (bIsAnyRelevant == false)
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
 	{
-		SleepOwner();
+		FQuestActor_RegisterInfo RegisterInfo;
+		RegisterInfo.RelevantTasks = RelevantTasks;
+
+		QuestActor->QuestActor_OnRegister(RegisterInfo);
 	}
 }
 void UQuestActorComponent::Unregister()
@@ -107,26 +113,69 @@ void UQuestActorComponent::WakeupOwner()
 
 void UQuestActorComponent::OnTaskUpdated(const USuqsTaskState* TaskState)
 {
-	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskUpdated"));
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TaskUpdated"));
+
+
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
+	{
+		FQuestActor_UpdateInfo UpdateInfo;
+		UpdateInfo.UpdatedTask = TaskState;
+
+		QuestActor->QuestActor_Update(UpdateInfo);
+	}
+
 }
 void UQuestActorComponent::OnTaskCompleted(const USuqsTaskState* TaskState)
 {
-	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskCompleted"));
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TaskCompleted"));
+
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
+	{
+		FQuestActor_CompleteInfo CompleteInfo;
+		CompleteInfo.CompletedTask = TaskState;
+
+		QuestActor->QuestActor_Complete(CompleteInfo);
+	}
+	
 }
 void UQuestActorComponent::OnTaskFailed(const USuqsTaskState* TaskState)
 {
-	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskFailed"));
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TaskFailed"));
+
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
+	{
+		FQuestActor_FailInfo FailInfo;
+		FailInfo.FailedTask = TaskState;
+
+		QuestActor->QuestActor_Fail(FailInfo);
+	}
 }
+
+
 
 void UQuestActorComponent::OnTaskAdded(const USuqsTaskState* TaskState)
 {
-	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskAdded"));
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TaskAdded"));
 
-	WakeupOwner();
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
+	{
+		FQuestActor_TaskAddedInfo TaskAddedInfo;
+		TaskAddedInfo.AddedTask = TaskState;
+
+		QuestActor->QuestActor_TaskAdded(TaskAddedInfo);
+	}
 }
 void UQuestActorComponent::OnTaskRemoved(const USuqsTaskState* TaskState)
 {
-	MsgBoth(FString("QuestActorComponent.cpp"), FString("TaskRemoved"));
+	MsgLog(FString("QuestActorComponent.cpp"), FString("TaskRemoved"));
+
+	if (IQuestActorInterface* QuestActor = Cast<IQuestActorInterface>(GetOwner()))
+	{
+		FQuestActor_TaskRemovedInfo TaskRemovedInfo;
+		TaskRemovedInfo.RemovedTask = TaskState;
+
+		QuestActor->QuestActor_TaskRemoved(TaskRemovedInfo);
+	}
 }
 
 

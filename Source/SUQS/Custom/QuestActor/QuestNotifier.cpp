@@ -22,10 +22,12 @@ UQuestNotifier::UQuestNotifier()
 	
 }
 
-void UQuestNotifier::Initialize_Notifier(UQuestActorComponent* InParent)
+const USuqsTaskState* UQuestNotifier::Initialize_Notifier(UQuestActorComponent* InParent)
 {
 	ParentComponent = InParent;
-	Register();
+
+
+	return Register();
 }
 
 void UQuestNotifier::OnRemove_Notifier()
@@ -33,18 +35,24 @@ void UQuestNotifier::OnRemove_Notifier()
 	UnRegister();
 }
 
-void UQuestNotifier::Register()
+const USuqsTaskState* UQuestNotifier::Register()
 {
-	if (bIsRegistered == true) return;
+	if (bIsRegistered == true) return nullptr;
 
 	const UGameInstance* GI = GetWorld()->GetGameInstance();
-	if (GI == nullptr) return;
+	if (GI == nullptr) return nullptr;
 
 	UQuestActorSubsystem* QuestActorSubsystem = GI->GetSubsystem<UQuestActorSubsystem>();
-	if (QuestActorSubsystem == nullptr) return;
+	if (QuestActorSubsystem == nullptr) return nullptr;
 
-	QuestActorSubsystem->RegisterQuestActorComponent(this);
+	const USuqsTaskState* Task = QuestActorSubsystem->RegisterQuestActorComponent(this, bIsRelevant);
+	if (bIsRelevant)
+	{
+		return Task;
+	}
+	
 
+	return nullptr;
 }
 void UQuestNotifier::UnRegister()
 {
@@ -62,15 +70,7 @@ void UQuestNotifier::UnRegister()
 
 
 
-void UQuestNotifier::SetIsRelevant(bool bNewIsRelevant, const USuqsTaskState* Task)
-{
-	bIsRelevant = bNewIsRelevant;
 
-	if (bIsRelevant == true)
-	{
-		OnTaskAdded(Task);
-	}
-}
 
 
 

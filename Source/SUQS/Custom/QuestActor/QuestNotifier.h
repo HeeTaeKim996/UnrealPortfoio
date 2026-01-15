@@ -20,11 +20,11 @@ public:
 	UQuestNotifier();
 
 public:
-	void Initialize_Notifier(UQuestActorComponent* InParent);
+	const USuqsTaskState* Initialize_Notifier(UQuestActorComponent* InParent);
 	void OnRemove_Notifier();
 
 private:
-	void Register();
+	const USuqsTaskState* Register();
 	void UnRegister();
 
 public:
@@ -33,7 +33,6 @@ public:
 
 
 public:
-	void SetIsRelevant(bool bNewIsRelevant, const USuqsTaskState* Task);
 	FGameplayTag GetQuestID() const { return QuestID; }
 	FGameplayTag GetTaskID() const { return TaskID; }
 
