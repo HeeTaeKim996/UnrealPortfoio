@@ -330,6 +330,18 @@ struct SPUD_API FSpudNamedObjectData : public FSpudObjectData
 	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
 };
 
+struct SPUD_API FSpudSpawnedActorData : public FSpudObjectData
+{
+	uint32 ClassID;
+	FGuid Guid; // FGuid : Identifier which exclude Collision
+
+	FString Key() const { return Guid.ToString(SPUDDATA_GUID_KEY_FORMAT); } // Ex) 12345678-1234-1234-1234-1234567890ab
+
+	virtual const char* GetMagic() const override { return SPUDDATA_SPAWNEDACTOR_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+};
+
 struct SPUD_API FSpudDestroyedLevelActor : public FSpudChunk
 {
 	FString Name;
@@ -358,7 +370,7 @@ struct FSpudStructMapData : public FSpudChunk
 	{
 		if (ChunkStart(Ar))
 		{
-			for (TPair<const K, V>& Tuple : Contents)
+			for (TPair<K, V>& Tuple : Contents)
 			{
 				Tuple.Value.WriteToArchive(Ar);
 			}
@@ -423,72 +435,393 @@ struct FSpudStructMapData : public FSpudChunk
 
 
 
+template<typename T>
+struct FSpudArray : public FSpudChunk
+{
+	TArray<TSharedPtr<T>> Values;
+
+	virtual const char* GetChildMagic() const = 0;
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override
+	{
+		if (ChunkStart(Ar))
+		{
+			for (TSharedPtr<T>& Item : Values)
+			{
+				Item->WriteToArchive(Ar);
+			}
+			ChunkEnd(Ar);
+		}
+	}
+
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override
+	{
+		if (ChunkStart(Ar))
+		{
+			Reset();
+
+
+			const uint32 ChildMagicID = FSpudChunkHeader::EncodeMagic(GetChildMagic());
+			while (IsStillInChunk(Ar))
+			{
+				if (Ar.NextChunkIs(ChildMagicID))
+				{
+					TSharedPtr<T> ChildData = MakeShareable(new T);
+					ChildData->ReadFromArchive(Ar, StoredSystemVersion);
+					Values.Add(ChildData);
+				}
+				else
+				{
+					Ar.SkipNextChunk();
+				}
+			}
+			ChunkEnd(Ar);
+		}
+	}
+
+	void Reset()
+	{
+		Values.Empty();
+	}
+};
+
+
+struct FSpudNamedObjectMap : public FSpudStructMapData<FString, FSpudNamedObjectData> // FString : FName or Guid string
+{
+	virtual bool RenameObject(const FString& OldName, const FString& NewName);
+};
+
+struct FSpudGlobalObjectMap : public FSpudNamedObjectMap
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_GLOBALOBJECTLIST_MAGIC; }
+	virtual const char* GetChildMagic() const override { return SPUDDATA_NAMEDOBJECT_MAGIC; }
+};
+
+struct FSpudLevelActorMap : public FSpudNamedObjectMap
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_LEVELACTORLIST_MAGIC; }
+	virtual const char* GetChildMagic() const override { return SPUDDATA_NAMEDOBJECT_MAGIC; }
+};
+
+struct FSpudSpawnedActorMap : public FSpudStructMapData<FString, FSpudSpawnedActorData> // FString : GUID String
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_SPAWNEDACTORLIST_MAGIC; }
+	virtual const char* GetChildMagic() const override { return SPUDDATA_SPAWNEDACTOR_MAGIC; }
+};
+
+struct FSpudDestroyedActorArray : public FSpudArray<FSpudDestroyedLevelActor>
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_DESTROYEDACTORLIST_MAGIC; }
+	virtual const char* GetChildMagic() const override { return SPUDDATA_DESTROYEDACTOR_MAGIC; }
+
+	void Add(const FString& Name);
+};
+
+struct FSpudClassDefinitions : public FSpudArray<FSpudClassDef>
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_CLASSDEFINITIONLIST_MAGIC; }
+	virtual const char* GetChildMagic() const override { return SPUDDATA_CLASSDEF_MAGIC; }
+};
+
+
+
+template<typename T>
+struct FSpudIndex : public FSpudChunk
+{
+	TMap<T, uint32> Lookup;
+	TArray<T> UniqueValues;
+
+	uint32 GetIndex(const T& V) const
+	{
+		const uint32* pIndex = Lookup.Find(V);
+		if (pIndex == nullptr)
+		{
+			return SPUDDATA_INDEX_NONE;
+		}
+
+		return *pIndex;
+	}
+
+	uint32 FindOrAddIndex(const T& V)
+	{
+		const uint32* pIndex = Lookup.Find(V);
+		if (pIndex)
+		{
+			return *pIndex;
+		}
+
+		uint32 NewIndex = UniqueValues.Num();
+		UniqueValues.Add(V);
+		Lookup.Add(V, NewIndex);
+		return NewIndex;
+	}
+
+	uint32 Rename(const T& Old, const T& New)
+	{
+		uint32 Index;
+		if (Lookup.RemoveAndCopyValue(Old, Index))
+		{
+			Lookup.Add(New, Index);
+			return Index;
+		}
+
+		return SPUDDATA_INDEX_NONE;
+	}
+
+	const T& GetValue(uint32 Index) const
+	{
+		check(Index < static_cast<uint32>(UniqueValues.Num()));
+		return UniqueValues[Index];
+	}
+
+	void Empty()
+	{
+		Lookup.Empty();
+		UniqueValues.Empty();
+	}
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override
+	{
+		if (ChunkStart(Ar))
+		{
+			Ar << UniqueValues;
+			ChunkEnd(Ar);
+		}
+	}
+
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override
+	{
+		if (ChunkStart(Ar))
+		{
+			Empty();
+			Ar << UniqueValues;
+
+			uint32 Num = static_cast<uint32>(UniqueValues.Num());
+			for (uint32 i = 0; i < Num; i++)
+			{
+				Lookup.Add(UniqueValues[i], i);
+			}
+			ChunkEnd(Ar);
+		}
+	}
+};
+
+
+
+struct FSpudClassNameIndex : public FSpudIndex<FString>
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_CLASSNAMEINDEX_MAGIC; }
+};
+
+struct FSpudPropertyNameIndex : public FSpudIndex<FString>
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_PROPERTYNAMEINDEX_MAGIC; }
+};
+
+struct SPUD_API FSpudClassMetadata : public FSpudChunk
+{
+	FSpudClassDefinitions ClassDefinitions;
+
+	FSpudClassNameIndex ClassNameIndex;
+
+	FSpudPropertyNameIndex PropertyNameIndex;
+
+	FSpudVersionInfo UserDataModelVersion;
 
+	virtual const char* GetMagic() const override { return SPUDDATA_METADATA_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+	
+	TSharedPtr<FSpudClassDef> FindOrAddClassDef(const FString& ClassName);
+	TSharedPtr<const FSpudClassDef> GetClassDef(const FString& ClassName) const;
 
+	const FString& GetPropertyNameFromID(uint32 ID) const;
+	
+	uint32 FindOrAddPropertyIDFromName(const FString& Name);
+	
+	uint32 GetPropertyIDFromName(const FString& Name) const;
+	
+	uint32 FindOrAddPropertyIDFromProperty(const FProperty* Prop);
+	
+	uint32 FindOrAddPrefixID(const FString& Prefix);
+	
+	uint32 GetPrefixID(const FString& Prefix);
+	
+	const FString& GetClassNameFromID(uint32 Id) const;
 
+	uint32 FindOrAddClassIDFromName(const FString& Name);
 
+	uint32 GetClassIDFromName(const FString& Name) const;
 
+	void Reset();
 
 
+	bool RenameClass(const FString& OldClassName, const FString& NewClassName);
+	bool RenameProperty(const FString& ClassName, const FString& OldName, const FString& NewName, const FString& OldPrefix = "", const FString& NewPrefix = "");
 
+	bool IsUserDataModelOutdated() const { return UserDataModelVersion.Version != GCurrentUserDataModelVersion; }
+	uint32 GetUserDataModelVersion() const { return UserDataModelVersion.Version; }
+};
 
+enum SPUD_API ELevelDataStatus
+{
+	LDS_Unloaded,
+	LDS_BackgroundWriteAndUnload,
+	LDS_Loaded
+};
 
+struct SPUD_API FSpudGlobalData : public FSpudChunk
+{
+	FString CurrentLevel;
+	
+	FSpudClassMetadata Metadata;
 
+	FSpudGlobalObjectMap Objects;
 
+	virtual const char* GetMagic() const override { return SPUDDATA_GLOBALDATA_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+	void Reset();
 
+	bool IsUserDataModelOutdated() const { return Metadata.IsUserDataModelOutdated(); }
+	uint32 GetUserDataModelVersion() const { return Metadata.GetUserDataModelVersion(); }
+};
 
+struct SPUD_API FSpudLevelData : public FSpudChunk
+{
+	FString Name;
 
+	FSpudClassMetadata Metadata;
 
+	FSpudLevelActorMap LevelActors;
 
+	FSpudSpawnedActorMap SpawnedActors;
 
+	FSpudDestroyedActorArray DestroyedActors;
 
+	ELevelDataStatus Status;
 
+	FCriticalSection Mutex;
 
+	bool IsLoaded();
 
+	void ReleaseMemory();
 
+	FString Key() const { return Name; }
 
+	FSpudLevelData() {}
 
+	FSpudLevelData(const FSpudLevelData& Other)
+		: FSpudChunk(Other), Name(Other.Name), Metadata(Other.Metadata), LevelActors(Other.LevelActors), SpawnedActors(Other.SpawnedActors),
+		DestroyedActors(Other.DestroyedActors), Status(Other.Status)
+	{}
 
+	virtual const char* GetMagic() const override { return SPUDDATA_LEVELDATA_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
 
+	virtual void PreStoreWorld();
 
+	static bool ReadLevelInfoFromArchive(FSpudChunkedDataArchive& Ar, bool bReturnToStart, FString& OutLevelName, int64& OutDataSize);
 
+	void Reset();
 
+	bool IsUserDataModelOutdated() const { return Metadata.IsUserDataModelOutdated(); }
+	uint32 GetUserDataModelVersion() const { return Metadata.GetUserDataModelVersion(); }
+};
 
 
+struct SPUD_API FSpudScreenshot : public FSpudChunk
+{
+	// PNG encoded image bytes
+	TArray<uint8> ImageData;
 
+	virtual const char* GetMagic() const override { return SPUDDATA_SCREENSHOT_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+};
 
 
+struct SPUD_API FSpudSaveCustomInfo : public FSpudChunk
+{
+	TArray<FString> PropertyNames;
 
+	TArray<uint32> PropertyOffsets;
 
+	TArray<uint8> PropertyData;
 
+	virtual const char* GetMagic() const override { return SPUDDATA_CUSTOMINFO_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+	void Reset();
+};
 
 
+struct SPUD_API FSpudSaveInfo : public FSpudChunk
+{
+	uint16 SystemVersion;
+	
+	FText Title;
 
+	FDateTime Timestamp;
 
+	FSpudSaveCustomInfo CustomInfo;
 
+	FSpudScreenshot Screenshot;
 
+	FSpudSaveInfo();
+	virtual const char* GetMagic() const override { return SPUDDATA_SAVEINFO_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+	void Reset();
+};
 
+struct SPUD_API FSpudSaveData : public FSpudChunk
+{
+	FSpudSaveInfo Info;
+	FSpudGlobalData GlobalData;
 
+	typedef TSharedPtr<FSpudLevelData, ESPMode::ThreadSafe> TLevelDataPtr;
+	TMap<FString, TLevelDataPtr> LevelDataMap;
 
+	FCriticalSection LevelDataMapMutex;
 
+	virtual const char* GetMagic() const override { return SPUDDATA_SAVEGAME_MAGIC; }
 
+	void PrepareForWrite();
 
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
 
+	void WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& LevelPath);
 
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
 
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLevels, const FString& LevelPath);
 
+	virtual TLevelDataPtr GetLevelData(const FString& LevelName, bool bLoadIfNeeded, const FString& LevelPath);
 
+	virtual TLevelDataPtr CreateLevelData(const FString& LevelName);
 
+	virtual bool WriteAndReleaseLevelData(const FString& LevelName, const FString& LevelPath, bool bBlocking);
 
+	virtual void WriteAndReleaseAllLevelData(const FString& LevelPath);
 
+	virtual void DeleteLevelData(const FString& LevelName, const FString& LevelPath);
 
+	virtual void Reset();
 
+	static void DeleteAllLevelDataFiles(const FString& LevelPath);
 
 
+	static FString GetLevelDataPath(const FString& LevelPath, const FString& LevelName);
 
+	static void WriteLevelData(FSpudLevelData& LevelData, const FString& LevelName, const FString& LevelPath);
 
+	static bool ReadSaveInfoFromArchive(FSpudChunkedDataArchive& Ar, FSpudSaveInfo& OutInfo);
+};
 
 
+int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Length);
 
 
 
@@ -503,6 +836,161 @@ struct FSpudStructMapData : public FSpudChunk
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 #if 0
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudData, Verbose, Verbose);
 
@@ -1026,7 +1514,7 @@ struct FSpudArray : public FSpudChunk
 	
 };
 
-struct FSpudNamedObjectMap : public FSpudStructMapData<FString /* FName or Guid String */, FSpudNamedObjectData>
+struct FSpudNamedObjectMap : public FSpudStructMapData<FString, FSpudNamedObjectData> // FString : FName or Guid String
 {
 	virtual bool RenameObject(const FString& OldName, const FString& NewName);
 };
@@ -1042,7 +1530,7 @@ struct FSpudLevelActorMap : public FSpudNamedObjectMap
 	virtual const char* GetChildMagic() const override { return SPUDDATA_NAMEDOBJECT_MAGIC; }
 };
 
-struct FSpudSpawnedActorMap : public FSpudStructMapData<FString /*GUID String*/, FSpudSpawnedActorData>
+struct FSpudSpawnedActorMap : public FSpudStructMapData<FString, FSpudSpawnedActorData> // FString : GUID String
 {
 	virtual const char* GetMagic() const override { return SPUDDATA_SPAWNEDACTORLIST_MAGIC; }
 	virtual const char* GetChildMagic() const override { return SPUDDATA_SPAWNEDACTOR_MAGIC; }
@@ -1372,53 +1860,53 @@ struct SPUD_API FSpudSaveData : public FSpudChunk
 	/// Read the entire save file into memory
 	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
 
-	/**
-	 * @brief Read a save file with extra options. Options to pipe all level data chunks
-	 * directly into their own separate named files in LevelPath, so their state is only loaded into memory when
-	 * needed. Entries for these levels will still be present in LevelDataMap, but with an unloaded state
-	 * @param Ar Source archive for the entire save file
-	 * @param bLoadAllLevels If true, all levels will be loaded into memory. If false, none will be & data will be split for later loading
-	 * @param LevelPath The parent directory where level chunks should be written as separate files
-	 */
+	//*
+	// * @brief Read a save file with extra options. Options to pipe all level data chunks
+	// * directly into their own separate named files in LevelPath, so their state is only loaded into memory when
+	// * needed. Entries for these levels will still be present in LevelDataMap, but with an unloaded state
+	// * @param Ar Source archive for the entire save file
+	// * @param bLoadAllLevels If true, all levels will be loaded into memory. If false, none will be & data will be split for later loading
+	// * @param LevelPath The parent directory where level chunks should be written as separate files
+	// 
 	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLevels, const FString& LevelPath);
 	
-	/**
-	 * @brief Retrieve data for a single level, loading it if necessary. Thread-safe.
-	 * @param LevelName The name of the level
-	 * @param bLoadIfNeeded Load (synchronously) if the level is present but unloaded
-	 * @param LevelPath The parent directory where level chunks can be found as separate files
-	 * @return The level data or null if not available
-	 */
+	//*
+	// * @brief Retrieve data for a single level, loading it if necessary. Thread-safe.
+	// * @param LevelName The name of the level
+	// * @param bLoadIfNeeded Load (synchronously) if the level is present but unloaded
+	// * @param LevelPath The parent directory where level chunks can be found as separate files
+	// * @return The level data or null if not available
+	// 
 	virtual TLevelDataPtr GetLevelData(const FString& LevelName, bool bLoadIfNeeded, const FString& LevelPath);
 
 	
-	/**
-	 * @brief Create level data for a new level
-	 * @param LevelName The name of the level
-	 * @return Pointer to the new level data
-	 */
+	//*
+	// * @brief Create level data for a new level
+	// * @param LevelName The name of the level
+	// * @return Pointer to the new level data
+	// 
 	virtual TLevelDataPtr CreateLevelData(const FString& LevelName);
 
 
-	/**
-	* @brief Write any loaded data for a single level to disk, and unload it from memory . It becomes part of the
-	* on-disk state for the active game which can later be re-combined with others into a single save game.
-	* @param LevelName The name of the level
-    * @param LevelPath The path in which to write the level data
-	*/
+	//*
+	//* @brief Write any loaded data for a single level to disk, and unload it from memory . It becomes part of the
+	//* on-disk state for the active game which can later be re-combined with others into a single save game.
+	//* @param LevelName The name of the level
+ //   * @param LevelPath The path in which to write the level data
+	//
 	virtual bool WriteAndReleaseLevelData(const FString& LevelName, const FString& LevelPath, bool bBlocking);
 	
-	/**
-	* @brief Write any loaded data for all levels to disk, and unload from memory . They become part of the
-	* on-disk state for the active game which can later be re-combined with others into a single save game.
-	* @param LevelPath The path in which to write the level data
-	*/
+	//*
+	//* @brief Write any loaded data for all levels to disk, and unload from memory . They become part of the
+	//* on-disk state for the active game which can later be re-combined with others into a single save game.
+	//* @param LevelPath The path in which to write the level data
+	//
 	virtual void WriteAndReleaseAllLevelData(const FString& LevelPath);
-	/**
-	 * @brief Delete any state associated with a given level, forgetting any saved state for it.
-	 * @param LevelName The name of the level
-	 * @param LevelPath The path in which paged out level data may have been written
-	 */
+	//*
+	// * @brief Delete any state associated with a given level, forgetting any saved state for it.
+	// * @param LevelName The name of the level
+	// * @param LevelPath The path in which paged out level data may have been written
+	// 
 	virtual void DeleteLevelData(const FString& LevelName, const FString& LevelPath);
 
 	virtual void Reset();
@@ -1437,12 +1925,13 @@ struct SPUD_API FSpudSaveData : public FSpudChunk
 };
 
 
-/**
- * @brief Copy bytes from one archive to another (can't seem to find a built-in way to do this?)
- * @param InArchive Archive to read from
- * @param OutArchive Archive to write to
- * @param Length Total length of data to copy
- * @return The length of the data actually copied
- */
+//*
+// * @brief Copy bytes from one archive to another (can't seem to find a built-in way to do this?)
+// * @param InArchive Archive to read from
+// * @param OutArchive Archive to write to
+// * @param Length Total length of data to copy
+// * @return The length of the data actually copied
+// 
 int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Length);
 #endif
+*/
