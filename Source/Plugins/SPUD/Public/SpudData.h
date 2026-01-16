@@ -2,6 +2,338 @@
 
 #include "CoreMinimal.h"
 
+
+DECLARE_LOG_CATEGORY_EXTERN(LogSpudData, Verbose, Verbose);
+
+extern int32 GCurrentUserDataModelVersion;
+
+// Chunk IDs
+#define SPUDDATA_SAVEGAME_MAGIC "SAVE"
+#define SPUDDATA_SAVEINFO_MAGIC "INFO"
+#define SPUDDATA_SCREENSHOT_MAGIC "SHOT"
+
+// custom per-save header info
+#define SPUDDATA_CUSTOMINFO_MAGIC "CINF"
+#define SPUDDATA_METADATA_MAGIC "META"
+#define SPUDDATA_CLASSDEFINITIONLIST_MAGIC "CLST"
+#define SPUDDATA_CLASSDEF_MAGIC "CDEF"
+#define SPUDDATA_CLASSNAMEINDEX_MAGIC "CNIX"
+#define SPUDDATA_PROPERTYNAMEINDEX_MAGIC "PNIX"
+#define SPUDDATA_VERSIONINFO_MAGIC "VERS"
+#define SPUDDATA_NAMEDOBJECT_MAGIC "NOBJ"
+#define SPUDDATA_SPAWNEDACTOR_MAGIC "SPWN"
+#define SPUDDATA_DESTROYEDACTOR_MAGIC "KILL"
+#define SPUDDATA_LEVELDATAMAP_MAGIC "LVLS"
+#define SPUDDATA_LEVELDATA_MAGIC "LEVL"
+#define SPUDDATA_GLOBALDATA_MAGIC "GLOB"
+#define SPUDDATA_GLOBALOBJECTLIST_MAGIC "GOBS"
+#define SPUDDATA_LEVELACTORLIST_MAGIC "LATS"
+#define SPUDDATA_SPAWNEDACTORLIST_MAGIC "SATS"
+#define SPUDDATA_DESTROYEDACTORLIST_MAGIC "DATS"
+#define SPUDDATA_PROPERTYDEF_MAGIC "PDEF"
+#define SPUDDATA_PROPERTYDATA_MAGIC "PROP"
+
+// custom per-object data
+#define SPUDDATA_CUSTOMDATA_MAGIC "CUST"
+#define SPUDDATA_COREACTORDATA_MAGIC "CORA"
+
+#define SPUDDATA_INDEX_NONE 0xFF'FF'FF'FF
+#define SPUDDATA_PROPERTYID_NONE 0xFF'FF'FF'FF
+#define SPUDDATA_PREFIXID_NONE 0xFF'FF'FF'FF
+#define SPUDDATA_CLASSID_NONE 0xFF'FF'FF'FF
+
+
+
+// The entire save file is a chunk of its own, just in case we ever need to embed this in something larger than a file:
+// Header:
+// - MAGIC (char[4]) "SAVE"
+// - Total Data Length (uint32) (validation check, excluding header, including all nested chunks)
+// Data:
+// - Save Info Chunk
+// - Global Data Chunk
+// - Level Chunks x N
+
+#define SPUDDATA_GUID_KEY_FORMAT EGuidFormats::DigitsWithHyphens
+
+
+enum SPUD_API ESpudStorageType
+{
+	// All of these are serialized as per their underlying types
+	ESST_UInt8 = 0,
+	ESST_UInt16 = 1,
+	ESST_UInt32 = 2,
+	ESST_UInt64 = 3,
+	ESST_Int8 = 4,
+	ESST_Int16 = 5,
+	ESST_Int32 = 6,
+	ESST_Int64 = 7,
+	ESST_Float = 8,
+	ESST_Double = 9,
+
+	ESST_Vector = 20,
+	ESST_Rotator = 21,
+	ESST_Transform = 22,
+	ESST_Guid = 23,
+
+	ESST_CustomStruct = 29,
+
+	ESST_String = 30,
+	ESST_Name = 31,
+	ESST_Text = 32,
+
+
+	// Not directly supported but embedded in an FRecord. Opque is the type that SPUD doesnt read/write. not used data, but Just Preserved data 
+	ESST_OpaqueRecord = 64,
+
+
+	// Unknown is a placeholder fallback
+	ESST_Unknown = 0x0F'00,
+
+
+
+	// - VAlues 0x10'00 upwards are flags. Whether type is single or array.
+	// EX) ESST_ArrayOf | ESST_Uint8 -> TArray<uint8>.		//		ESST_Single | ESST_Float -> float
+	ESST_ArrayOf = 0x10'00,
+	ESST_Single = 0x0,
+};
+
+
+
+
+struct SPUD_API FSpudChunkHeader
+{
+	uint32 Magic;
+	uint32 Length;
+
+	static constexpr int64 GetHeaderSize() { return sizeof(uint32) + sizeof(uint32); }
+
+	char MagicFriendly[4]; // Not saved, for easier debuggin
+
+	FSpudChunkHeader() : Magic(0), Length(0), MagicFriendly{' ', ' ', ' ', ' '}
+	{ }
+
+	static uint32 EncodeMagic(const char* InMagic)
+	{
+		check(strlen(InMagic) >= 4)
+		return InMagic[0] +
+			(InMagic[1] << 8) +
+			(InMagic[2] << 16) +
+			(InMagic[3] << 24);
+	}
+
+	static void DecodeMagic(uint32 InMagic, char* OutMagic)
+	{
+		OutMagic[0] = InMagic & 0xFF;
+		OutMagic[1] = (InMagic >> 8) & 0xFF;
+		OutMagic[2] = (InMagic >> 16) & 0xFF;
+		OutMagic[3] = (InMagic >> 24) & 0xFF;
+	}
+
+	static FString MagicToString(const char* InMagic)
+	{
+		return FString(4, InMagic);
+	}
+
+	void Set(const char* InMagic, uint32 InLen)
+	{
+		Magic = EncodeMagic(InMagic);
+		Length = InLen;
+		DecodeMagic(Magic, MagicFriendly);
+	}
+
+	bool IsMagicEqual(const char* InMagic) const
+	{
+		return EncodeMagic(InMagic) == Magic;
+	}
+
+	friend FArchive& operator << (FArchive& Ar, FSpudChunkHeader& Data)
+	{
+		Ar << Data.Magic;
+		Ar << Data.Length;
+
+		if (Ar.IsLoading())
+		{
+			DecodeMagic(Data.Magic, Data.MagicFriendly);
+		}
+
+		return Ar;
+	}
+};
+
+struct SPUD_API FSpudChunkedDataArchive : public FArchiveProxy
+{
+	FSpudChunkedDataArchive(FArchive& InInnerArchive)
+		: FArchiveProxy(InInnerArchive)
+	{}
+
+
+	bool PreviewNextChunk(FSpudChunkHeader& OutHeader, bool SeekBackToHeader = true);
+	bool NextChunkIs(uint32 EncodedMagic);
+	bool NextChunkIs(const char* Magic);
+	void SkipNextChunk();
+};
+
+
+struct SPUD_API FSpudChunk
+{
+	FSpudChunkHeader ChunkHeader;
+	int64 ChunkHeaderStart;
+	int64 ChunkDataStart;
+
+	int64 ChunkDataEnd;
+
+	virtual ~FSpudChunk() = default;
+	virtual const char* GetMagic() const = 0;
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) = 0;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) = 0;
+
+	bool ChunkStart(FArchive& Ar);
+	void ChunkEnd(FArchive& Ar);
+	bool IsStillInChunk(FArchive& Ar) const;
+};
+
+struct SPUD_API FSpudAdhocWrapperChunk : public FSpudChunk
+{
+	char Magic[5];
+
+	FSpudAdhocWrapperChunk(const char* InMagic)
+	{
+		checkf(strlen(InMagic) >= 4, TEXT("FSpudAdhocWrapperChunk : Magic must be 4 characters"));
+		memcpy(Magic, InMagic, 4);
+		Magic[4] = '\0';
+	}
+	virtual const char* GetMagic() const override { return Magic; }
+
+	// you should not call read/write. this chunk is solely for wrapping others without owning them
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override { check(false); }
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override { check(false); }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudData, Verbose, Verbose);
 
 extern int32 GCurrentUserDataModelVersion;
@@ -915,3 +1247,4 @@ struct SPUD_API FSpudSaveData : public FSpudChunk
  * @return The length of the data actually copied
  */
 int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Length);
+#endif

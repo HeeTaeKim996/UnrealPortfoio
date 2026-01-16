@@ -2,6 +2,10 @@ using UnrealBuildTool;
 using System.IO;
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
+
+// Refernece
+// https://github.com/sinbad/SPUD
+
 public class SPUD : ModuleRules
 {
 	public SPUD(ReadOnlyTargetRules Target) : base(Target)
