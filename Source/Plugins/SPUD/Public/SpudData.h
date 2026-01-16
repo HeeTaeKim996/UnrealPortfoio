@@ -192,6 +192,7 @@ struct SPUD_API FSpudChunk
 	bool IsStillInChunk(FArchive& Ar) const;
 };
 
+
 struct SPUD_API FSpudAdhocWrapperChunk : public FSpudChunk
 {
 	char Magic[5];
@@ -210,23 +211,192 @@ struct SPUD_API FSpudAdhocWrapperChunk : public FSpudChunk
 };
 
 
+struct SPUD_API FSpudPropertyDef
+{
+	uint32 PropertyID;
+
+	uint32 PrefixID;
+
+	uint16 DataType;
+
+	FSpudPropertyDef()
+		: PropertyID(SPUDDATA_PROPERTYID_NONE), PrefixID(SPUDDATA_PREFIXID_NONE), DataType(ESST_Unknown) 
+	{}
+	FSpudPropertyDef(uint32 InPropertyNameID, uint32 InPrefixID, uint16 InDataType)
+		: PropertyID(InPropertyNameID), PrefixID(InPrefixID), DataType(InDataType) 
+	{}
+};
 
 
+struct SPUD_API FSpudVersionInfo : public FSpudChunk
+{
+	int32 Version;
+
+	virtual const char* GetMagic() const override { return SPUDDATA_VERSIONINFO_MAGIC; }
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+};
 
 
+struct SPUD_API FSpudClassDef : public FSpudChunk
+{
+	FString ClassName;
+
+	TMap<uint32, TMap<uint32, int>> PropertyLookup;
+	TArray<FSpudPropertyDef> Properties;
+
+	virtual const char* GetMagic() const override { return SPUDDATA_CLASSDEF_MAGIC; }
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+
+	int AddProperty(uint32 InPropertyNameID, uint32 InPrefixID, uint16 InDataType);
+
+	const FSpudPropertyDef* FindProperty(uint32 PropNameID, uint32 PrefixID);
+
+	int FindPropertyIndex(uint32 PropNameID, uint32 PrefixID);
+
+	int FindOrAddPropertyIndex(uint32 PropNameID, uint32 PrefixID, uint16 DataType);
+
+	bool RenameProperty(uint32 OldPropID, uint32 OldPrefixID, uint32 NewPropID, uint32 NewPrefixID);
+
+	
+	enum ClassDefMatch
+	{
+		NotChecked,
+		Matching,
+		Different
+	};
+	mutable ClassDefMatch RuntimeMatchState = NotChecked;
+
+	bool MatchesRuntimeClass(const struct FSpudClassMetadata& ParentMeta) const;
+};
 
 
+struct SPUD_API FSpudDataHolder : public FSpudChunk
+{
+	TArray<uint8> Data;
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+
+	virtual void Reset();
+};
 
 
+struct SPUD_API FSpudPropertyData : public FSpudChunk
+{
+	TArray<uint32> PropertyOffsets;
+	TArray<uint8> Data;
+
+	virtual const char* GetMagic() const override { return SPUDDATA_PROPERTYDATA_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+	void ReadFromArchiveV1(FSpudChunkedDataArchive& Ar);
+
+	virtual void Reset();
+};
 
 
+struct SPUD_API FSpudCoreActorData : public FSpudDataHolder
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_COREACTORDATA_MAGIC; }
+};
+
+struct SPUD_API FSpudCustomData : public FSpudDataHolder
+{
+	virtual const char* GetMagic() const override { return SPUDDATA_CUSTOMDATA_MAGIC; }
+};
+
+struct SPUD_API FSpudObjectData : public FSpudChunk
+{
+	FSpudCoreActorData CoreData;
+
+	FSpudPropertyData Properties;
+
+	FSpudCustomData CustomData;
+};
 
 
+struct SPUD_API FSpudNamedObjectData : public FSpudObjectData
+{
+	FString Name;
+
+	FString Key() const { return Name; }
+
+	virtual const char* GetMagic() const override { return SPUDDATA_NAMEDOBJECT_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+};
+
+struct SPUD_API FSpudDestroyedLevelActor : public FSpudChunk
+{
+	FString Name;
+
+	FString Key() const { return Name; }
+
+	FSpudDestroyedLevelActor() {}
+	FSpudDestroyedLevelActor(const FString& InName) : Name(InName) {}
+
+	virtual const char* GetMagic() const override { return SPUDDATA_DESTROYEDACTOR_MAGIC; }
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
+};
 
 
+template<typename K, typename V>
+struct FSpudStructMapData : public FSpudChunk
+{
+	TMap<K, V> Contents;
+
+	void Empty() { Contents.Empty(); }
+
+	virtual const char* GetChildMagic() const = 0;
+
+	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override
+	{
+		if (ChunkStart(Ar))
+		{
+			for (TPair<const K, V>& Tuple : Contents)
+			{
+				Tuple.Value.WriteToArchive(Ar);
+			}
+			ChunkEnd(Ar);
+		}
+	}
 
 
+	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override
+	{
+		if (ChunkStart(Ar))
+		{
+			Contents.Empty();
 
+			const uint32 ChildMagicID = FSpudChunkHeader::EncodeMagic(GetChildMagic());
+			while (IsStillInChunk(Ar))
+			{
+				if (Ar.NextChunkIs(ChildMagicID))
+				{
+					V ChildData;
+					ChildData.ReadFromArchive(Ar, StoredSystemVersion);
+					Contents.Add(ChildData.Key(), ChildData);
+				}
+				else
+				{
+					Ar.SkipNextChunk();
+				}
+			}
+
+			ChunkEnd(Ar);
+		}
+	}
+
+	void Reset()
+	{
+		Contents.Empty();
+	}
+};
 
 
 
@@ -775,6 +945,34 @@ struct FSpudStructMapData : public FSpudChunk
 	}
 	
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 template <typename T>
 struct FSpudArray : public FSpudChunk
