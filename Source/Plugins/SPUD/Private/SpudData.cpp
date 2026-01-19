@@ -1168,7 +1168,7 @@ void FSpudSaveData::PrepareForWrite()
 
 void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar)
 {
-	WriteToArchive(Ar, ""); // @@@@@@@@@@@@@@@@@@@@@ Im not Sure yet. but maybe assign the level folder's path in here ? @@@@@@@@@@@@@@@@@@@@@@@@@@
+	WriteToArchive(Ar, ""); // ¡Ø "" : Maybe Prelude state is NOT LDS_Unloaded
 }
 
 void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& LevelPath)
@@ -1344,7 +1344,7 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 
 void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
 {
-	ReadFromArchive(Ar, true, ""); // @@@@@@@@@@@@@@@@@@@@@ Im not Sure yet. but maybe assign the level folder's path in here ? @@@@@@@@@@@@@@@@@@@@@@@@@@
+	ReadFromArchive(Ar, true, ""); // ¡Ø "" : Because bLoadAllLevels == true, Level Path doesn't matter
 }
 
 

@@ -358,6 +358,35 @@ struct SPUD_API FSpudDestroyedLevelActor : public FSpudChunk
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template<typename K, typename V>
 struct FSpudStructMapData : public FSpudChunk
 {
@@ -417,25 +446,6 @@ struct FSpudStructMapData : public FSpudChunk
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 template<typename T>
 struct FSpudArray : public FSpudChunk
 {
@@ -485,6 +495,23 @@ struct FSpudArray : public FSpudChunk
 		Values.Empty();
 	}
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 struct FSpudNamedObjectMap : public FSpudStructMapData<FString, FSpudNamedObjectData> // FString : FName or Guid string
