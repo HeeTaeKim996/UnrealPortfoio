@@ -7,6 +7,1996 @@
 
 #include "SpudPropertyUtil.h"
 
+
+
+DEFINE_LOG_CATEGORY(LogSpudData)
+
+
+#define SPUD_CURRENT_SYSTEM_VERSION 3
+
+// int32 so that Blueprint-compatiable. 2 billision should be enough anyway and you can always user the negatives
+int32 GCurrentUserDataModelVersion = 0;
+
+
+
+
+//----------FSpudChunkDataArchive---------------
+bool FSpudChunkedDataArchive::PreviewNextChunk(FSpudChunkHeader& OutHeader, bool SeekBackToHeader) // Default(SeekBackToHeader) == true
+{
+	if (IsLoading() == false) return false;
+
+	const int64 CurrPos = Tell(); // Tell : return Current cursor's position to int64
+
+	if (CurrPos + FSpudChunkHeader::GetHeaderSize() > TotalSize()) return false;
+
+	*this << OutHeader;
+
+	if (SeekBackToHeader)
+	{
+		Seek(CurrPos); // Seek : Set Archive's Cursor position to input variable. so Set the curr pos again to Upper tell's time pos
+	}
+
+	return true;
+}
+
+bool FSpudChunkedDataArchive::NextChunkIs(uint32 EncodedMagic)
+{
+	FSpudChunkHeader Header;
+	if (PreviewNextChunk(Header))
+	{
+		return Header.Magic == EncodedMagic;
+	}
+
+	return false;
+}
+
+bool FSpudChunkedDataArchive::NextChunkIs(const char* Magic)
+{
+	return NextChunkIs(FSpudChunkHeader::EncodeMagic(Magic));
+
+}
+
+void FSpudChunkedDataArchive::SkipNextChunk()
+{
+	if (IsLoading() == false)
+	{
+		UE_LOG(LogSpudData, Fatal, TEXT("Invalid to call SkipNextChunk when writing"));
+		return;
+	}
+
+	FSpudChunkHeader Header;
+	const int64 StartPos = Tell();
+
+	if (PreviewNextChunk(Header, false))
+	{
+		Seek(Tell() + Header.Length);
+	}
+	else
+	{
+		Seek(StartPos);
+		UE_LOG(LogSpudData, Fatal, TEXT("Unable to preview next chunk to skip"));
+		return;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+//------------FSpudChunk----------------
+
+bool FSpudChunk::ChunkStart(FArchive& Ar)
+{
+	ChunkHeaderStart = Ar.Tell();
+
+	if (Ar.IsLoading())
+	{
+		Ar << ChunkHeader;
+
+		if (FSpudChunkHeader::EncodeMagic(GetMagic()) != ChunkHeader.Magic)
+		{
+			// Incorrent chunk. seek back
+			Ar.Seek(ChunkHeaderStart);
+			return false;
+		}
+
+		ChunkDataStart = Ar.Tell();
+		ChunkDataEnd = ChunkDataStart + ChunkHeader.Length;
+	}
+	else
+	{
+		// We fill length in properly later ( At ChunkEnd )
+		ChunkHeader.Set(GetMagic(), 0);
+		Ar << ChunkHeader;
+		ChunkDataStart = Ar.Tell();
+	}
+
+	return true;
+}
+
+void FSpudChunk::ChunkEnd(FArchive& Ar)
+{
+	if (Ar.IsLoading())
+	{
+		if (Ar.Tell() != ChunkDataEnd)
+		{
+			Ar.Seek(ChunkDataEnd);
+		}
+	}
+	else
+	{
+		int64 CurrentPos = Ar.Tell();
+		ChunkDataEnd = CurrentPos;
+		ChunkHeader.Length = ChunkDataEnd - ChunkDataStart;
+
+		Ar.Seek(ChunkHeaderStart);
+		Ar << ChunkHeader;
+		Ar.Seek(CurrentPos);
+	}
+}
+
+bool FSpudChunk::IsStillInChunk(FArchive& Ar) const
+{
+	if (Ar.IsLoading())
+	{
+		return Ar.Tell() < ChunkDataEnd;
+	}
+	else
+	{
+		return true; // always inside while writing
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//------------FSpudVersionInfo------------
+void FSpudVersionInfo::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Version;
+		ChunkEnd(Ar);
+	}
+
+}
+void FSpudVersionInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Version;
+		ChunkEnd(Ar);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------FSpudClassDef--------------------
+void FSpudClassDef::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << ClassName;
+
+		uint16 NumProperties = static_cast<uint16>(Properties.Num());
+		Ar << NumProperties;
+		for (FSpudPropertyDef& Def : Properties)
+		{
+			Ar << Def.PropertyID;
+			Ar << Def.PrefixID;
+			Ar << Def.DataType;
+		}
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudClassDef::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << ClassName;
+
+		uint16 NumProperties;
+		Ar << NumProperties;
+
+		Properties.Empty();
+		PropertyLookup.Empty();
+		for (uint16 i = 0; i < NumProperties; i++)
+		{
+			uint32 PropertyID;
+			uint32 PrefixID;
+			uint16 DataType;
+
+			Ar << PropertyID;
+			Ar << PrefixID;
+			Ar << DataType;
+
+			AddProperty(PropertyID, PrefixID, DataType);
+		}
+		RuntimeMatchState = NotChecked;
+		ChunkEnd(Ar);
+	}
+}
+
+int FSpudClassDef::AddProperty(uint32 InPropNameID, uint32 InPrefixID, uint16 InDataType)
+{
+	int Index = Properties.Num();
+	Properties.Add(FSpudPropertyDef(InPropNameID, InPrefixID, InDataType));
+
+	TMap<uint32, int>& InnerMap = PropertyLookup.FindOrAdd(InPrefixID);
+	InnerMap.Add(InPropNameID, Index);
+
+	return Index;
+}
+
+const FSpudPropertyDef* FSpudClassDef::FindProperty(uint32 PropNameID, uint32 PrefixID)
+{
+	int Index = FindPropertyIndex(PropNameID, PrefixID);
+	if (Index < 0)
+	{
+		return nullptr;
+	}
+
+	return &Properties[Index];
+}
+
+int FSpudClassDef::FindPropertyIndex(uint32 PropNameID, uint32 PrefixID)
+{
+	TMap<uint32, int>* InnerMap = PropertyLookup.Find(PrefixID);
+	if (InnerMap == nullptr) return -1;
+
+	int* pIndex = InnerMap->Find(PropNameID);
+	if (pIndex == nullptr) return -1;
+
+	return *pIndex;
+}
+
+int FSpudClassDef::FindOrAddPropertyIndex(uint32 PropNameID, uint32 PrefixID, uint16 DataType)
+{
+	const int Index = FindPropertyIndex(PropNameID, PrefixID);
+	if (Index >= 0)
+	{
+		return Index;
+	}
+
+	return AddProperty(PropNameID, PrefixID, DataType);
+}
+
+bool FSpudClassDef::RenameProperty(uint32 OldPropID, uint32 OldPrefixID, uint32 NewPropID, uint32 NewPrefixID)
+{
+	const int Index = FindPropertyIndex(OldPropID, OldPrefixID);
+	if (Index >= 0)
+	{
+		FSpudPropertyDef& Propdef = Properties[Index];
+		Propdef.PrefixID = NewPrefixID;
+		Propdef.PropertyID = NewPropID;
+
+		TMap<uint32, int>& OldInnerMap = PropertyLookup.FindChecked(OldPrefixID);
+		OldInnerMap.Remove(OldPropID);
+
+		TMap<uint32, int>& NewInnerMap = PropertyLookup.FindOrAdd(NewPrefixID);
+		NewInnerMap.Add(NewPropID, Index);
+
+		return true;
+	}
+
+	return false;
+}
+
+// 『 Check whether save time's class's member && Runtime's class's member Same
+bool FSpudClassDef::MatchesRuntimeClass(const FSpudClassMetadata& Meta) const
+{
+	if (RuntimeMatchState == NotChecked)
+	{
+		RuntimeMatchState = SpudPropertyUtil::StoredClassDefMatchesRuntime(*this, Meta) ? Matching : Different;
+	}
+
+	return RuntimeMatchState == Matching;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------FSpudPropertyData------------------
+void FSpudPropertyData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << PropertyOffsets;
+		Ar << Data;
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudPropertyData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (StoredSystemVersion == 1)
+	{
+		ReadFromArchiveV1(Ar);
+		return;
+	}
+
+	PropertyOffsets.Empty();
+	if (ChunkStart(Ar))
+	{
+		Ar << PropertyOffsets;
+		Ar << Data;
+		ChunkEnd(Ar);
+	}
+}
+void FSpudPropertyData::ReadFromArchiveV1(FSpudChunkedDataArchive& Ar)
+{
+	// V1 accidentally wrote PropertyOffsets *before* the chunk header because it wrote it
+	// manually then re-used the parent class write. 
+	// It all worked because read & write were the same, but it breaks the rules of chunk wrapping
+	// We need to read this back the old way for compatibility
+
+	PropertyOffsets.Empty();
+	Ar << PropertyOffsets;
+	if (ChunkStart(Ar))
+	{
+		Ar << Data;
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudPropertyData::Reset()
+{
+	PropertyOffsets.Empty();
+	Data.Empty();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------FSpudDataHolder--------------
+void FSpudDataHolder::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (Data.Num() == 0) return;
+
+	if (ChunkStart(Ar))
+	{
+		Ar << Data;
+		ChunkEnd(Ar);
+	}
+}
+void FSpudDataHolder::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Data;
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudDataHolder::Reset()
+{
+	Data.Empty();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------FSpudDestroyedLevelActor-------------------
+void FSpudDestroyedLevelActor::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudDestroyedLevelActor::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+		ChunkEnd(Ar);
+	}
+}
+
+
+
+
+
+
+
+
+//--------------------FSpudNameObjectData---------------------
+void FSpudNamedObjectData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+
+		CoreData.WriteToArchive(Ar);
+		Properties.WriteToArchive(Ar);
+		CustomData.WriteToArchive(Ar);
+		ChunkEnd(Ar);
+	}
+
+}
+
+void FSpudNamedObjectData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+
+		CoreData.ReadFromArchive(Ar, StoredSystemVersion);
+		Properties.ReadFromArchive(Ar, StoredSystemVersion);
+		CustomData.ReadFromArchive(Ar, StoredSystemVersion);
+		ChunkEnd(Ar);
+	}
+
+}
+
+
+
+
+
+
+
+
+//------------------FSpudSpawnedActorData---------------
+void FSpudSpawnedActorData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << ClassID;
+		Ar << Guid;
+
+		CoreData.WriteToArchive(Ar);
+		Properties.WriteToArchive(Ar);
+		CustomData.WriteToArchive(Ar);
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSpawnedActorData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << ClassID;
+		Ar << Guid;
+
+		CoreData.ReadFromArchive(Ar, StoredSystemVersion);
+		Properties.ReadFromArchive(Ar, StoredSystemVersion);
+		CustomData.ReadFromArchive(Ar, StoredSystemVersion);
+		ChunkEnd(Ar);
+	}
+}
+
+
+
+
+
+
+
+
+//----------------FSpudNamedObjectMap-------------------
+bool FSpudNamedObjectMap::RenameObject(const FString& OldName, const FString& NewName)
+{
+	FSpudNamedObjectData ObjData;
+	if (Contents.RemoveAndCopyValue(OldName, ObjData))
+	{
+		ObjData.Name = NewName;
+		Contents.Add(NewName, ObjData);
+		return true;
+	}
+
+	return false;
+}
+
+
+
+
+
+
+//----------------FSpudDestroyedActorArray-------------------
+void FSpudDestroyedActorArray::Add(const FString& Name)
+{
+	Values.Add(MakeShareable(new FSpudDestroyedLevelActor(Name)));
+}
+
+
+
+
+
+
+//----------------FSpudClassMetaData--------------------
+void FSpudClassMetadata::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		UserDataModelVersion.Version = GCurrentUserDataModelVersion;
+		UserDataModelVersion.WriteToArchive(Ar);
+
+		ClassNameIndex.WriteToArchive(Ar);
+		ClassDefinitions.WriteToArchive(Ar);
+		PropertyNameIndex.WriteToArchive(Ar);
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudClassMetadata::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		const uint32 VersionID = FSpudChunkHeader::EncodeMagic(SPUDDATA_VERSIONINFO_MAGIC);
+		const uint32 ClassNameIndexID = FSpudChunkHeader::EncodeMagic(SPUDDATA_CLASSNAMEINDEX_MAGIC);
+		const uint32 ClassDefListID = FSpudChunkHeader::EncodeMagic(SPUDDATA_CLASSDEFINITIONLIST_MAGIC);
+		const uint32 PropertyNameIndexID = FSpudChunkHeader::EncodeMagic(SPUDDATA_PROPERTYNAMEINDEX_MAGIC);
+
+		FSpudChunkHeader Hdr;
+		while (IsStillInChunk(Ar))
+		{
+			Ar.PreviewNextChunk(Hdr, true);
+			if (Hdr.Magic == VersionID)
+			{
+				UserDataModelVersion.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == ClassNameIndexID)
+			{
+				ClassNameIndex.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == ClassDefListID)
+			{
+				ClassDefinitions.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == PropertyNameIndexID)
+			{
+				PropertyNameIndex.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else
+			{
+				Ar.SkipNextChunk();
+			}
+		}
+
+		ChunkEnd(Ar);
+	}
+}
+
+TSharedPtr<FSpudClassDef> FSpudClassMetadata::FindOrAddClassDef(const FString& ClassName)
+{
+	int Index = ClassNameIndex.FindOrAddIndex(ClassName);
+	if (ClassDefinitions.Values.Num() < Index + 1)
+	{
+		// Create new entries
+		int OldNum = ClassDefinitions.Values.Num();
+		ClassDefinitions.Values.SetNum(Index + 1);
+		for (int i = OldNum; i < Index + 1; i++) // if Index - OldNum > 1, Dummy classDefinition is added
+		{
+			ClassDefinitions.Values[i] = MakeShareable(new FSpudClassDef());
+		}
+		ClassDefinitions.Values[Index]->ClassName = ClassName; // Only Real ClassDefinition's ClassName is Setted
+	}
+
+	return ClassDefinitions.Values[Index];
+}
+
+TSharedPtr<const FSpudClassDef> FSpudClassMetadata::GetClassDef(const FString& ClassName) const
+{
+	int Index = ClassNameIndex.GetIndex(ClassName);
+	if (Index != SPUDDATA_INDEX_NONE)
+	{
+		return ClassDefinitions.Values[Index];
+	}
+	return nullptr;
+}
+
+const FString& FSpudClassMetadata::GetPropertyNameFromID(uint32 ID) const
+{
+	return PropertyNameIndex.GetValue(ID);
+}
+uint32 FSpudClassMetadata::FindOrAddPropertyIDFromName(const FString& Name)
+{
+	return PropertyNameIndex.FindOrAddIndex(Name);
+}
+
+uint32 FSpudClassMetadata::GetPropertyIDFromName(const FString& Name) const
+{
+	return PropertyNameIndex.GetIndex(Name);
+}
+
+uint32 FSpudClassMetadata::FindOrAddPropertyIDFromProperty(const FProperty* Prop)
+{
+	return FindOrAddPropertyIDFromName(Prop->GetNameCPP()); // 『 FProperty->GetNameCPP() : return PROPERTY'S name (defined in cpp). ex) UPROPERTY() int32 Health; -> return "Health"
+}
+uint32 FSpudClassMetadata::FindOrAddPrefixID(const FString& Prefix)
+{
+	if (Prefix.IsEmpty())
+	{
+		return SPUDDATA_PREFIXID_NONE;
+	}
+	return FindOrAddPropertyIDFromName(Prefix);
+}
+uint32 FSpudClassMetadata::GetPrefixID(const FString& Prefix)
+{
+	if (Prefix.IsEmpty())
+	{
+		return SPUDDATA_PREFIXID_NONE;
+	}
+	return GetPropertyIDFromName(Prefix);
+}
+
+const FString& FSpudClassMetadata::GetClassNameFromID(uint32 ID) const
+{
+	return ClassNameIndex.GetValue(ID);
+}
+uint32 FSpudClassMetadata::FindOrAddClassIDFromName(const FString& Name)
+{
+	uint32 Ret = ClassNameIndex.FindOrAddIndex(Name);
+
+	if (Ret == SPUDDATA_CLASSID_NONE)
+	{
+		UE_LOG(LogSpudData, Fatal, TEXT("Too many classes (seriously, how did you manage this? 4M classes ? Woah)"));
+	}
+
+	return Ret;
+}
+uint32 FSpudClassMetadata::GetClassIDFromName(const FString& Name) const
+{
+	return ClassNameIndex.GetIndex(Name);
+}
+
+void FSpudClassMetadata::Reset()
+{
+	ClassDefinitions.Reset();
+	PropertyNameIndex.Empty();
+	ClassNameIndex.Empty();
+}
+
+bool FSpudClassMetadata::RenameClass(const FString& OldClassName, const FString& NewClassName)
+{
+	uint32 Index = ClassNameIndex.Rename(OldClassName, NewClassName);
+	if (Index != SPUDDATA_INDEX_NONE)
+	{
+		TSharedPtr<FSpudClassDef> ClassDef = ClassDefinitions.Values[Index];
+		ClassDef->ClassName = NewClassName;
+		return true;
+	}
+	return false;
+}
+
+bool FSpudClassMetadata::RenameProperty(const FString& ClassName, const FString& OldName, const FString& NewName, const FString& OldPrefix, const FString& NewPrefix)
+{
+	uint32* pClassID = ClassNameIndex.Lookup.Find(ClassName);
+	uint32* pPropertyNameID = PropertyNameIndex.Lookup.Find(OldName);
+	if (pClassID && pPropertyNameID)
+	{
+		TSharedPtr<FSpudClassDef> Def = ClassDefinitions.Values[*pClassID];
+
+		uint32 OldNameID = GetPropertyIDFromName(OldName);
+		uint32 NewNameID = FindOrAddPropertyIDFromName(NewName);
+		uint32 OldPrefixID = GetPrefixID(OldPrefix);
+		uint32 NewPrefixID = FindOrAddPrefixID(NewPrefix);
+
+		return Def->RenameProperty(OldNameID, OldPrefixID, NewNameID, NewPrefixID);
+	}
+
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+//--------------------FSpudLevelData---------------------
+void FSpudLevelData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	FScopeLock Lock(&Mutex);
+
+	if (Status == LDS_Unloaded)
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Attempted to write an unloaded LevelData struct for [%s], skipping"), *Name);
+		return;
+	}
+
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+		Metadata.WriteToArchive(Ar);
+		LevelActors.WriteToArchive(Ar);
+		SpawnedActors.WriteToArchive(Ar);
+		DestroyedActors.WriteToArchive(Ar);
+		ChunkEnd(Ar);
+	}
+}
+
+bool FSpudLevelData::ReadLevelInfoFromArchive(FSpudChunkedDataArchive& Ar, bool bReturnToStart, FString& OutLevelName, int64& OutDataSize)
+{
+	// No lock needed as we're not populating anything, this method can  be static
+	// Do part of ChunkStart required to read header
+	if (Ar.IsLoading() == false)
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Cannot ReadLevelNameFromArchive. Archive [%s] is not loading"), *Ar.GetArchiveName());
+		return false;
+	}
+
+	const int64 Start = Ar.Tell();
+	FSpudChunkHeader Hdr;
+	Ar << Hdr;
+
+	if (FSpudChunkHeader::EncodeMagic(SPUDDATA_LEVELDATA_MAGIC) != Hdr.Magic)
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Cannot ReadLevelNameFromAchive from [%s]. next chunk is not a level"), *Ar.GetArchiveName());
+		if (bReturnToStart)
+		{
+			Ar.Seek(Start);
+		}
+
+		return false;
+	}
+
+	OutDataSize = Hdr.Length;
+	Ar << OutLevelName;
+
+	if (bReturnToStart)
+	{
+		Ar.Seek(Start);
+	}
+
+	return true;
+}
+
+void FSpudLevelData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	FScopeLock Lock(&Mutex);
+
+	if (ChunkStart(Ar))
+	{
+		Ar << Name;
+
+		const uint32 MetadataID = FSpudChunkHeader::EncodeMagic(SPUDDATA_METADATA_MAGIC);
+		const uint32 LevelActorsID = FSpudChunkHeader::EncodeMagic(SPUDDATA_LEVELACTORLIST_MAGIC);
+		const uint32 SpawnedActorsID = FSpudChunkHeader::EncodeMagic(SPUDDATA_SPAWNEDACTORLIST_MAGIC);
+		const uint32 DestroyedActorsID = FSpudChunkHeader::EncodeMagic(SPUDDATA_DESTROYEDACTORLIST_MAGIC);
+		FSpudChunkHeader Hdr;
+		while (IsStillInChunk(Ar))
+		{
+			Ar.PreviewNextChunk(Hdr, true);
+			if (Hdr.Magic == MetadataID)
+			{
+				Metadata.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == LevelActorsID)
+			{
+				LevelActors.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == SpawnedActorsID)
+			{
+				SpawnedActors.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == DestroyedActorsID)
+			{
+				DestroyedActors.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else
+			{
+				Ar.SkipNextChunk();
+			}
+		}
+
+		Status = LDS_Loaded;
+
+		ChunkEnd(Ar);
+	}
+}
+
+
+// Called before Write. Empty all temporary datas
+void FSpudLevelData::PreStoreWorld()
+{
+	FScopeLock Lock(&Mutex);
+
+	// We do NOT empty the destroyed actors list because those are populated as things are removed
+	// Hence why NOT calling Reset()
+	// Reset All data except DestroyedActors data
+	Metadata.Reset();
+	LevelActors.Reset();
+	SpawnedActors.Reset();
+}
+
+void FSpudLevelData::Reset()
+{
+	FScopeLock Lock(&Mutex);
+	Name = "";
+
+	Metadata.Reset();
+	LevelActors.Reset();
+	SpawnedActors.Reset();
+
+	DestroyedActors.Reset();
+
+	Status = LDS_Unloaded;
+}
+bool FSpudLevelData::IsLoaded()
+{
+	FScopeLock Lock(&Mutex);
+	return Status == LDS_Loaded;
+}
+
+void FSpudLevelData::ReleaseMemory()
+{
+	FScopeLock Lock(&Mutex);
+	Metadata.Reset();
+	LevelActors.Reset();
+	SpawnedActors.Reset();
+	DestroyedActors.Reset();
+	Status = LDS_Unloaded;
+}
+
+
+
+
+
+
+
+
+
+
+//--------------FSpudGlobalData---------------
+void FSpudGlobalData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << CurrentLevel;
+		Metadata.WriteToArchive(Ar);
+		Objects.WriteToArchive(Ar);
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudGlobalData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << CurrentLevel;
+
+		const uint32 MetadataID = FSpudChunkHeader::EncodeMagic(SPUDDATA_METADATA_MAGIC);
+		const uint32 ObjectsID = FSpudChunkHeader::EncodeMagic(SPUDDATA_GLOBALOBJECTLIST_MAGIC);
+		FSpudChunkHeader Hdr;
+		while (IsStillInChunk(Ar))
+		{
+			Ar.PreviewNextChunk(Hdr, true);
+			if (Hdr.Magic == MetadataID)
+			{
+				Metadata.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == ObjectsID)
+			{
+				Objects.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else
+			{
+				Ar.SkipNextChunk();
+			}
+		}
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudGlobalData::Reset()
+{
+	CurrentLevel = "";
+	Metadata.Reset();
+	Objects.Empty();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//-------------------------FSpudSaveInfo---------------------------
+FSpudSaveInfo::FSpudSaveInfo() : SystemVersion(SPUD_CURRENT_SYSTEM_VERSION), CustomInfo(), Screenshot()
+{
+}
+
+void FSpudSaveInfo::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << SystemVersion;
+		Ar << Title;
+		FString TimestampStr = Timestamp.ToIso8601();
+		Ar << TimestampStr;
+
+
+		Screenshot.WriteToArchive(Ar);
+		CustomInfo.WriteToArchive(Ar);
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSaveInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << SystemVersion;
+		Ar << Title;
+		FString TimestampStr;
+		Ar << TimestampStr;
+		FDateTime::ParseIso8601(*TimestampStr, Timestamp);
+
+		const uint32 ScreenshotID = FSpudChunkHeader::EncodeMagic(SPUDDATA_SCREENSHOT_MAGIC);
+		const uint32 CustomInfoID = FSpudChunkHeader::EncodeMagic(SPUDDATA_CUSTOMINFO_MAGIC);
+		FSpudChunkHeader Hdr;
+		while (IsStillInChunk(Ar))
+		{
+			Ar.PreviewNextChunk(Hdr, true);
+			if (Hdr.Magic == ScreenshotID)
+			{
+				Screenshot.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else if (Hdr.Magic == CustomInfoID)
+			{
+				CustomInfo.ReadFromArchive(Ar, StoredSystemVersion);
+			}
+			else
+			{
+				Ar.SkipNextChunk();
+			}
+		}
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSaveInfo::Reset()
+{
+	Title = FText();
+	Screenshot.ImageData.Empty();
+	CustomInfo.Reset();
+}
+
+
+
+
+
+
+
+
+
+//--------------------FSpudScreenShot--------------------
+void FSpudScreenshot::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (ImageData.Num() > 0)
+	{
+		if (ChunkStart(Ar))
+		{
+			Ar.Serialize(ImageData.GetData(), ImageData.Num()); // 『 GetData == c++ data() -> return address of start point
+
+			ChunkEnd(Ar);
+		}
+	}
+
+}
+
+void FSpudScreenshot::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		ImageData.SetNum(ChunkHeader.Length); // 『 Because uint8 is 1byte
+		Ar.Serialize(ImageData.GetData(), ChunkHeader.Length);
+		ChunkEnd(Ar);
+	}
+}
+
+
+
+
+
+
+
+//--------------------FSpudSaveCustomInfo--------------------------
+void FSpudSaveCustomInfo::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	if (PropertyData.Num() == 0) return;
+
+	if (ChunkStart(Ar))
+	{
+		Ar << PropertyNames;
+		Ar << PropertyOffsets;
+		Ar << PropertyData;
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSaveCustomInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	if (ChunkStart(Ar))
+	{
+		Ar << PropertyNames;
+		Ar << PropertyOffsets;
+		Ar << PropertyData;
+
+		ChunkEnd(Ar);
+	}
+}
+
+
+void FSpudSaveCustomInfo::Reset()
+{
+	PropertyNames.Empty();
+	PropertyOffsets.Empty();
+	PropertyData.Empty();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------FSpudSaveData----------------------
+void FSpudSaveData::PrepareForWrite()
+{
+	Info.SystemVersion = SPUD_CURRENT_SYSTEM_VERSION;
+}
+
+void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar)
+{
+	WriteToArchive(Ar, ""); // @@@@@@@@@@@@@@@@@@@@@ Im not Sure yet. but maybe assign the level folder's path in here ? @@@@@@@@@@@@@@@@@@@@@@@@@@
+}
+
+void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& LevelPath)
+{
+	if (ChunkStart(Ar))
+	{
+		Info.WriteToArchive(Ar);
+		GlobalData.WriteToArchive(Ar);
+
+		FSpudAdhocWrapperChunk LevelDataMapChunk(SPUDDATA_LEVELDATAMAP_MAGIC);
+		if (LevelDataMapChunk.ChunkStart(Ar))
+		{
+			FScopeLock MapLock(&LevelDataMapMutex);
+			for (TPair<FString, TLevelDataPtr>& KV : LevelDataMap)
+			{
+				TLevelDataPtr& LevelData = KV.Value;
+
+				FScopeLock LevelLock(&LevelData->Mutex);
+
+				switch (LevelData->Status)
+				{
+				default:
+				case LDS_BackgroundWriteAndUnload: // while awaiting background write, data is still in memory so same as loaded ( locked by mutex )
+				case LDS_Loaded:
+					// In memory : just write
+					LevelData->WriteToArchive(Ar);
+					break;
+
+				case LDS_Unloaded:
+					// This Level data is not in memory. we want to pipe level data directly from the level file into
+					// the combined archive so it doesn't have to go through memory
+					IFileManager& FileMgr = IFileManager::Get();
+					TUniquePtr<FArchive> InLevelArchive = TUniquePtr<FArchive>(FileMgr.CreateFileReader(*GetLevelDataPath(LevelPath, LevelData->Name)));
+					// 『 IFileManager.CreateFileRender : Open file in Read mode and copy that to FArchive
+
+
+					if (InLevelArchive == nullptr)
+					{
+						UE_LOG(LogSpudData, Error, TEXT("Level [%s] is recorded as being present but unloaded. but level data is not in file cache."
+							"this level will be missing from the save"), *LevelData->Name);
+					}
+					else
+					{
+						SpudCopyArchiveData(*InLevelArchive.Get(), Ar, InLevelArchive->TotalSize());
+					}
+
+					break;
+				}
+			}
+
+
+			LevelDataMapChunk.ChunkEnd(Ar);
+		}
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLevels, const FString& LevelPath)
+{
+	if (ChunkStart(Ar))
+	{
+		FSpudChunkHeader Hdr;
+
+		const uint32 InfoID = FSpudChunkHeader::EncodeMagic(SPUDDATA_SAVEINFO_MAGIC);
+		Ar.PreviewNextChunk(Hdr);
+		if (Hdr.Magic != InfoID)
+		{
+			UE_LOG(LogSpudData, Error, TEXT("Save data is corrupt. first chunk MUST be the INFO chunk"));
+			return;
+		}
+
+		Info.ReadFromArchive(Ar, 0); // 『 Note. Inputting SystemVersionInfo is 0
+
+		bool bOrigLoadAllLevels = bLoadAllLevels;
+		bool bIsUpgrading = false;
+		if (Ar.IsLoading() && Info.SystemVersion != SPUD_CURRENT_SYSTEM_VERSION)
+		{
+			// System version upgrade. we need to load all evels to fix. then page out
+			UE_LOG(LogSpudData, Log, TEXT("Save file [%s] is an old system version, automatically upgrading..."), *Ar.GetArchiveName());
+			bLoadAllLevels = true;
+			bIsUpgrading = true;
+		}
+
+		const uint32 GlobalDataID = FSpudChunkHeader::EncodeMagic(SPUDDATA_GLOBALDATA_MAGIC);
+		const uint32 LevelDataMapID = FSpudChunkHeader::EncodeMagic(SPUDDATA_LEVELDATAMAP_MAGIC);
+		while (IsStillInChunk(Ar))
+		{
+			Ar.PreviewNextChunk(Hdr, true);
+			if (Hdr.Magic == GlobalDataID)
+			{
+				GlobalData.ReadFromArchive(Ar, Info.SystemVersion);
+			}
+			else if (Hdr.Magic == LevelDataMapID)
+			{
+				FSpudAdhocWrapperChunk LevelDataMapChunk(SPUDDATA_LEVELDATAMAP_MAGIC);
+				if (LevelDataMapChunk.ChunkStart(Ar))
+				{
+					{
+						FScopeLock MapMutex(&LevelDataMapMutex);
+						LevelDataMap.Empty();
+					}
+
+					const uint32 LevelMagicID = FSpudChunkHeader::EncodeMagic(SPUDDATA_LEVELDATA_MAGIC);
+					while (IsStillInChunk(Ar))
+					{
+						if (Ar.NextChunkIs(LevelMagicID))
+						{
+							if (bLoadAllLevels)
+							{
+								TLevelDataPtr LvlData(new FSpudLevelData());
+								LvlData->ReadFromArchive(Ar, Info.SystemVersion);
+
+								{
+									FScopeLock MapMutex(&LevelDataMapMutex);
+									LevelDataMap.Add(LvlData->Key(), LvlData);
+								}
+							}
+							else
+							{
+								FString LevelName;
+								int64 LevelDataSize;
+								if (FSpudLevelData::ReadLevelInfoFromArchive(Ar, true, LevelName, LevelDataSize))
+								{
+									IFileManager& FileMgr = IFileManager::Get();
+									auto OutLevelArchive = TUniquePtr<FArchive>(FileMgr.CreateFileWriter(*GetLevelDataPath(LevelPath, LevelName)));
+									// 『 IFileManager.CreateFileWriter : if File exists, Delete. Then Create FileWRiter
+
+									int64 TotalSize = LevelDataSize + FSpudChunkHeader::GetHeaderSize();
+									SpudCopyArchiveData(Ar, *OutLevelArchive.Get(), TotalSize);
+									OutLevelArchive->Close();
+
+									TLevelDataPtr LvlData(new FSpudLevelData());
+									LvlData->Name = LevelName;
+									LvlData->Status = LDS_Unloaded;
+									{
+										FScopeLock MapMutex(&LevelDataMapMutex);
+										LevelDataMap.Add(LvlData->Key(), LvlData);
+									}
+								}
+							}
+						}
+						else
+						{
+							Ar.SkipNextChunk();
+						}
+					}
+
+					LevelDataMapChunk.ChunkEnd(Ar);
+				}
+			}
+			else
+			{
+				Ar.SkipNextChunk();
+			}
+		}
+
+		if (bIsUpgrading)
+		{
+			UE_LOG(LogSpudData, Log, TEXT("Save file [%s] upgrade complete. Not changed on dist. will be saved in new format next time."), *Ar.GetArchiveName());
+
+			if (bLoadAllLevels && bOrigLoadAllLevels == false)
+			{
+				// we Force a load of all levels even though the caller didn't want it (perhaps because of upgrade)
+				// So now unload them
+				WriteAndReleaseAllLevelData(LevelPath);
+			}
+		}
+
+		ChunkEnd(Ar);
+	}
+}
+
+void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
+{
+	ReadFromArchive(Ar, true, ""); // @@@@@@@@@@@@@@@@@@@@@ Im not Sure yet. but maybe assign the level folder's path in here ? @@@@@@@@@@@@@@@@@@@@@@@@@@
+}
+
+
+void FSpudSaveData::Reset()
+{
+	Info.Reset();
+	GlobalData.Reset();
+	{
+		FScopeLock MapMutex(&LevelDataMapMutex);
+		LevelDataMap.Empty();
+	}
+}
+
+FSpudSaveData::TLevelDataPtr FSpudSaveData::CreateLevelData(const FString& LevelName)
+{
+	TLevelDataPtr NewLevelData(new FSpudLevelData());
+	NewLevelData->Name = LevelName;
+	NewLevelData->Status = LDS_Loaded;
+
+	{
+		FScopeLock MapMutex(&LevelDataMapMutex);
+		LevelDataMap.Add(LevelName, NewLevelData);
+	}
+
+	return NewLevelData;
+}
+
+void FSpudSaveData::DeleteAllLevelDataFiles(const FString& LevelPath)
+{
+	IFileManager& FM = IFileManager::Get();
+
+	TArray<FString> LevelFiles;
+	FM.FindFiles(LevelFiles, *LevelPath, TEXT(".lvl")); // 『 IFileManager.FindFiles : doesn't recurr. only direct exe 'lvl' is found
+
+	for (FString& File : LevelFiles)
+	{
+		FString AbsoluteFileName = FPaths::Combine(LevelPath, File);
+		FM.Delete(*AbsoluteFileName);
+	}
+}
+
+FString FSpudSaveData::GetLevelDataPath(const FString& LevelPath, const FString& LevelName)
+{
+	return FString::Printf(TEXT("%s%s.lvl"), *LevelPath, *LevelName);
+
+}
+
+void FSpudSaveData::WriteLevelData(FSpudLevelData& LevelData, const FString& LevelName, const FString& LevelPath)
+{
+	IFileManager& FileMgr = IFileManager::Get();
+	const FString FileName = GetLevelDataPath(LevelPath, LevelName);
+	const TUniquePtr<FArchive> Archive = TUniquePtr<FArchive>(FileMgr.CreateFileWriter(*FileName));
+
+	if (Archive)
+	{
+		FSpudChunkedDataArchive ChunkedAr(*Archive);
+		LevelData.WriteToArchive(ChunkedAr);
+		// Always explicitly close to catch errors from flush/close
+		ChunkedAr.Close();
+
+		if (ChunkedAr.IsError() || ChunkedAr.IsCriticalError())
+		{
+			UE_LOG(LogSpudData, Error, TEXT("Error while writing level data to [%s]"), *FileName);
+		}
+	}
+	else
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Error opening level data file for writing : %s"), *FileName);
+	}
+}
+
+bool FSpudSaveData::ReadSaveInfoFromArchive(FSpudChunkedDataArchive& Ar, FSpudSaveInfo& OutInfo)
+{
+	FSpudChunkHeader Hdr;
+	Ar.PreviewNextChunk(Hdr, false);
+
+	if (Hdr.Magic != FSpudChunkHeader::EncodeMagic(SPUDDATA_SAVEGAME_MAGIC))
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Cannot get info for save game, file is not a save game"));
+		return false;
+	}
+
+	if (Ar.NextChunkIs(SPUDDATA_SAVEINFO_MAGIC) == false)
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Cannot get info for save game, INFO chunk isn't present at start"));
+		return false;
+	}
+
+	OutInfo.ReadFromArchive(Ar, 0);
+
+	return true;
+}
+
+
+FSpudSaveData::TLevelDataPtr FSpudSaveData::GetLevelData(const FString& LevelName, bool bLoadIfNeeded, const FString& LevelPath)
+{
+	TLevelDataPtr Ret;
+	
+	{
+		FScopeLock MapMutex(&LevelDataMapMutex);
+		const TLevelDataPtr* Found = LevelDataMap.Find(LevelName);
+		if (Found)
+		{
+			Ret = *Found;
+		}
+	}
+
+	if (Ret.IsValid() && bLoadIfNeeded)
+	{
+		FScopeLock LevelLock(&Ret->Mutex);
+		
+		switch (Ret->Status)
+		{
+		case LDS_Unloaded:
+		{
+
+
+			IFileManager& FileMgr = IFileManager::Get();
+			const FString Filename = GetLevelDataPath(LevelPath, LevelName);
+			const TUniquePtr<FArchive> Archive = TUniquePtr<FArchive>(FileMgr.CreateFileReader(*Filename));
+
+			if (Archive)
+			{
+				FSpudChunkedDataArchive ChunkedAr(*Archive);
+
+				Ret->ReadFromArchive(ChunkedAr, SPUD_CURRENT_SYSTEM_VERSION);
+				ChunkedAr.Close();
+
+				if (ChunkedAr.IsError() || ChunkedAr.IsCriticalError())
+				{
+					UE_LOG(LogSpudData, Error, TEXT("Error while loading active game level file from [%s]"), *Filename);
+				}
+			}
+			else
+			{
+				UE_LOG(LogSpudData, Error, TEXT("Error opening active game level state file [%s]"), *Filename);
+			}
+			break;
+		}
+
+		case LDS_BackgroundWriteAndUnload:
+			// Lading in this state is just flipping back to loaded. because all the state is still in memory.
+			// we're just waiting for it to be written out and released.
+			// by changing the status back to loaded, the background unload task will skip the unload
+			Ret->Status = LDS_Loaded;
+			break;
+
+		default:
+		case LDS_Loaded:
+			break;
+		}
+	}
+
+	return Ret;
+}
+
+
+void FSpudSaveData::WriteAndReleaseAllLevelData(const FString& LevelPath)
+{
+	FScopeLock MapLock(&LevelDataMapMutex);
+	for (TPair<FString, TLevelDataPtr>& Pair : LevelDataMap)
+	{
+		WriteAndReleaseLevelData(Pair.Key, LevelPath, true);
+	}
+}
+
+bool FSpudSaveData::WriteAndReleaseLevelData(const FString& LevelName, const FString& LevelPath, bool bBlocking)
+{
+	TLevelDataPtr LevelData = GetLevelData(LevelName, false, ""); // doesnt need to assign path because (2) is false
+	if (LevelData.IsValid())
+	{
+		FScopeLock LevelLock(&LevelData->Mutex);
+		if (LevelData->Status == LDS_Loaded ||
+			(LevelData->Status == LDS_BackgroundWriteAndUnload && bBlocking)
+			)
+		{
+			if (bBlocking)
+			{
+				WriteLevelData(*LevelData, LevelName, LevelPath);
+				LevelData->ReleaseMemory();
+			}
+			else
+			{
+				// 『 just Pated
+
+				// My first thought here was to Swap() the loaded memory and fire that off into the background thread
+				// thus disconnecting it and not having to worry about locking afterwards
+				// But the problem was if the write was queued and then another request for the level data came in
+				// before it was written to disk, the state could be entirely lost, since the only record of it was
+				// in a disconnected background thread. So instead, I've chosen to keep the data in the struct and
+				// just mark it as pending write and unload. That way if another request comes in before the write happens,
+				// the data can just be resurrected in-place.
+				// The downside is that this requires some locking so although primary I/O stalling is removed, overlapping
+				// write and a request for another level can potentially have locking contention which could cause its
+				// own stalls. However this is still much less likely. If it becomes an issue then we may need to use
+				// a more granular approach to locking (separating status and still copying data perhaps) but that's more
+				// complex & prone to slip-ups, so keeping it simpler for now.
+
+
+
+				LevelData->Status = LDS_BackgroundWriteAndUnload;
+				AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, LevelName, LevelPath]()
+					{
+						TLevelDataPtr LevelData = GetLevelData(LevelName, false, ""); // TSharedPtr's Ref count is Thread safe
+						if (LevelData.IsValid())
+						{
+							FScopeLock LevelLock(&LevelData->Mutex);
+							if (LevelData->Status == LDS_BackgroundWriteAndUnload)
+							{
+								WriteLevelData(*LevelData, LevelName, LevelPath);
+								LevelData->ReleaseMemory();
+							}
+						}
+					}
+				);
+			}
+		}
+	}
+
+	return true;
+}
+
+void FSpudSaveData::DeleteLevelData(const FString& LevelName, const FString& LevelPath)
+{
+	{
+		FScopeLock MapMutex(&LevelDataMapMutex);
+		LevelDataMap.Remove(LevelName);
+	}
+
+	IFileManager& FileMgr = IFileManager::Get();
+	const FString Filename = GetLevelDataPath(LevelPath, LevelName);
+	FileMgr.Delete(*Filename, false, true, true); // (3) : Delete also ReadOnly file. (4) : False : If Delete Fails, Log-Error Invoked
+}
+
+//------------------------------------------------------------------------------
+int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Length)
+{
+	constexpr int BufferLen = 4096;
+	uint8 TempBuffer[BufferLen];
+
+	int64 BytesCopied = 0;
+	if (InArchive.IsLoading() && OutArchive.IsSaving())
+	{
+		while (BytesCopied < Length)
+		{
+			int64 BytesToRequest = std::min(Length - BytesCopied, static_cast<int64>(BufferLen));
+			InArchive.Serialize(TempBuffer, BytesToRequest);
+			if (InArchive.IsError())
+			{
+				UE_LOG(LogSpudData, Error, TEXT("Error during read while copying archive data from [%s] to [%s]"), *InArchive.GetArchiveName(), *OutArchive.GetArchiveName());
+				break;
+			}
+
+			OutArchive.Serialize(TempBuffer, BytesToRequest);
+			if (OutArchive.IsError())
+			{
+				UE_LOG(LogSpudData, Error, TEXT("Error during write while copying archive data from [%s] to [%s]"), *InArchive.GetArchiveName(), *OutArchive.GetArchiveName());
+				break;
+			}
+
+			BytesCopied += BytesToRequest;
+		}
+	}
+	else
+	{
+		UE_LOG(LogSpudData, Error, TEXT("Cannot copy archive data from [%s] to [%s], mistmatched loading/saving status"), *InArchive.GetArchiveName(), *OutArchive.GetArchiveName());
+	}
+
+	return BytesCopied;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#if 0
 DEFINE_LOG_CATEGORY(LogSpudData)
 
 // System version covers our internal format changes
@@ -54,7 +2044,7 @@ void FSpudChunkedDataArchive::SkipNextChunk()
 	if (!IsLoading())
 	{
 		UE_LOG(LogSpudData, Fatal, TEXT("Invalid to call SkipNextChunk when writing"))
-		return;
+			return;
 	}
 
 	FSpudChunkHeader Header;
@@ -69,7 +2059,7 @@ void FSpudChunkedDataArchive::SkipNextChunk()
 	{
 		Seek(StartPos);
 		UE_LOG(LogSpudData, Fatal, TEXT("Unable to preview next chunk to skip"))
-		return;
+			return;
 	}
 }
 //------------------------------------------------------------------------------
@@ -146,7 +2136,7 @@ void FSpudVersionInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 Store
 {
 	if (ChunkStart(Ar))
 	{
-		Ar << Version;		
+		Ar << Version;
 		ChunkEnd(Ar);
 	}
 }
@@ -161,14 +2151,14 @@ void FSpudClassDef::WriteToArchive(FSpudChunkedDataArchive& Ar)
 		// We won't use chunks for each child struct, so write the length first
 		uint16 NumProperties = static_cast<uint16>(Properties.Num());
 		Ar << NumProperties;
-		for (auto && Def : Properties)
+		for (auto&& Def : Properties)
 		{
 			Ar << Def.PropertyID;
 			Ar << Def.PrefixID;
 			Ar << Def.DataType;
 		}
 		ChunkEnd(Ar);
-	}	
+	}
 }
 
 void FSpudClassDef::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
@@ -195,12 +2185,12 @@ void FSpudClassDef::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSy
 		}
 		RuntimeMatchState = NotChecked;
 		ChunkEnd(Ar);
-	}	
+	}
 }
 
 int FSpudClassDef::AddProperty(uint32 InPropNameID, uint32 InPrefixID, uint16 InDataType)
 {
-	int Index = Properties.Num(); 
+	int Index = Properties.Num();
 	Properties.Add(FSpudPropertyDef(InPropNameID, InPrefixID, InDataType));
 
 	auto& InnerMap = PropertyLookup.FindOrAdd(InPrefixID);
@@ -214,9 +2204,9 @@ const FSpudPropertyDef* FSpudClassDef::FindProperty(uint32 PropNameID, uint32 Pr
 	int Index = FindPropertyIndex(PropNameID, PrefixID);
 	if (Index < 0)
 		return nullptr;
-	
+
 	return &Properties[Index];
-	
+
 }
 
 int FSpudClassDef::FindPropertyIndex(uint32 PropNameID, uint32 PrefixID)
@@ -258,7 +2248,7 @@ bool FSpudClassDef::RenameProperty(uint32 OldPropID, uint32 OldPrefixID, uint32 
 		NewInnerMap.Add(NewPropID, Index);
 
 		return true;
-		
+
 	}
 
 	return false;
@@ -271,10 +2261,10 @@ bool FSpudClassDef::MatchesRuntimeClass(const FSpudClassMetadata& Meta) const
 		// Run through the actual code class properties the same way
 		RuntimeMatchState = SpudPropertyUtil::StoredClassDefMatchesRuntime(*this, Meta) ?
 			Matching : Different;
-		
+
 	}
 	return RuntimeMatchState == Matching;
-	
+
 }
 
 //------------------------------------------------------------------------------
@@ -321,7 +2311,7 @@ void FSpudPropertyData::ReadFromArchiveV1(FSpudChunkedDataArchive& Ar)
 	{
 		Ar << Data;
 		ChunkEnd(Ar);
-	}	
+	}
 }
 
 void FSpudPropertyData::Reset()
@@ -337,7 +2327,7 @@ void FSpudDataHolder::WriteToArchive(FSpudChunkedDataArchive& Ar)
 	// Only write this chunk if there's some data
 	if (Data.Num() == 0)
 		return;
-	
+
 	if (ChunkStart(Ar))
 	{
 		// Technically this duplicates some information, since TArray writes the length of the array at the
@@ -438,7 +2428,7 @@ void FSpudSpawnedActorData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 
 bool FSpudNamedObjectMap::RenameObject(const FString& OldName, const FString& NewName)
 {
 	FSpudNamedObjectData ObjData;
-	if(Contents.RemoveAndCopyValue(OldName, ObjData))
+	if (Contents.RemoveAndCopyValue(OldName, ObjData))
 	{
 		ObjData.Name = NewName;
 		Contents.Add(NewName, ObjData);
@@ -453,7 +2443,7 @@ void FSpudDestroyedActorArray::Add(const FString& Name)
 {
 
 	Values.Add(MakeShareable(new FSpudDestroyedLevelActor(Name)));
-	
+
 }
 //------------------------------------------------------------------------------
 
@@ -463,7 +2453,7 @@ void FSpudClassMetadata::WriteToArchive(FSpudChunkedDataArchive& Ar)
 	{
 		UserDataModelVersion.Version = GCurrentUserDataModelVersion;
 		UserDataModelVersion.WriteToArchive(Ar);
-		
+
 		ClassNameIndex.WriteToArchive(Ar);
 		ClassDefinitions.WriteToArchive(Ar);
 		PropertyNameIndex.WriteToArchive(Ar);
@@ -553,16 +2543,16 @@ uint32 FSpudClassMetadata::FindOrAddPrefixID(const FString& Prefix)
 		return SPUDDATA_PREFIXID_NONE;
 
 	// Otherwise same as property (helps share names when scope & prop names are their own entries)
-	return FindOrAddPropertyIDFromName(Prefix);	
+	return FindOrAddPropertyIDFromName(Prefix);
 }
 uint32 FSpudClassMetadata::GetPrefixID(const FString& Prefix)
 {
 	// Special case blank
 	if (Prefix.IsEmpty())
 		return SPUDDATA_PREFIXID_NONE;
-	
+
 	// Prefixes share the property name lookup
-	return GetPropertyIDFromName(Prefix);	
+	return GetPropertyIDFromName(Prefix);
 }
 
 const FString& FSpudClassMetadata::GetClassNameFromID(uint32 ID) const
@@ -575,8 +2565,8 @@ uint32 FSpudClassMetadata::FindOrAddClassIDFromName(const FString& Name)
 
 	if (Ret == SPUDDATA_CLASSID_NONE)
 		UE_LOG(LogSpudData, Fatal, TEXT("Too many classes (seriously, how did you manage this? 4M classes? Woah)"))
-	
-	return Ret;
+
+		return Ret;
 }
 uint32 FSpudClassMetadata::GetClassIDFromName(const FString& Name) const
 {
@@ -587,7 +2577,7 @@ void FSpudClassMetadata::Reset()
 {
 	ClassDefinitions.Reset();
 	PropertyNameIndex.Empty();
-	ClassNameIndex.Empty();	
+	ClassNameIndex.Empty();
 }
 
 bool FSpudClassMetadata::RenameClass(const FString& OldClassName, const FString& NewClassName)
@@ -613,7 +2603,7 @@ bool FSpudClassMetadata::RenameProperty(const FString& ClassName, const FString&
 
 		// Now point our property for that class at new name. Everything else remains the same
 		auto Def = ClassDefinitions.Values[*pClassID];
-	
+
 		uint32 OldNameID = GetPropertyIDFromName(OldName);
 		uint32 NewNameID = FindOrAddPropertyIDFromName(NewName);
 		uint32 OldPrefixID = GetPrefixID(OldPrefix);
@@ -623,7 +2613,7 @@ bool FSpudClassMetadata::RenameProperty(const FString& ClassName, const FString&
 	}
 
 	return false;
-	
+
 }
 
 //------------------------------------------------------------------------------
@@ -655,7 +2645,7 @@ bool FSpudLevelData::ReadLevelInfoFromArchive(FSpudChunkedDataArchive& Ar, bool 
 	if (!Ar.IsLoading())
 	{
 		UE_LOG(LogSpudData, Error, TEXT("Cannot ReadLevelNameFromArchive, archive %s is not loading"), *Ar.GetArchiveName())
-		return false;
+			return false;
 	}
 
 	const int64 Start = Ar.Tell();
@@ -665,8 +2655,8 @@ bool FSpudLevelData::ReadLevelInfoFromArchive(FSpudChunkedDataArchive& Ar, bool 
 	if (FSpudChunkHeader::EncodeMagic(SPUDDATA_LEVELDATA_MAGIC) != Hdr.Magic)
 	{
 		UE_LOG(LogSpudData, Error, TEXT("Cannot ReadLevelNameFromArchive from %s, next chunk is not a level"), *Ar.GetArchiveName())
-		if (bReturnToStart)
-			Ar.Seek(Start);
+			if (bReturnToStart)
+				Ar.Seek(Start);
 		return false;
 	}
 
@@ -677,13 +2667,13 @@ bool FSpudLevelData::ReadLevelInfoFromArchive(FSpudChunkedDataArchive& Ar, bool 
 		Ar.Seek(Start);
 
 	return true;
-	
+
 }
 
 void FSpudLevelData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion)
 {
 	FScopeLock Lock(&Mutex);
-	
+
 	// Separate loading process since it's easier to deal with chunk robustness and versions
 	if (ChunkStart(Ar))
 	{
@@ -710,7 +2700,7 @@ void FSpudLevelData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredS
 		}
 
 		Status = LDS_Loaded;
-		
+
 		ChunkEnd(Ar);
 	}
 }
@@ -788,7 +2778,7 @@ void FSpudGlobalData::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 Stored
 		}
 
 		ChunkEnd(Ar);
-	}	
+	}
 }
 
 void FSpudGlobalData::Reset()
@@ -799,7 +2789,7 @@ void FSpudGlobalData::Reset()
 }
 
 //------------------------------------------------------------------------------
-FSpudSaveInfo::FSpudSaveInfo(): SystemVersion(SPUD_CURRENT_SYSTEM_VERSION), CustomInfo(), Screenshot()
+FSpudSaveInfo::FSpudSaveInfo() : SystemVersion(SPUD_CURRENT_SYSTEM_VERSION), CustomInfo(), Screenshot()
 {
 }
 
@@ -809,14 +2799,14 @@ void FSpudSaveInfo::WriteToArchive(FSpudChunkedDataArchive& Ar)
 	{
 		Ar << SystemVersion;
 		Ar << Title;
-		FString TimestampStr = Timestamp.ToIso8601(); 
+		FString TimestampStr = Timestamp.ToIso8601();
 		Ar << TimestampStr;
 
 		// This won't write anything if there isn't any screenshot data
 		Screenshot.WriteToArchive(Ar);
 		// Ditto, if no custom info this won't do anything
 		CustomInfo.WriteToArchive(Ar);
-	
+
 		ChunkEnd(Ar);
 	}
 }
@@ -827,7 +2817,7 @@ void FSpudSaveInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSy
 	{
 		Ar << SystemVersion;
 		Ar << Title;
-		FString TimestampStr; 
+		FString TimestampStr;
 		Ar << TimestampStr;
 		FDateTime::ParseIso8601(*TimestampStr, Timestamp);
 
@@ -843,7 +2833,7 @@ void FSpudSaveInfo::ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSy
 				CustomInfo.ReadFromArchive(Ar, StoredSystemVersion);
 			else
 				Ar.SkipNextChunk();
-		}		
+		}
 		ChunkEnd(Ar);
 	}
 }
@@ -866,7 +2856,7 @@ void FSpudScreenshot::WriteToArchive(FSpudChunkedDataArchive& Ar)
 			// Don't use << operator, just write the PNG data directly
 			// Chunk header already tells us how big it is since it's the only content
 			Ar.Serialize(ImageData.GetData(), ImageData.Num());
-			
+
 			ChunkEnd(Ar);
 		}
 	}
@@ -889,7 +2879,7 @@ void FSpudSaveCustomInfo::WriteToArchive(FSpudChunkedDataArchive& Ar)
 	// Don't write the chunk at all if no data
 	if (PropertyData.Num() == 0)
 		return;
-	
+
 	if (ChunkStart(Ar))
 	{
 		Ar << PropertyNames;
@@ -933,7 +2923,7 @@ void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& L
 {
 	if (ChunkStart(Ar))
 	{
-		Info.WriteToArchive(Ar);	
+		Info.WriteToArchive(Ar);
 		GlobalData.WriteToArchive(Ar);
 
 		// Manually write the level data because its source could be memory, or piped in from files
@@ -947,7 +2937,7 @@ void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& L
 				// Lock outer so the status check write/copy are all locked together
 				// FCriticalSection is recursive (already locked by same thread is fine)
 				FScopeLock LevelLock(&LevelData->Mutex);
-				
+
 				// For level data that's not loaded, we pipe data directly from the serialized file into
 				switch (LevelData->Status)
 				{
@@ -966,7 +2956,7 @@ void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& L
 					if (!InLevelArchive)
 					{
 						UE_LOG(LogSpudData, Error, TEXT("Level %s is recorded as being present but unloaded, but level data is not in file cache. "
-						"This level will be missing from the save"), *LevelData->Name);
+							"This level will be missing from the save"), *LevelData->Name);
 					}
 					else
 					{
@@ -982,7 +2972,7 @@ void FSpudSaveData::WriteToArchive(FSpudChunkedDataArchive& Ar, const FString& L
 
 		ChunkEnd(Ar);
 	}
-	
+
 }
 
 void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLevels, const FString& LevelPath)
@@ -1009,7 +2999,7 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 		{
 			// System version upgrade, we need to load all levels to fix, then page out
 			UE_LOG(LogSpudData, Log, TEXT("Save file %s is an old system version, automatically upgrading..."), *Ar.GetArchiveName())
-			bLoadAllLevels = true;
+				bLoadAllLevels = true;
 			bIsUpgrading = true;
 		}
 		const uint32 GlobalDataID = FSpudChunkHeader::EncodeMagic(SPUDDATA_GLOBALDATA_MAGIC);
@@ -1026,7 +3016,7 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 				if (LevelDataMapChunk.ChunkStart(Ar))
 				{
 					{
-						FScopeLock MapMutex(&LevelDataMapMutex);					
+						FScopeLock MapMutex(&LevelDataMapMutex);
 						LevelDataMap.Empty();
 					}
 
@@ -1041,7 +3031,7 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 								TLevelDataPtr LvlData(new FSpudLevelData());
 								LvlData->ReadFromArchive(Ar, Info.SystemVersion);
 								{
-									FScopeLock MapMutex(&LevelDataMapMutex);					
+									FScopeLock MapMutex(&LevelDataMapMutex);
 									LevelDataMap.Add(LvlData->Key(), LvlData);
 								}
 							}
@@ -1059,12 +3049,12 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 									int64 TotalSize = LevelDataSize + FSpudChunkHeader::GetHeaderSize();
 									SpudCopyArchiveData(Ar, *OutLevelArchive.Get(), TotalSize);
 									OutLevelArchive->Close();
-									
-                                    TLevelDataPtr LvlData(new FSpudLevelData());
+
+									TLevelDataPtr LvlData(new FSpudLevelData());
 									LvlData->Name = LevelName;
 									LvlData->Status = LDS_Unloaded;
 									{
-										FScopeLock MapMutex(&LevelDataMapMutex);					
+										FScopeLock MapMutex(&LevelDataMapMutex);
 										LevelDataMap.Add(LvlData->Key(), LvlData);
 									}
 								}
@@ -1075,10 +3065,10 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 							Ar.SkipNextChunk();
 						}
 					}
-					
+
 					LevelDataMapChunk.ChunkEnd(Ar);
 				}
-				
+
 			}
 			else
 				Ar.SkipNextChunk();
@@ -1087,12 +3077,12 @@ void FSpudSaveData::ReadFromArchive(FSpudChunkedDataArchive& Ar, bool bLoadAllLe
 		if (bIsUpgrading)
 			UE_LOG(LogSpudData, Log, TEXT("Save file %s upgrade complete. Not changed on disk, will be saved in new format next time."), *Ar.GetArchiveName())
 
-		if (bLoadAllLevels && !bOrigLoadAllLevels)
-		{
-			// We forced a load of all levels even though the caller didn't want it (perhaps because of upgrade)
-			// So now unload them
-			WriteAndReleaseAllLevelData(LevelPath);
-		}
+			if (bLoadAllLevels && !bOrigLoadAllLevels)
+			{
+				// We forced a load of all levels even though the caller didn't want it (perhaps because of upgrade)
+				// So now unload them
+				WriteAndReleaseAllLevelData(LevelPath);
+			}
 
 		ChunkEnd(Ar);
 	}
@@ -1125,18 +3115,18 @@ FSpudSaveData::TLevelDataPtr FSpudSaveData::CreateLevelData(const FString& Level
 		FScopeLock MapMutex(&LevelDataMapMutex);
 		LevelDataMap.Add(LevelName, NewLevelData);
 	}
-	
+
 	return NewLevelData;
 }
 
 void FSpudSaveData::DeleteAllLevelDataFiles(const FString& LevelPath)
 {
 	IFileManager& FM = IFileManager::Get();
-	
+
 	TArray<FString> LevelFiles;
 	FM.FindFiles(LevelFiles, *LevelPath, TEXT(".lvl"));
 
-	for (auto && File : LevelFiles)
+	for (auto&& File : LevelFiles)
 	{
 		// We want to parse just the very first part of the file, not all of it
 		FString AbsoluteFilename = FPaths::Combine(LevelPath, File);
@@ -1147,7 +3137,7 @@ void FSpudSaveData::DeleteAllLevelDataFiles(const FString& LevelPath)
 
 FString FSpudSaveData::GetLevelDataPath(const FString& LevelPath, const FString& LevelName)
 {
-	return FString::Printf(TEXT("%s%s.lvl"), *LevelPath, *LevelName);		
+	return FString::Printf(TEXT("%s%s.lvl"), *LevelPath, *LevelName);
 }
 
 void FSpudSaveData::WriteLevelData(FSpudLevelData& LevelData, const FString& LevelName, const FString& LevelPath)
@@ -1172,7 +3162,7 @@ void FSpudSaveData::WriteLevelData(FSpudLevelData& LevelData, const FString& Lev
 	{
 		UE_LOG(LogSpudData, Error, TEXT("Error opening level data file for writing: %s"), *Filename);
 	}
-	
+
 }
 
 bool FSpudSaveData::ReadSaveInfoFromArchive(FSpudChunkedDataArchive& Ar, FSpudSaveInfo& OutInfo)
@@ -1184,18 +3174,18 @@ bool FSpudSaveData::ReadSaveInfoFromArchive(FSpudChunkedDataArchive& Ar, FSpudSa
 	if (Hdr.Magic != FSpudChunkHeader::EncodeMagic(SPUDDATA_SAVEGAME_MAGIC))
 	{
 		UE_LOG(LogSpudData, Error, TEXT("Cannot get info for save game, file is not a save game"))
-		return false;
+			return false;
 	}
 
 	if (!Ar.NextChunkIs(SPUDDATA_SAVEINFO_MAGIC))
 	{
 		UE_LOG(LogSpudData, Error, TEXT("Cannot get info for save game, INFO chunk isn't present at start"))
-		return false;		
+			return false;
 	}
 	OutInfo.ReadFromArchive(Ar, 0);
 
 	return true;
-	
+
 }
 
 
@@ -1216,31 +3206,31 @@ FSpudSaveData::TLevelDataPtr FSpudSaveData::GetLevelData(const FString& LevelNam
 		switch (Ret->Status)
 		{
 		case LDS_Unloaded:
+		{
+			// Load individual level file back into memory
+			IFileManager& FileMgr = IFileManager::Get();
+			const auto Filename = GetLevelDataPath(LevelPath, LevelName);
+			const auto Archive = TUniquePtr<FArchive>(FileMgr.CreateFileReader(*Filename));
+
+			if (Archive)
 			{
-				// Load individual level file back into memory
-				IFileManager& FileMgr = IFileManager::Get();
-				const auto Filename = GetLevelDataPath(LevelPath, LevelName);
-				const auto Archive = TUniquePtr<FArchive>(FileMgr.CreateFileReader(*Filename));
+				FSpudChunkedDataArchive ChunkedAr(*Archive);
 
-				if (Archive)
+				// We have to assume that leveldata has been upgraded at load time if system version was incorrect
+				Ret->ReadFromArchive(ChunkedAr, SPUD_CURRENT_SYSTEM_VERSION);
+				ChunkedAr.Close();
+
+				if (ChunkedAr.IsError() || ChunkedAr.IsCriticalError())
 				{
-					FSpudChunkedDataArchive ChunkedAr(*Archive);
-
-					// We have to assume that leveldata has been upgraded at load time if system version was incorrect
-					Ret->ReadFromArchive(ChunkedAr, SPUD_CURRENT_SYSTEM_VERSION);
-					ChunkedAr.Close();
-
-					if (ChunkedAr.IsError() || ChunkedAr.IsCriticalError())
-					{
-						UE_LOG(LogSpudData, Error, TEXT("Error while loading active game level file from %s"), *Filename);
-					}
+					UE_LOG(LogSpudData, Error, TEXT("Error while loading active game level file from %s"), *Filename);
 				}
-				else
-				{
-					UE_LOG(LogSpudData, Error, TEXT("Error opening active game level state file %s"), *Filename);
-				}
-				break;
 			}
+			else
+			{
+				UE_LOG(LogSpudData, Error, TEXT("Error opening active game level state file %s"), *Filename);
+			}
+			break;
+		}
 		case LDS_BackgroundWriteAndUnload:
 			// Loading in this state is just flipping back to loaded, because all the state is still in memory
 			// We're just waiting for it to be written out and released
@@ -1260,7 +3250,7 @@ FSpudSaveData::TLevelDataPtr FSpudSaveData::GetLevelData(const FString& LevelNam
 void FSpudSaveData::WriteAndReleaseAllLevelData(const FString& LevelPath)
 {
 	FScopeLock MapLock(&LevelDataMapMutex);
-	for (auto && Pair : LevelDataMap)
+	for (auto&& Pair : LevelDataMap)
 	{
 		WriteAndReleaseLevelData(Pair.Key, LevelPath, true);
 	}
@@ -1296,25 +3286,25 @@ bool FSpudSaveData::WriteAndReleaseLevelData(const FString& LevelName, const FSt
 				// own stalls. However this is still much less likely. If it becomes an issue then we may need to use
 				// a more granular approach to locking (separating status and still copying data perhaps) but that's more
 				// complex & prone to slip-ups, so keeping it simpler for now.
-				
+
 				LevelData->Status = LDS_BackgroundWriteAndUnload;
 
 				// Write this level data to disk in a background thread
 				// Only pass the level name and not the pointer, this is then safe from the list being cleared
 				AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, LevelName, LevelPath]()
-                {
-					auto LevelData = GetLevelData(LevelName, false, "");
-                    if (LevelData.IsValid())
-                    {
-	                    // Re-acquire lock and check still unloading
-                        FScopeLock LevelLock(&LevelData->Mutex);
-                        if (LevelData->Status == LDS_BackgroundWriteAndUnload)
-                        {
-                            WriteLevelData(*LevelData, LevelName, LevelPath);
-                            LevelData->ReleaseMemory();
-                        }
-                    }
-                });
+					{
+						auto LevelData = GetLevelData(LevelName, false, "");
+						if (LevelData.IsValid())
+						{
+							// Re-acquire lock and check still unloading
+							FScopeLock LevelLock(&LevelData->Mutex);
+							if (LevelData->Status == LDS_BackgroundWriteAndUnload)
+							{
+								WriteLevelData(*LevelData, LevelName, LevelPath);
+								LevelData->ReleaseMemory();
+							}
+						}
+					});
 			}
 		}
 	}
@@ -1331,7 +3321,7 @@ void FSpudSaveData::DeleteLevelData(const FString& LevelName, const FString& Lev
 	IFileManager& FileMgr = IFileManager::Get();
 	const FString Filename = GetLevelDataPath(LevelPath, LevelName);
 	FileMgr.Delete(*Filename, false, true, true);
-	
+
 }
 
 //------------------------------------------------------------------------------
@@ -1362,7 +3352,7 @@ int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Lengt
 			}
 
 			BytesCopied += BytesToRequest;
-			
+
 		}
 	}
 	else
@@ -1371,3 +3361,5 @@ int64 SpudCopyArchiveData(FArchive& InArchive, FArchive& OutArchive, int64 Lengt
 	}
 	return BytesCopied;
 }
+#endif
+*/

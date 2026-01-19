@@ -276,7 +276,7 @@ struct SPUD_API FSpudClassDef : public FSpudChunk
 
 struct SPUD_API FSpudDataHolder : public FSpudChunk
 {
-	TArray<uint8> Data;
+	TArray<uint8> Data; // UObject is Property. Property is saved as Byte stream. so FSpudDataHolder is for save one Property
 
 	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
 	virtual void ReadFromArchive(FSpudChunkedDataArchive& Ar, uint32 StoredSystemVersion) override;
@@ -288,7 +288,8 @@ struct SPUD_API FSpudDataHolder : public FSpudChunk
 struct SPUD_API FSpudPropertyData : public FSpudChunk
 {
 	TArray<uint32> PropertyOffsets;
-	TArray<uint8> Data;
+	TArray<uint8> Data; 
+	// FSpudPropertyData is for save Properties. Data is All Property's Data. TArray<uint32> PropertyOffsets is Location of each Property Data's Start Pos
 
 	virtual const char* GetMagic() const override { return SPUDDATA_PROPERTYDATA_MAGIC; }
 	virtual void WriteToArchive(FSpudChunkedDataArchive& Ar) override;
