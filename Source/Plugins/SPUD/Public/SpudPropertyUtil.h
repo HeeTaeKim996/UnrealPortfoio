@@ -5,6 +5,183 @@
 #include "Serialization/MemoryReader.h"
 #include "Serialization/MemoryWriter.h"
 
+
+class FSpudMemoryReader;
+class FSpudMemoryWriter;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
+namespace{
+
+
+	template<typename T> 
+	struct SpudTypeInfo 
+	{
+		static const ESpudStorageType EnumType;
+		using StorageType = T;
+	};
+
+	template<>
+	struct SpudTypeInfo<bool>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt8;
+		using StorageType = uint8;
+	};
+
+	struct SpudAnyEnum {};
+
+	template<>
+	struct SpudTypeInfo<SpudAnyEnum>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt16;
+		using StorageType = uint16;
+	};
+		
+	template<>
+	struct SpudTypeInfo<AActor>
+	{
+		static const ESpudStorageType EnumType = ESST_String;
+		using StorageType = FString;
+	};
+
+	template<>
+	struct SpudTypeInfo<UObject>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt32;
+		using StorageType = uint32;
+	};
+
+	template<>
+	struct SpudTypeInfo<UClass>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt32;
+		using StorageType = uint32;
+	};
+
+	template<>	const ESpudStorageType SpudTypeInfo<uint8>::EnumType = ESST_UInt8;
+	template<>	const ESpudStorageType SpudTypeInfo<uint16>::EnumType = ESST_UInt16;
+	template<>	const ESpudStorageType SpudTypeInfo<uint32>::EnumType = ESST_UInt32;
+	template<>	const ESpudStorageType SpudTypeInfo<uint64>::EnumType = ESST_UInt64;
+	template<>	const ESpudStorageType SpudTypeInfo<int8>::EnumType = ESST_Int8;
+	template<>	const ESpudStorageType SpudTypeInfo<int16>::EnumType = ESST_Int16;
+	template<>	const ESpudStorageType SpudTypeInfo<int>::EnumType = ESST_Int32;
+	template<>	const ESpudStorageType SpudTypeInfo<int64>::EnumType = ESST_Int64;
+	template<>	const ESpudStorageType SpudTypeInfo<float>::EnumType = ESST_Float;
+	template<>	const ESpudStorageType SpudTypeInfo<double>::EnumType = ESST_Double;
+	template<>	const ESpudStorageType SpudTypeInfo<FVector>::EnumType = ESST_Vector;
+	template<>	const ESpudStorageType SpudTypeInfo<FRotator>::EnumType = ESST_Rotator;
+	template<>	const ESpudStorageType SpudTypeInfo<FTransform>::EnumType = ESST_Transform;
+	template<>	const ESpudStorageType SpudTypeInfo<FGuid>::EnumType = ESST_Guid;
+	template<>	const ESpudStorageType SpudTypeInfo<FString>::EnumType = ESST_String;
+	template<>	const ESpudStorageType SpudTypeInfo<FName>::EnumType = ESST_Name;
+	template<>	const ESpudStorageType SpudTypeInfo<FText>::EnumType = ESST_Text;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 class FSpudMemoryReader;
 class FSpudMemoryWriter;
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
@@ -548,3 +725,4 @@ public:
 	static FString GetLogPrefix(const FProperty* Property, int Depth);
 
 };
+#endif
