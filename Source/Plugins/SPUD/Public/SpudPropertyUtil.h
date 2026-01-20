@@ -23,11 +23,11 @@ class FSpudMemoryWriter;
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
-namespace{
+namespace {
 
 
-	template<typename T> 
-	struct SpudTypeInfo 
+	template<typename T>
+	struct SpudTypeInfo
 	{
 		static const ESpudStorageType EnumType;
 		using StorageType = T;
@@ -48,7 +48,7 @@ namespace{
 		static const ESpudStorageType EnumType = ESST_UInt16;
 		using StorageType = uint16;
 	};
-		
+
 	template<>
 	struct SpudTypeInfo<AActor*>
 	{
@@ -138,18 +138,18 @@ public:
 
 
 
-	class StoredMatchesRuntimePropertyVisitor : public SpudPropertyUtil::PropertyVisitor 
+	class StoredMatchesRuntimePropertyVisitor : public SpudPropertyUtil::PropertyVisitor
 	{
 	protected:
 		TArray<FSpudPropertyDef>::TConstIterator StoredPropertyIterator;
 		const FSpudClassDef& ClassDef;
 		const FSpudClassMetadata& Meta;
 		bool bMatches;
-	
+
 	public:
 		StoredMatchesRuntimePropertyVisitor(TArray<FSpudPropertyDef>::TConstIterator InStoredPropertyIterator, const FSpudClassDef& InClassDef,
 			const FSpudClassMetadata& InMeta);
-		
+
 		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID, void* ContainerPtr, int Depth) override;
 
 		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) override;
@@ -186,7 +186,7 @@ public:
 	static void StoreContainerProperty(FProperty* Property, const UObject* RootObject, uint32 PrefixID, const void* ContainerPtr, bool bIsArrayElement, int Depth,
 		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FSpudMemoryWriter& Out);
 
-	
+
 
 	typedef TMap<FGuid, UObject*> RuntimeObjectMap;
 
@@ -200,6 +200,210 @@ public:
 		const RuntimeObjectMap* RuntimeObjects, const FSpudClassMetadata& Meta, int Depth, FSpudMemoryReader& DataIn);
 
 	static bool StoredClassDefMatchesRuntime(const FSpudClassDef& ClassDef, const FSpudClassMetadata& Meta);
+
+
+
+
+protected:
+	static bool IsNativelySupportedArrayType(const FArrayProperty* AProp);
+
+	static bool VisitPersistentProperties(UObject* RootObject, const UStruct* Definition, uint32 PrefixID, void* ContainerPtr, bool IsChildOfSaveGame,
+		int Depth, PropertyVisitor& Visitor);
+
+	static FString ToString(int Val) { return FString::FromInt(Val); }
+	static FString ToString(int64 Val) { return FString::Printf(TEXT("lld"), Val); }
+	static FString ToString(uint32 Val) { return FString::Printf(TEXT("%u"), Val); }
+	static FString ToString(uint64 Val) { return FString::Printf(TEXT("llu"), Val); }
+	static FString ToString(bool Val) { return Val ? "True" : "False"; }
+	static FString ToString(float Val) { return FString::SanitizeFloat(Val); }
+	static FString ToString(double Val) { return FString::Printf(TEXT("lf"), Val); }
+	static FString ToString(const FString& Val) { return Val; }
+	static FString ToString(const FName& Val) { return Val.ToString(); }
+	static FString ToString(const FText& Val) { return Val.ToString(); }
+
+	template<typename T>
+	static FString ToString(T* Val) { return Val->ToString(); }
+
+
+	template<class PropType, typename ValueType>
+	static typename SpudTypeInfo<ValueType>::StorageType WritePropertyData(PropType* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
+	{
+		if (bIsArrayElement == false)
+		{
+			RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+		}
+
+		auto Val = static_cast<typename SpudTypeInfo<ValueType>::StorageType>(Prop->GetPropertyValue(Data));
+		Out << Val;
+		return Val;
+	}
+
+
+	template<class PropType, typename ValueType>
+	static bool TryWritePropertyData(FProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
+	{
+		if (auto IProp = CastField<PropType>(Prop))
+		{
+			auto Val = WritePropertyData<PropType, ValueType>(IProp, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
+			return true;
+		}
+
+		return false;
+	}
+
+
+	static uint16 WriteEnumPropertyData(FEnumProperty* EProp, uint32 PrefixID, const void* Data, bool bIsArrayElement, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static bool TryWriteEnumPropertyData(FProperty* Property, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static FString WriteActorRefPropertyData(::FProperty* OProp, AActor* Actor, FPlatformTypes::uint32 PrefixID, const void* Data, bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static FString WriteNestedUObjectPropertyData(::FObjectProperty* OProp, UObject* UObj, FPlatformTypes::uint32 PrefixID, const void* Data, bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static FString WriteSoftObjectPropertyData(FSoftObjectProperty* SProp, uint32 PrefixID, const void* Data, bool bIsArrayElement, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static FString WriteSubclassOfPropertyData(FClassProperty* CProp, UClass* Class, uint32 PrefixID, const void* Data, bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+	static bool TryWriteUObjectPropertyData(FProperty* Property, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out);
+
+
+	template<typename ValueType>
+	static ValueType WriteStructPropertyData(FStructProperty* SProp, uint32 PrefixID, const void* Data, FArchive& Out)
+	{
+		auto ValPtr = static_cast<const ValueType*>(Data);
+		ValueType Val = *ValPtr;
+		Out << Val;
+		return Val;
+	}
+
+	template<typename ValueType>
+	static bool TryWriteBuilinStructPropertyData(FStructProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
+	{
+		if (Prop->Struct == TBaseStructure<ValueType>::Get())
+		{
+			if (bIsArrayElement == false)
+			{
+				RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+			}
+			ValueType Val = WriteStructPropertyData<ValueType>(Prop, PrefixID, Data, Out);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
+			return true;
+		}
+
+		return false;
+	}
+
+	template<typename ValueType>
+	static ValueType ReadStructPropertyData(FStructProperty* SProp, void* Data, FArchive& In)
+	{
+		auto ValPtr = static_cast<ValueType*>(Data);
+		In << *ValPtr;
+		return *ValPtr;
+	}
+
+	template<class PropType, typename ValueType>
+	static typename SpudTypeInfo<ValueType>::StorageType ReadPropertyData(PropType* Prop, void* Data, FArchive& In)
+	{
+		typename SpudTypeInfo<ValueType>::StorageType Val;
+		In << Val;
+		Prop->SetPropertyValue(Data, static_cast<ValueType>(Val));
+		return Val;
+	}
+
+	template<typename ValueType>
+	static bool TryReadBuilinStructPropertyData(FStructProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
+	{
+		if (Prop->Struct == TBaseStructure<ValueType>::Get() &&
+			StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true))
+		{
+			ValueType Val = ReadStructPropertyData<ValueType>(Prop, Data, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
+			return true;
+		}
+
+		return false;
+	}
+
+	static uint16 ReadEnumPropertyData(FEnumProperty* EProp, void* Data, FArchive& In);
+
+	static bool TryReadEnumPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In);
+
+	static FString ReadActorRefPropertyData(FProperty* OProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level, FArchive& In);
+
+	static FString ReadNestedUObjectPropertyData(FObjectProperty* OProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level, UObject* Outer,
+		const FSpudClassMetadata& Meta, FArchive& In);
+
+	static FString ReadSoftObjectPropertyData(FSoftObjectProperty* SProp, void* Data, const FSpudClassMetadata& Meta, FArchive& In);
+
+	static FString ReadSubclassOfPropertyData(FClassProperty* CProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level, const FSpudClassMetadata& Meta,
+		FArchive& In);
+
+	static bool TryReadUObjectPropertyData(::FProperty* Prop, void* Data, const ::FSpudPropertyDef& StoredProperty, const RuntimeObjectMap* RuntimeObjects,
+		ULevel* Level, UObject* Outer, const FSpudClassMetadata& Meta, int Depth, FArchive& In);
+
+	static void SetObjectPropertyValue(FProperty* Property, void* data, UObject* Obj);
+
+	static UObject* FindObjectWithOverridenName(const UWorld* World, const FString& RefString);
+
+
+public:
+	template<typename T>
+	static void WriteRaw(const T& Value, FArchive& Out)
+	{
+		typename SpudTypeInfo<T>::StorageType OutVal = Value;
+		Out << OutVal;
+	}
+
+	template<typename T>
+	static void ReadRaw(T& Value, FArchive& In)
+	{
+		typename SpudTypeInfo<T>::StorageType SerialisedVal;
+		In << SerialisedVal;
+		Value = static_cast<T>(SerialisedVal);
+	}
+
+	template<typename T>
+	void WriteProperty(const FString& Name, uint32 PrefixID, const T& Value, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta, FArchive& Out)
+	{
+		RegisterProperty(Name, PrefixID, SpudTypeInfo<T>::EnumType, ClassDef, PropertyOffsets, Meta, Out);
+		WriteRaw(Value, Out);
+	}
+
+	static bool IsPersistentObject(UObject* Obj);
+
+	static bool IsRuntimeActor(const AActor* Actor);
+		
+	static FGuid GetGuidProperty(const UObject* Obj);
+
+	static FGuid GetGuidProperty(const UObject* Obj, const FStructProperty* Prop);
+
+	static bool SetGuidProperty(UObject* Obj, const FGuid& Guid);
+
+	static bool SetGuidProperty(UObject* Obj, const FStructProperty* Prop, const FGuid& Guid);
+
+	static FStructProperty* FindGuidProperty(const UObject* Obj);
+
+	static FString GetLevelActorName(const AActor* Actor);
+
+	static FString GetGlobalObjectID(const UObject* Obj);
+
+	static FString GetClassName(const UObject* Obj);
+
+	static FString GetLogPrefix(int Depth);
+
+	static FString GetLogPrefix(const FProperty* Property, int Depth);
 };
 
 
@@ -337,67 +541,67 @@ public:
 
 #if 0
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
-namespace{
-/// Type info for persistence
-/// Maps a given type to:
-/// 1. An enum value, for describing how the data is stored
-/// 2. A storage type, for *casting* the data before writing to ensure it conforms to 1.
-/// The latter is useful mostly to make sure we have control over the size of bools and enums
-template <typename T> struct SpudTypeInfo
-{
-	static const ESpudStorageType EnumType;
-	using StorageType = T;
-};
-// Bool needs a special case so that StorageType is uint8 (bools can otherwise write as 32-bit values)
-template <> struct SpudTypeInfo<bool>
-{
-	static const ESpudStorageType EnumType = ESST_UInt8;
-	using StorageType = uint8;
-};
-// This is a placeholder for any enum value
-// Special cased so we always write enums as uint16
-struct SpudAnyEnum {};
-template <> struct SpudTypeInfo<SpudAnyEnum>
-{
-	static const ESpudStorageType EnumType = ESST_UInt16;
-	using StorageType = uint16;
-};
-// Actor references need a special case, stored as FStrings
-template <> struct SpudTypeInfo<AActor*>
-{
-	static const ESpudStorageType EnumType = ESST_String;
-	using StorageType = FString;
-};
-// Nested UObjects are stored as a ClassID
-template <> struct SpudTypeInfo<UObject*>
-{
-	static const ESpudStorageType EnumType = ESST_UInt32;
-	using StorageType = uint32;
-};
-// TSubclassOfs are stored as a ClassID
-template <> struct SpudTypeInfo<UClass*>
-{
-	static const ESpudStorageType EnumType = ESST_UInt32;
-	using StorageType = uint32;
-};
-/// Now the simpler types where StorageType == input type 
-template <> const ESpudStorageType SpudTypeInfo<uint8>::EnumType = ESST_UInt8;
-template <> const ESpudStorageType SpudTypeInfo<uint16>::EnumType = ESST_UInt16;
-template <> const ESpudStorageType SpudTypeInfo<uint32>::EnumType = ESST_UInt32;
-template <> const ESpudStorageType SpudTypeInfo<uint64>::EnumType = ESST_UInt64;
-template <> const ESpudStorageType SpudTypeInfo<int8>::EnumType = ESST_Int8;
-template <> const ESpudStorageType SpudTypeInfo<int16>::EnumType = ESST_Int16;
-template <> const ESpudStorageType SpudTypeInfo<int>::EnumType = ESST_Int32;
-template <> const ESpudStorageType SpudTypeInfo<int64>::EnumType = ESST_Int64;
-template <> const ESpudStorageType SpudTypeInfo<float>::EnumType = ESST_Float;
-template <> const ESpudStorageType SpudTypeInfo<double>::EnumType = ESST_Double;
-template <> const ESpudStorageType SpudTypeInfo<FVector>::EnumType = ESST_Vector;
-template <> const ESpudStorageType SpudTypeInfo<FRotator>::EnumType = ESST_Rotator;
-template <> const ESpudStorageType SpudTypeInfo<FTransform>::EnumType = ESST_Transform;
-template <> const ESpudStorageType SpudTypeInfo<FGuid>::EnumType = ESST_Guid;
-template <> const ESpudStorageType SpudTypeInfo<FString>::EnumType = ESST_String;
-template <> const ESpudStorageType SpudTypeInfo<FName>::EnumType = ESST_Name;
-template <> const ESpudStorageType SpudTypeInfo<FText>::EnumType = ESST_Text;
+namespace {
+	/// Type info for persistence
+	/// Maps a given type to:
+	/// 1. An enum value, for describing how the data is stored
+	/// 2. A storage type, for *casting* the data before writing to ensure it conforms to 1.
+	/// The latter is useful mostly to make sure we have control over the size of bools and enums
+	template <typename T> struct SpudTypeInfo
+	{
+		static const ESpudStorageType EnumType;
+		using StorageType = T;
+	};
+	// Bool needs a special case so that StorageType is uint8 (bools can otherwise write as 32-bit values)
+	template <> struct SpudTypeInfo<bool>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt8;
+		using StorageType = uint8;
+	};
+	// This is a placeholder for any enum value
+	// Special cased so we always write enums as uint16
+	struct SpudAnyEnum {};
+	template <> struct SpudTypeInfo<SpudAnyEnum>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt16;
+		using StorageType = uint16;
+	};
+	// Actor references need a special case, stored as FStrings
+	template <> struct SpudTypeInfo<AActor*>
+	{
+		static const ESpudStorageType EnumType = ESST_String;
+		using StorageType = FString;
+	};
+	// Nested UObjects are stored as a ClassID
+	template <> struct SpudTypeInfo<UObject*>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt32;
+		using StorageType = uint32;
+	};
+	// TSubclassOfs are stored as a ClassID
+	template <> struct SpudTypeInfo<UClass*>
+	{
+		static const ESpudStorageType EnumType = ESST_UInt32;
+		using StorageType = uint32;
+	};
+	/// Now the simpler types where StorageType == input type 
+	template <> const ESpudStorageType SpudTypeInfo<uint8>::EnumType = ESST_UInt8;
+	template <> const ESpudStorageType SpudTypeInfo<uint16>::EnumType = ESST_UInt16;
+	template <> const ESpudStorageType SpudTypeInfo<uint32>::EnumType = ESST_UInt32;
+	template <> const ESpudStorageType SpudTypeInfo<uint64>::EnumType = ESST_UInt64;
+	template <> const ESpudStorageType SpudTypeInfo<int8>::EnumType = ESST_Int8;
+	template <> const ESpudStorageType SpudTypeInfo<int16>::EnumType = ESST_Int16;
+	template <> const ESpudStorageType SpudTypeInfo<int>::EnumType = ESST_Int32;
+	template <> const ESpudStorageType SpudTypeInfo<int64>::EnumType = ESST_Int64;
+	template <> const ESpudStorageType SpudTypeInfo<float>::EnumType = ESST_Float;
+	template <> const ESpudStorageType SpudTypeInfo<double>::EnumType = ESST_Double;
+	template <> const ESpudStorageType SpudTypeInfo<FVector>::EnumType = ESST_Vector;
+	template <> const ESpudStorageType SpudTypeInfo<FRotator>::EnumType = ESST_Rotator;
+	template <> const ESpudStorageType SpudTypeInfo<FTransform>::EnumType = ESST_Transform;
+	template <> const ESpudStorageType SpudTypeInfo<FGuid>::EnumType = ESST_Guid;
+	template <> const ESpudStorageType SpudTypeInfo<FString>::EnumType = ESST_String;
+	template <> const ESpudStorageType SpudTypeInfo<FName>::EnumType = ESST_Name;
+	template <> const ESpudStorageType SpudTypeInfo<FText>::EnumType = ESST_Text;
 }
 /// Utility class which does all the nuts & bolts related to property persistence without actually being stateful
 /// Also none of this is exposed to Blueprints, is completely internal to C++ persistence
@@ -412,7 +616,7 @@ public:
 	{
 	public:
 		virtual ~PropertyVisitor() = default;
-		
+
 		/**
 		 * @brief Visit a property and perform some action. For nested structs, this will be called for the struct
 		 * itself and its nested properties.
@@ -424,8 +628,8 @@ public:
 		 * @returns True to continue parsing properties, false to quit early
 		 */
 		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID,
-		                           void* ContainerPtr, int Depth) = 0;
-		
+			void* ContainerPtr, int Depth) = 0;
+
 		/**
 		* @brief Be informed about an unsupported property. This is a property which is marked as persistent but
 		* is not currently supported.
@@ -445,7 +649,7 @@ public:
 		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) = 0;
 
 		/**
-		 * Called just before descending into a struct 
+		 * Called just before descending into a struct
 		 * @param RootObject The root object being traversed
 		 * @param SProp The property of the struct
 		 * @param PrefixID The prefix ID for members of the struct
@@ -453,7 +657,7 @@ public:
 		 */
 		virtual void StartNestedStruct(UObject* RootObject, FStructProperty* SProp, uint32 PrefixID, int Depth) {}
 		/**
-		 * Called just after all the members of a struct have been visited 
+		 * Called just after all the members of a struct have been visited
 		 * @param RootObject The root object being traversed
 		 * @param SProp The property of the struct
 		 * @param PrefixID The prefix ID for members of the struct
@@ -468,14 +672,14 @@ public:
 	 * @param IsChildOfSaveGame whether this property is a child of another property which was marked as SaveGame
 	 * @return Whether this property should be included in the persistent state
 	 */
-	static bool ShouldPropertyBeIncluded(FProperty* Property, bool IsChildOfSaveGame);	
+	static bool ShouldPropertyBeIncluded(FProperty* Property, bool IsChildOfSaveGame);
 	/**
 	 * @brief Return wether a specified property is supported by the persistence system or not
 	 * @param Property the property in question
 	 * @return Whether this property is supported in the persistence system
 	 */
 	static bool IsPropertySupported(FProperty* Property);
-	
+
 	/**
 	 * @brief Return whether a specified property is natively supported, with full upgrade functionality
 	 * @param Property the property in question
@@ -489,7 +693,7 @@ public:
 	 */
 	static bool IsPropertyFallbackSupported(FProperty* Property);
 	/**
-	 * @brief Return whether a property is of a built-in struct 
+	 * @brief Return whether a property is of a built-in struct
 	 * @param SProp The struct property
 	 * @return Whether this property is of a built-in type (e.g. FVector)
 	 */
@@ -529,89 +733,89 @@ public:
 		bool bMatches;
 	public:
 		StoredMatchesRuntimePropertyVisitor(TArray<FSpudPropertyDef>::TConstIterator InStoredPropertyIterator,
-                                            const FSpudClassDef& InClassDef, const FSpudClassMetadata& InMeta);
+			const FSpudClassDef& InClassDef, const FSpudClassMetadata& InMeta);
 		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID,
-		                           void* ContainerPtr, int Depth) override;
+			void* ContainerPtr, int Depth) override;
 		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) override;
 		// After visiting, was everything a match
 		bool IsMatch() const { return bMatches; }
 	};
 	static bool StoredPropertyTypeMatchesRuntime(const FProperty* RuntimeProperty,
-                                          const FSpudPropertyDef& StoredProperty,
-                                          bool bIgnoreArrayFlag);
+		const FSpudPropertyDef& StoredProperty,
+		bool bIgnoreArrayFlag);
 
-	
+
 	static FString GetNestedPrefix(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta);
 	static uint32 GetNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta);
 	static uint32 FindOrAddNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, FSpudClassMetadata& Meta);
 	static void RegisterProperty(uint32 PropNameID, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FArchive& Out);
 	static void RegisterProperty(const FString& Name,
-	                             uint32 PrefixID,
-	                             uint16 DataType,
-	                             TSharedPtr<FSpudClassDef> ClassDef,
-	                             TArray<uint32>& PropertyOffsets,
-	                             FSpudClassMetadata& Meta,
-	                             FArchive& Out);
+		uint32 PrefixID,
+		uint16 DataType,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static void RegisterProperty(FProperty* Prop,
-	                             uint32 PrefixID,
-	                             TSharedPtr<FSpudClassDef> ClassDef,
-	                             TArray<uint32>& PropertyOffsets,
-	                             FSpudClassMetadata
-	                             & Meta,
-	                             FArchive& Out);
+		uint32 PrefixID,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata
+		& Meta,
+		FArchive& Out);
 
 	/// Visit all properties of a UObject
 	static void VisitPersistentProperties(UObject* RootObject, PropertyVisitor& Visitor, int StartDepth = 0);
 	/// Visit all properties of a class definition, with no instance
 	static void VisitPersistentProperties(const UStruct* Definition, PropertyVisitor& Visitor);
-	
+
 	static void StoreProperty(const UObject* RootObject,
-	                          FProperty* Property,
-	                          uint32 PrefixID,
-	                          const void* ContainerPtr,
-	                          int Depth,
-	                          TSharedPtr<FSpudClassDef> ClassDef,
-	                          TArray<uint32>& PropertyOffsets,
-	                          FSpudClassMetadata& Meta,
-	                          FSpudMemoryWriter& Out);
+		FProperty* Property,
+		uint32 PrefixID,
+		const void* ContainerPtr,
+		int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FSpudMemoryWriter& Out);
 	static void StoreArrayProperty(FArrayProperty* AProp,
-	                               const UObject* RootObject,
-	                               uint32 PrefixID,
-	                               const void* ContainerPtr,
-	                               int Depth,
-	                               TSharedPtr<FSpudClassDef> ClassDef,
-	                               TArray<uint32>& PropertyOffsets,
-	                               FSpudClassMetadata& Meta,
-	                               FSpudMemoryWriter& Out);
+		const UObject* RootObject,
+		uint32 PrefixID,
+		const void* ContainerPtr,
+		int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FSpudMemoryWriter& Out);
 	static void StoreContainerProperty(FProperty* Property,
-	                                   const UObject* RootObject,
-	                                   uint32 PrefixID,
-	                                   const void* ContainerPtr,
-	                                   bool bIsArrayElement,
-	                                   int Depth,
-	                                   TSharedPtr<FSpudClassDef> ClassDef,
-	                                   TArray<uint32>& PropertyOffsets,
-	                                   FSpudClassMetadata& Meta,
-	                                   FSpudMemoryWriter& Out);
+		const UObject* RootObject,
+		uint32 PrefixID,
+		const void* ContainerPtr,
+		bool bIsArrayElement,
+		int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FSpudMemoryWriter& Out);
 
 
 	typedef TMap<FGuid, UObject*> RuntimeObjectMap;
-	
+
 	static void RestoreProperty(UObject* RootObject, FProperty* Property, void* ContainerPtr,
-	                            const FSpudPropertyDef& StoredProperty,
-	                            const RuntimeObjectMap* RuntimeObjects,
-	                            const FSpudClassMetadata& Meta,
-	                            int Depth, FSpudMemoryReader& DataIn);
+		const FSpudPropertyDef& StoredProperty,
+		const RuntimeObjectMap* RuntimeObjects,
+		const FSpudClassMetadata& Meta,
+		int Depth, FSpudMemoryReader& DataIn);
 	static void RestoreArrayProperty(UObject* RootObject, FArrayProperty* const AProp, void* ContainerPtr,
-	                                 const FSpudPropertyDef& StoredProperty,
-	                                 const RuntimeObjectMap* RuntimeObjects,
-	                                 const FSpudClassMetadata& Meta,
-	                                 int Depth, FSpudMemoryReader& DataIn);
+		const FSpudPropertyDef& StoredProperty,
+		const RuntimeObjectMap* RuntimeObjects,
+		const FSpudClassMetadata& Meta,
+		int Depth, FSpudMemoryReader& DataIn);
 	static void RestoreContainerProperty(UObject* RootObject, FProperty* const Property,
-	                                     void* ContainerPtr, const FSpudPropertyDef& StoredProperty,
-	                                     const RuntimeObjectMap* RuntimeObjects,
-	                                     const FSpudClassMetadata& Meta,
-	                                     int Depth, FSpudMemoryReader& DataIn);
+		void* ContainerPtr, const FSpudPropertyDef& StoredProperty,
+		const RuntimeObjectMap* RuntimeObjects,
+		const FSpudClassMetadata& Meta,
+		int Depth, FSpudMemoryReader& DataIn);
 
 
 	/// Utility function for checking whether iterating through the properties on a UObject results in the same
@@ -631,21 +835,21 @@ protected:
 	static bool IsNativelySupportedArrayType(const FArrayProperty* AProp);
 	/// General recursive visitation of properties, returns false to early-out, object/container can be null
 	static bool VisitPersistentProperties(UObject* RootObject, const UStruct* Definition, uint32 PrefixID,
-	                                      void* ContainerPtr, bool IsChildOfSaveGame, int Depth,
-	                                      PropertyVisitor& Visitor);
+		void* ContainerPtr, bool IsChildOfSaveGame, int Depth,
+		PropertyVisitor& Visitor);
 
 	static FString ToString(int Val) { return FString::FromInt(Val); }
-    static FString ToString(int64 Val) { return FString::Printf(TEXT("%lld"), Val); }
-    static FString ToString(uint32 Val) { return FString::Printf(TEXT("%u"), Val); }
-    static FString ToString(uint64 Val) { return FString::Printf(TEXT("%llu"), Val); }
-    static FString ToString(bool Val) { return Val ? "True" : "False"; }
+	static FString ToString(int64 Val) { return FString::Printf(TEXT("%lld"), Val); }
+	static FString ToString(uint32 Val) { return FString::Printf(TEXT("%u"), Val); }
+	static FString ToString(uint64 Val) { return FString::Printf(TEXT("%llu"), Val); }
+	static FString ToString(bool Val) { return Val ? "True" : "False"; }
 	static FString ToString(float Val) { return FString::SanitizeFloat(Val); }
 	static FString ToString(double Val) { return FString::Printf(TEXT("%lf"), Val); }
 	static FString ToString(const FString& Val) { return Val; }
 	static FString ToString(const FName& Val) { return Val.ToString(); }
 	static FString ToString(const FText& Val) { return Val.ToString(); }
 	template <typename T>
-    static FString ToString(T* Val) { return Val->ToString(); }	
+	static FString ToString(T* Val) { return Val->ToString(); }
 
 	template <class PropType, typename ValueType>
 	static typename SpudTypeInfo<ValueType>::StorageType WritePropertyData(
@@ -658,130 +862,130 @@ protected:
 		FSpudClassMetadata& Meta,
 		FArchive& Out)
 	{
-    	if (!bIsArrayElement)
-    		RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
-    	auto Val = static_cast<typename SpudTypeInfo<ValueType>::StorageType>(Prop->GetPropertyValue(Data)); // Cast in case we want to compress into smaller type
-    	Out << Val;
-    	return Val;
-    }
+		if (!bIsArrayElement)
+			RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+		auto Val = static_cast<typename SpudTypeInfo<ValueType>::StorageType>(Prop->GetPropertyValue(Data)); // Cast in case we want to compress into smaller type
+		Out << Val;
+		return Val;
+	}
 
 
 	template <class PropType, typename ValueType>
 	static bool TryWritePropertyData(FProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth,
-	                          TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta,
-	                          FArchive& Out)
-    {
-    	if (auto IProp = CastField<PropType>(Prop))
-    	{
-    		auto Val = WritePropertyData<PropType, ValueType>(IProp, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta,
+		FArchive& Out)
+	{
+		if (auto IProp = CastField<PropType>(Prop))
+		{
+			auto Val = WritePropertyData<PropType, ValueType>(IProp, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
 			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
-    		return true;
-    	}
-    	return false;
-	    
-    }
+			return true;
+		}
+		return false;
+
+	}
 
 	static uint16 WriteEnumPropertyData(FEnumProperty* EProp,
-	                                    uint32 PrefixID,
-	                                    const void* Data,
-	                                    bool bIsArrayElement,
-	                                    TSharedPtr<FSpudClassDef> ClassDef,
-	                                    TArray<uint32>& PropertyOffsets,
-	                                    FSpudClassMetadata& Meta,
-	                                    FArchive& Out);
+		uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 
 	static bool TryWriteEnumPropertyData(FProperty* Property,
-	                                     uint32 PrefixID,
-	                                     const void* Data,
-	                                     bool bIsArrayElement,
-	                                     int Depth,
-	                                     TSharedPtr<FSpudClassDef> ClassDef,
-	                                     TArray<uint32>& PropertyOffsets,
-	                                     FSpudClassMetadata& Meta,
-	                                     FArchive& Out);
+		uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static FString WriteActorRefPropertyData(::FProperty* OProp,
-	                                         AActor* Actor,
-	                                         FPlatformTypes::uint32 PrefixID,
-	                                         const void* Data,
-	                                         bool bIsArrayElement,
-	                                         TSharedPtr<FSpudClassDef> ClassDef,
-	                                         TArray<uint32>& PropertyOffsets,
-	                                         FSpudClassMetadata& Meta,
-	                                         FArchive& Out);
+		AActor* Actor,
+		FPlatformTypes::uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static FString WriteNestedUObjectPropertyData(::FObjectProperty* OProp,
-	                                              UObject* UObj,
-	                                              FPlatformTypes::uint32 PrefixID,
-	                                              const void* Data,
-	                                              bool bIsArrayElement,
-	                                              TSharedPtr<FSpudClassDef> ClassDef,
-	                                              TArray<uint32>& PropertyOffsets,
-	                                              FSpudClassMetadata& Meta,
-	                                              FArchive& Out);
+		UObject* UObj,
+		FPlatformTypes::uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static FString WriteSoftObjectPropertyData(FSoftObjectProperty* SProp,
-												 uint32 PrefixID,
-												 const void* Data,
-												 bool bIsArrayElement,
-												 TSharedPtr<FSpudClassDef> ClassDef,
-												 TArray<uint32>& PropertyOffsets,
-												 FSpudClassMetadata& Meta,
-												 FArchive& Out);
+		uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static FString WriteSubclassOfPropertyData(FClassProperty* CProp,
-	                                           UClass* Class,
-	                                           uint32 PrefixID,
-	                                           const void* Data,
-	                                           bool bIsArrayElement,
-	                                           TSharedPtr<FSpudClassDef> ClassDef,
-	                                           TArray<uint32>& PropertyOffsets,
-	                                           FSpudClassMetadata& Meta,
-	                                           FArchive& Out);
+		UClass* Class,
+		uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 	static bool TryWriteUObjectPropertyData(FProperty* Property,
-	                                        uint32 PrefixID,
-	                                        const void* Data,
-	                                        bool bIsArrayElement,
-	                                        int Depth,
-	                                        TSharedPtr<FSpudClassDef> ClassDef,
-	                                        TArray<uint32>& PropertyOffsets,
-	                                        FSpudClassMetadata& Meta,
-	                                        FArchive& Out);
+		uint32 PrefixID,
+		const void* Data,
+		bool bIsArrayElement,
+		int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta,
+		FArchive& Out);
 
-	
+
 	template<typename ValueType>
 	static ValueType WriteStructPropertyData(FStructProperty* SProp, uint32 PrefixID, const void* Data, FArchive& Out)
-    {
-    	auto ValPtr = static_cast<const ValueType*>(Data);
-    	// Need to explicitly copy because << can read as well and incoming data is const
-    	ValueType Val = *ValPtr;
-    	Out << Val;
-    	return Val;
-    }
+	{
+		auto ValPtr = static_cast<const ValueType*>(Data);
+		// Need to explicitly copy because << can read as well and incoming data is const
+		ValueType Val = *ValPtr;
+		Out << Val;
+		return Val;
+	}
 	template <typename ValueType>
 	static bool TryWriteBuiltinStructPropertyData(FStructProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement,
-	                                       int Depth, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
-    {
-    	// Check struct detail value matches
-    	if (Prop->Struct == TBaseStructure<ValueType>::Get())
-    	{
-    		if (!bIsArrayElement)
-    			RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
-    		ValueType Val = WriteStructPropertyData<ValueType>(Prop, PrefixID, Data, Out);
-    		UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
-    		return true;
-    	}
-    	return false;
-    }
+		int Depth, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
+	{
+		// Check struct detail value matches
+		if (Prop->Struct == TBaseStructure<ValueType>::Get())
+		{
+			if (!bIsArrayElement)
+				RegisterProperty(Prop, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+			ValueType Val = WriteStructPropertyData<ValueType>(Prop, PrefixID, Data, Out);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
+			return true;
+		}
+		return false;
+	}
 
 
 	template<typename ValueType>
-    static ValueType ReadStructPropertyData(FStructProperty* SProp, void* Data, FArchive& In)
+	static ValueType ReadStructPropertyData(FStructProperty* SProp, void* Data, FArchive& In)
 	{
 		auto ValPtr = static_cast<ValueType*>(Data);
 		// In read mode, this should update pointer target (ugh I don't like UE dual-mode archvies)
 		In << *ValPtr;
 		return *ValPtr;
 	}
-	
+
 	template <class PropType, typename ValueType>
-    static typename SpudTypeInfo<ValueType>::StorageType ReadPropertyData(PropType* Prop, void* Data, FArchive& In)
+	static typename SpudTypeInfo<ValueType>::StorageType ReadPropertyData(PropType* Prop, void* Data, FArchive& In)
 	{
 		// Read as per storage type
 		typename SpudTypeInfo<ValueType>::StorageType Val;
@@ -793,55 +997,55 @@ protected:
 
 
 	template <typename ValueType>
-    static bool TryReadBuiltinStructPropertyData(FStructProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
+	static bool TryReadBuiltinStructPropertyData(FStructProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
 	{
 		// Check runtime property and stored match 
 		if (Prop->Struct == TBaseStructure<ValueType>::Get() &&
 			StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true)) // we ignore array flag since we could be processing inner
 		{
 			ValueType Val = ReadStructPropertyData<ValueType>(Prop, Data, In);
-    		UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(&Val));
 			return true;
 		}
 		return false;
 	}
 	template <class PropType, typename ValueType>
-    static bool TryReadPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
+	static bool TryReadPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
 	{
 		auto IProp = CastField<PropType>(Prop);
 		if (IProp && StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true)) // we ignore array flag since we could be processing inner
 		{
 			auto Val = ReadPropertyData<PropType, ValueType>(IProp, Data, In);
-    		UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
 			return true;
 		}
-		return false;   
+		return false;
 	}
 
 	static uint16 ReadEnumPropertyData(FEnumProperty* EProp, void* Data, FArchive& In);
 	static bool TryReadEnumPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty,
-	                                    int Depth, FArchive& In);
+		int Depth, FArchive& In);
 	static FString ReadActorRefPropertyData(FProperty* OProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level, FArchive& In);
 	static FString ReadNestedUObjectPropertyData(FObjectProperty* OProp,
-	                                             void* Data,
-	                                             const RuntimeObjectMap* RuntimeObjects,
-	                                             ULevel* Level,
-	                                             UObject* Outer,
-	                                             const FSpudClassMetadata& Meta,
-	                                             FArchive& In);
+		void* Data,
+		const RuntimeObjectMap* RuntimeObjects,
+		ULevel* Level,
+		UObject* Outer,
+		const FSpudClassMetadata& Meta,
+		FArchive& In);
 	static FString ReadSoftObjectPropertyData(FSoftObjectProperty* SProp,
-												  void* Data,
-												  const FSpudClassMetadata& Meta,
-												  FArchive& In);
+		void* Data,
+		const FSpudClassMetadata& Meta,
+		FArchive& In);
 	static FString ReadSubclassOfPropertyData(FClassProperty* CProp,
-	                                          void* Data,
-	                                          const RuntimeObjectMap* RuntimeObjects,
-	                                          ULevel* Level,
-	                                          const FSpudClassMetadata& Meta,
-	                                          FArchive& In);
+		void* Data,
+		const RuntimeObjectMap* RuntimeObjects,
+		ULevel* Level,
+		const FSpudClassMetadata& Meta,
+		FArchive& In);
 	static bool TryReadUObjectPropertyData(::FProperty* Prop, void* Data, const ::FSpudPropertyDef& StoredProperty,
-	                                        const RuntimeObjectMap* RuntimeObjects,
-	                                        ULevel* Level, UObject* Outer, const FSpudClassMetadata& Meta, int Depth, FArchive& In);
+		const RuntimeObjectMap* RuntimeObjects,
+		ULevel* Level, UObject* Outer, const FSpudClassMetadata& Meta, int Depth, FArchive& In);
 	static void SetObjectPropertyValue(FProperty* Property, void* Data, UObject* Obj);
 
 	static UObject* FindObjectWithOverridenName(const UWorld* World, const FString& RefString);
@@ -851,14 +1055,14 @@ public:
 	// Low-level functions, use with caution
 
 	template <typename T>
-    static void WriteRaw(const T& Value, FArchive& Out)
+	static void WriteRaw(const T& Value, FArchive& Out)
 	{
 		typename SpudTypeInfo<T>::StorageType OutVal = Value;
-		Out << OutVal;		
+		Out << OutVal;
 	}
 
 	template <typename T>
-    static void ReadRaw(T& Value, FArchive& In)
+	static void ReadRaw(T& Value, FArchive& In)
 	{
 		// Allow for type conversion e.g. bool to uint8
 		typename SpudTypeInfo<T>::StorageType SerialisedVal;
@@ -868,7 +1072,7 @@ public:
 
 	template <typename T>
 	void WriteProperty(const FString& Name, uint32 PrefixID, const T& Value, TSharedPtr<FSpudClassDef> ClassDef,
-	                   TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 	{
 		RegisterProperty(Name, PrefixID, SpudTypeInfo<T>::EnumType, ClassDef, PropertyOffsets, Meta, Out);
 		WriteRaw(Value, Out);
