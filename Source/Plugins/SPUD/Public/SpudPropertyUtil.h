@@ -21,7 +21,6 @@ class FSpudMemoryWriter;
 
 
 
-
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
 namespace {
 
@@ -287,7 +286,7 @@ protected:
 	}
 
 	template<typename ValueType>
-	static bool TryWriteBuilinStructPropertyData(FStructProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth,
+	static bool TryWriteBuiltinStructPropertyData(FStructProperty* Prop, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth,
 		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 	{
 		if (Prop->Struct == TBaseStructure<ValueType>::Get())
@@ -322,7 +321,7 @@ protected:
 	}
 
 	template<typename ValueType>
-	static bool TryReadBuilinStructPropertyData(FStructProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
+	static bool TryReadBuiltinStructPropertyData(FStructProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
 	{
 		if (Prop->Struct == TBaseStructure<ValueType>::Get() &&
 			StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true))
@@ -334,6 +333,22 @@ protected:
 
 		return false;
 	}
+
+	template<class PropType, typename ValueType>
+	static bool TryReadPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
+	{
+		auto IProp = CastField<PropType>(Prop);
+		if (IProp && StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true))
+		{
+			auto Val = ReadPropertyData<PropType, ValueType>(IProp, Data, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
+			return true;
+		}
+
+		return false;
+	}
+
+
 
 	static uint16 ReadEnumPropertyData(FEnumProperty* EProp, void* Data, FArchive& In);
 
@@ -534,11 +549,7 @@ public:
 
 
 
-
-
-
-
-
+/*
 #if 0
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
 namespace {
@@ -608,95 +619,95 @@ namespace {
 class SPUD_API SpudPropertyUtil
 {
 public:
-	/**
-	 * @brief The PropertyVisitor class is able to receive a predictable sequence of properties from a UObject, including
-	 * nested struct properties.
-	 */
+	//*
+	// * @brief The PropertyVisitor class is able to receive a predictable sequence of properties from a UObject, including
+	// * nested struct properties.
+	// 
 	class PropertyVisitor
 	{
 	public:
 		virtual ~PropertyVisitor() = default;
 
-		/**
-		 * @brief Visit a property and perform some action. For nested structs, this will be called for the struct
-		 * itself and its nested properties.
-		 * @param RootObject The root object for this property. Can  be null if just parsing definitions not instances!
-		 * @param Property The property to process
-		 * @param CurrentPrefixID The prefix which identifies nested struct properties
-		 * @param ContainerPtr Pointer to data container which can be used to access values. Can be null!
-		 * @param Depth The current nesting depth (0 for top-level properties, higher for nested structs)
-		 * @returns True to continue parsing properties, false to quit early
-		 */
+		//*
+		// * @brief Visit a property and perform some action. For nested structs, this will be called for the struct
+		// * itself and its nested properties.
+		// * @param RootObject The root object for this property. Can  be null if just parsing definitions not instances!
+		// * @param Property The property to process
+		// * @param CurrentPrefixID The prefix which identifies nested struct properties
+		// * @param ContainerPtr Pointer to data container which can be used to access values. Can be null!
+		// * @param Depth The current nesting depth (0 for top-level properties, higher for nested structs)
+		// * @returns True to continue parsing properties, false to quit early
+		// 
 		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID,
 			void* ContainerPtr, int Depth) = 0;
 
-		/**
-		* @brief Be informed about an unsupported property. This is a property which is marked as persistent but
-		* is not currently supported.
-		* @param RootObject The root object for this property. Can  be null if just parsing definitions not instances!
-		* @param Property The property to process
-		* @param CurrentPrefixID The prefix which identifies nested struct properties
-		* @param Depth The current nesting depth (0 for top-level properties, higher for nested structs)
-		*/
+		//*
+		//* @brief Be informed about an unsupported property. This is a property which is marked as persistent but
+		//* is not currently supported.
+		//* @param RootObject The root object for this property. Can  be null if just parsing definitions not instances!
+		//* @param Property The property to process
+		//* @param CurrentPrefixID The prefix which identifies nested struct properties
+		//* @param Depth The current nesting depth (0 for top-level properties, higher for nested structs)
+		//
 		virtual void UnsupportedProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID, int Depth) {}
-		/**
-		 * @brief Generate a nested prefix ID for properties underneath a struct or uobject property
-		* @param Prop The property identifying the custom struct
-		* @param CurrentPrefixID The current prefix up to this point
-		* @return The new PrefixID for properties nested within this struct. If you return SPUD_PREFIXID_NONE then
-		* nested properties will be skipped.
-		 */
+		//*
+		// * @brief Generate a nested prefix ID for properties underneath a struct or uobject property
+		//* @param Prop The property identifying the custom struct
+		//* @param CurrentPrefixID The current prefix up to this point
+		//* @return The new PrefixID for properties nested within this struct. If you return SPUD_PREFIXID_NONE then
+		//* nested properties will be skipped.
+		// 
 		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) = 0;
 
-		/**
-		 * Called just before descending into a struct
-		 * @param RootObject The root object being traversed
-		 * @param SProp The property of the struct
-		 * @param PrefixID The prefix ID for members of the struct
-		 * @param Depth The depth for members of the struct
-		 */
+		//*
+		// * Called just before descending into a struct
+		// * @param RootObject The root object being traversed
+		// * @param SProp The property of the struct
+		// * @param PrefixID The prefix ID for members of the struct
+		// * @param Depth The depth for members of the struct
+		// 
 		virtual void StartNestedStruct(UObject* RootObject, FStructProperty* SProp, uint32 PrefixID, int Depth) {}
-		/**
-		 * Called just after all the members of a struct have been visited
-		 * @param RootObject The root object being traversed
-		 * @param SProp The property of the struct
-		 * @param PrefixID The prefix ID for members of the struct
-		 * @param Depth The depth for members of the struct
-		 */
+		//*
+		// * Called just after all the members of a struct have been visited
+		// * @param RootObject The root object being traversed
+		// * @param SProp The property of the struct
+		// * @param PrefixID The prefix ID for members of the struct
+		// * @param Depth The depth for members of the struct
+		// 
 		virtual void EndNestedStruct(UObject* RootObject, FStructProperty* SProp, uint32 PrefixID, int Depth) {}
 	};
 
-	/**
-	 * @brief Return whether a specified property should be included in the persistent state of an object
-	 * @param Property the property to potentially be included
-	 * @param IsChildOfSaveGame whether this property is a child of another property which was marked as SaveGame
-	 * @return Whether this property should be included in the persistent state
-	 */
+	//*
+	// * @brief Return whether a specified property should be included in the persistent state of an object
+	// * @param Property the property to potentially be included
+	// * @param IsChildOfSaveGame whether this property is a child of another property which was marked as SaveGame
+	// * @return Whether this property should be included in the persistent state
+	// 
 	static bool ShouldPropertyBeIncluded(FProperty* Property, bool IsChildOfSaveGame);
-	/**
-	 * @brief Return wether a specified property is supported by the persistence system or not
-	 * @param Property the property in question
-	 * @return Whether this property is supported in the persistence system
-	 */
+	//*
+	// * @brief Return wether a specified property is supported by the persistence system or not
+	// * @param Property the property in question
+	// * @return Whether this property is supported in the persistence system
+	// 
 	static bool IsPropertySupported(FProperty* Property);
 
-	/**
-	 * @brief Return whether a specified property is natively supported, with full upgrade functionality
-	 * @param Property the property in question
-	 * @return Whether this property is supported in the persistence system
-	 */
+	//*
+	// * @brief Return whether a specified property is natively supported, with full upgrade functionality
+	// * @param Property the property in question
+	// * @return Whether this property is supported in the persistence system
+	// 
 	static bool IsPropertyNativelySupported(FProperty* Property);
-	/**
-	 * @brief Return whether a specified property is supported, as a fallback
-	 * @param Property the property in question
-	 * @return Whether this property is supported in the persistence system even if not natively
-	 */
+	//*
+	// * @brief Return whether a specified property is supported, as a fallback
+	// * @param Property the property in question
+	// * @return Whether this property is supported in the persistence system even if not natively
+	// 
 	static bool IsPropertyFallbackSupported(FProperty* Property);
-	/**
-	 * @brief Return whether a property is of a built-in struct
-	 * @param SProp The struct property
-	 * @return Whether this property is of a built-in type (e.g. FVector)
-	 */
+	//*
+	// * @brief Return whether a property is of a built-in struct
+	// * @param SProp The struct property
+	// * @return Whether this property is of a built-in type (e.g. FVector)
+	// 
 	static bool IsBuiltInStructProperty(const FStructProperty* SProp);
 
 	static bool IsCustomStructProperty(const FProperty* Property);
@@ -1104,3 +1115,4 @@ public:
 
 };
 #endif
+*/
