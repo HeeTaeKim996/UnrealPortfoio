@@ -156,6 +156,10 @@ bool SpudPropertyUtil::IsSubclassOfProperty(const FProperty* Property)
 	return CastField<FClassProperty>(Property) != nullptr;
 }
 
+
+
+
+
 uint16 SpudPropertyUtil::GetPropertyDataType(const FProperty* Prop)
 {
 	bool bIsArray = false;
@@ -282,6 +286,30 @@ uint16 SpudPropertyUtil::GetPropertyDataType(const FProperty* Prop)
 	return Ret;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 FString SpudPropertyUtil::GetNestedPrefix(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta)
 {
 	return PrefixIDSoFar == SPUDDATA_PREFIXID_NONE ?
@@ -292,7 +320,7 @@ uint32 SpudPropertyUtil::FindOrAddNestedPrefixID(uint32 PrefixIDSoFar, FProperty
 {
 	const FString NewPrefixString = GetNestedPrefix(PrefixIDSoFar, Prop, Meta);
 	return Meta.FindOrAddPropertyIDFromName(NewPrefixString);
-	
+
 }
 uint32 SpudPropertyUtil::GetNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta)
 {
@@ -300,45 +328,166 @@ uint32 SpudPropertyUtil::GetNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop
 	return Meta.GetPropertyIDFromName(NewPrefixString);
 }
 
+
+
+
+
+
+
+
+
+
 void SpudPropertyUtil::RegisterProperty(uint32 PropNameID, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
 	FArchive& Out)
 {
-	
-
+	const int Index = ClassDef->FindOrAddPropertyIndex(PropNameID, PrefixID, DataType);
+	if (PropertyOffsets.Num() < Index + 1)
+	{
+		PropertyOffsets.SetNum(Index + 1);
+	}
+	PropertyOffsets[Index] = Out.Tell();
 }
 
 void SpudPropertyUtil::RegisterProperty(const FString& Name, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
 	FSpudClassMetadata& Meta, FArchive& Out)
 {
+	return RegisterProperty(Meta.FindOrAddPropertyIDFromName(Name), PrefixID, DataType, ClassDef, PropertyOffsets, Out);
 
 }
 
 void SpudPropertyUtil::RegisterProperty(FProperty* Prop, uint32 PrefixID, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
 	FSpudClassMetadata& Meta, FArchive& Out)
 {
-
+	return RegisterProperty(Meta.FindOrAddPropertyIDFromProperty(Prop), PrefixID, GetPropertyDataType(Prop), ClassDef, PropertyOffsets, Out);
 }
+
+
+
+
+
+
+
+
 
 void SpudPropertyUtil::VisitPersistentProperties(UObject* RootObject, PropertyVisitor& Visitor, int StartDepth)
 {
-
+	VisitPersistentProperties(RootObject, RootObject->GetClass(), SPUDDATA_PREFIXID_NONE, RootObject, false, StartDepth, Visitor);
 }
 
 void SpudPropertyUtil::VisitPersistentProperties(const UStruct* Definition, PropertyVisitor& Visitor)
 {
-
+	VisitPersistentProperties(nullptr, Definition, SPUDDATA_PREFIXID_NONE, nullptr, false, 0, Visitor);
 }
 
-bool SpudPropertyUtil::VisitPersistentProperties(UObject* RootObject, const UStruct* Definition, uint32 PrefixID, void* ContainerPtr, bool IsChildOfSaveGame, 
+bool SpudPropertyUtil::VisitPersistentProperties(UObject* RootObject, const UStruct* Definition, uint32 PrefixID, void* ContainerPtr, bool IsChildOfSaveGame,
 	int Depth, PropertyVisitor& Visitor)
 {
-	
+	// 『 TFieldIterator<T>(a, b,);
+	// -> Iterate All T From a.
+	// if b is EFieldIteratorFlags::IncludeSuper, Iterate All T from a's super class also.
+
+	// 『 a could be UStruct, UClass
+
+	for (TFieldIterator<FProperty>PIT(Definition, EFieldIteratorFlags::IncludeSuper); PIT; ++PIT)
+	{
+		FProperty* Property = *PIT;
+
+		if (ShouldPropertyBeIncluded(Property, IsChildOfSaveGame) == false)
+		{
+			continue;
+		}
+
+		if (IsPropertySupported(Property) == false)
+		{
+			Visitor.UnsupportedProperty(RootObject, Property, PrefixID, Depth);
+			continue;
+		}
+
+		// Visitor can early-out
+		if (Visitor.VisitProperty(RootObject, Property, PrefixID, ContainerPtr, Depth) == false)
+		{
+			return false;
+		}
+
+		// FStructProperty Includes UCLASS, USTRUCT
+		if (FStructProperty* const SProp = CastField<FStructProperty>(Property))
+		{
+			if (IsBuiltInStructProperty(SProp) == false) // Only User defined class is searched
+			{
+				const UScriptStruct* StructDefinition = nullptr;
+				void* StructPtr = nullptr;
+
+
+				// Check if it's a InstancedStruct
+				if (SProp->Struct->IsChildOf(FInstancedStruct::StaticStruct()))
+				{
+					const FInstancedStruct* InstancedStruct = ContainerPtr ? SProp->ContainerPtrToValuePtr<FInstancedStruct>(ContainerPtr) : nullptr;
+
+					if (InstancedStruct)
+					{
+						if (InstancedStruct->IsValid() == false)
+						{
+							continue;
+						}
+
+						StructDefinition = InstancedStruct->GetScriptStruct();
+						StructPtr = (void*)InstancedStruct->GetMemory();
+					}
+				}
+				else
+				{
+					StructDefinition = SProp->Struct;
+					StructPtr = ContainerPtr ? SProp->ContainerPtrToValuePtr<void>(ContainerPtr) : nullptr;
+				}
+
+
+				const uint32 NewPrefixID = Visitor.GetNestedPrefix(SProp, PrefixID);
+				if (NewPrefixID == SPUDDATA_PREFIXID_NONE)
+				{
+					continue;
+				}
+
+				const int NewDepth = Depth + 1;
+				
+				Visitor.StartNestedStruct(RootObject, SProp, NewPrefixID, NewDepth);
+				if (VisitPersistentProperties(RootObject, StructDefinition, NewPrefixID, StructPtr, true, NewDepth, Visitor) == false) // Recurring this Func by user's defined class
+				{
+					return false;
+				}
+				Visitor.EndNestedStruct(RootObject, SProp, NewPrefixID, NewDepth);
+			}
+		}
+
+	}
+
+	return true;
 }
+
+
+
+
+
+
+
+
 
 uint16 SpudPropertyUtil::WriteEnumPropertyData(FEnumProperty* EProp, uint32 PrefixID, const void* Data, bool bIsArrayElement, TSharedPtr<FSpudClassDef> ClassDef,
 	TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
-	
+	// 『 if Enum is SINGLE, under record && Write is needed so bIsArrayElement == false is Needed
+	//	 But if Array like TArray<EMyEnum> Enums, Pos(Tell) is only one time needed. so, when first element called, bIsArrayElement == false is Needed,
+	//   but afterward, Recording Pos is not needed, so bIsArraElement == true is Needed
+
+	if (bIsArrayElement == false)
+	{
+		RegisterProperty(EProp, PrefixID, ClassDef, PropertyOffsets, Meta, Out); // Register 'WILL' be recored FArchive Pos
+	}
+
+	uint16 Val = EProp->GetUnderlyingProperty()->GetUnsignedIntPropertyValue(Data); 
+	// 『 GetUnderlyingPRoperty : Enum Value (ex) STATE_NONE, STATE_JUMP) to assigned int value ( ex) 1 << 0, 1 << 2 )
+	// 『 GetUnsignedIntPropertyValue : enum's assignd value (Data) to Int 
+	Out << Val;
+	return Val;
 }
 
 bool SpudPropertyUtil::TryWriteEnumPropertyData(FProperty* Property, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth, 
