@@ -5,9 +5,22 @@
 #include "Serialization/MemoryReader.h"
 #include "Serialization/MemoryWriter.h"
 
-
 class FSpudMemoryReader;
 class FSpudMemoryWriter;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
 namespace{
@@ -37,21 +50,21 @@ namespace{
 	};
 		
 	template<>
-	struct SpudTypeInfo<AActor>
+	struct SpudTypeInfo<AActor*>
 	{
 		static const ESpudStorageType EnumType = ESST_String;
 		using StorageType = FString;
 	};
 
 	template<>
-	struct SpudTypeInfo<UObject>
+	struct SpudTypeInfo<UObject*>
 	{
 		static const ESpudStorageType EnumType = ESST_UInt32;
 		using StorageType = uint32;
 	};
 
 	template<>
-	struct SpudTypeInfo<UClass>
+	struct SpudTypeInfo<UClass*>
 	{
 		static const ESpudStorageType EnumType = ESST_UInt32;
 		using StorageType = uint32;
@@ -75,6 +88,147 @@ namespace{
 	template<>	const ESpudStorageType SpudTypeInfo<FName>::EnumType = ESST_Name;
 	template<>	const ESpudStorageType SpudTypeInfo<FText>::EnumType = ESST_Text;
 }
+
+class SPUD_API SpudPropertyUtil
+{
+public:
+	class PropertyVisitor
+	{
+	public:
+		virtual ~PropertyVisitor() = default;
+
+		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID, void* ContainerPtr, int Depth) = 0;
+
+		virtual void UnsupportedProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID, int Depth) {}
+
+		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) = 0;
+
+		virtual void StartNestedStruct(UObject* RootObject, FStructProperty* Sprop, uint32 PrefixID, int Depth) {}
+
+		virtual void EndNestedStruct(UObject* RootObject, FStructProperty* SProp, uint32 PrefixID, int Depth) {}
+	};
+
+
+
+
+
+	static bool ShouldPropertyBeIncluded(FProperty* Property, bool IsChildOfSaveGame);
+
+	static bool IsPropertySupported(FProperty* Property);
+
+	static bool IsPropertyNativelySupported(FProperty* Property);
+
+	static bool IsPropertyFallbackSupported(FProperty* Property);
+
+	static bool IsBuiltInStructProperty(const FStructProperty* SProp);
+
+	static bool IsCustomStructProperty(const FProperty* Property);
+
+	static bool IsActorObjectProperty(const FProperty* Property);
+
+	static bool IsNestedUObjectProperty(const FProperty* Property);
+
+	static bool IsSubclassOfProperty(const FProperty* Property);
+
+	static uint16 GetPropertyDataType(const FProperty* Prop);
+
+
+
+
+
+
+
+	class StoredMatchesRuntimePropertyVisitor : public SpudPropertyUtil::PropertyVisitor 
+	{
+	protected:
+		TArray<FSpudPropertyDef>::TConstIterator StoredPropertyIterator;
+		const FSpudClassDef& ClassDef;
+		const FSpudClassMetadata& Meta;
+		bool bMatches;
+	
+	public:
+		StoredMatchesRuntimePropertyVisitor(TArray<FSpudPropertyDef>::TConstIterator InStoredPropertyIterator, const FSpudClassDef& InClassDef,
+			const FSpudClassMetadata& InMeta);
+		
+		virtual bool VisitProperty(UObject* RootObject, FProperty* Property, uint32 CurrentPrefixID, void* ContainerPtr, int Depth) override;
+
+		virtual uint32 GetNestedPrefix(FProperty* Prop, uint32 CurrentPrefixID) override;
+
+		bool IsMatch() const { return bMatches; }
+	};
+
+	static bool StoredPropertyTypeMatchesRuntime(const FProperty* RuntimeProperty, const FSpudPropertyDef& StoredProperty, bool bIgnoreArrayFlag);
+
+	static FString GetNestedPrefix(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta);
+
+	static uint32 GetNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta);
+
+	static uint32 FindOrAddNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, FSpudClassMetadata& Meta);
+
+	static void RegisterProperty(uint32 PropNameID, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FArchive& Out);
+
+	static void RegisterProperty(const FString& Name, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
+		FSpudClassMetadata& Meta, FArchive& Out);
+
+	static void RegisterProperty(FProperty* Prop, uint32 PrefixID, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta,
+		FArchive& Out);
+
+	static void VisitPersistentProperties(UObject* RootObject, PropertyVisitor& Visitor, int StartDepth = 0);
+
+	static void VisitPersistentProperties(const UStruct* Definition, PropertyVisitor& Visitor);
+
+	static void StoreProperty(const UObject* RootObject, FProperty* Property, uint32 PrefixID, const void* ContainerPtr, int Depth, TSharedPtr<FSpudClassDef> ClassDef,
+		TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FSpudMemoryWriter& Out);
+
+	static void StoreArrayProperty(FArrayProperty* AProp, const UObject* RootObject, uint32 PrefixID, const void* ContainerPtr, int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FSpudMemoryWriter& Out);
+
+	static void StoreContainerProperty(FProperty* Property, const UObject* RootObject, uint32 PrefixID, const void* ContainerPtr, bool bIsArrayElement, int Depth,
+		TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FSpudMemoryWriter& Out);
+
+	
+
+	typedef TMap<FGuid, UObject*> RuntimeObjectMap;
+
+	static void RestoreProperty(UObject* RootObject, FProperty* Property, void* ContainerPtr, const FSpudPropertyDef& StoredProperty, const RuntimeObjectMap* RuntimeObjects,
+		const FSpudClassMetadata& Meta, int Depth, FSpudMemoryReader& DataIn);
+
+	static void RestoreArrayProperty(UObject* RootObject, FArrayProperty* AProp, void* ContainerPtr, const FSpudPropertyDef& StoredProperty,
+		const RuntimeObjectMap* RuntimeObjects, const FSpudClassMetadata& Meta, int Depth, FSpudMemoryReader& DataIn);
+
+	static void RestoreContainerProperty(UObject* RootObject, FProperty* const Property, void* ContainerPtr, const FSpudPropertyDef& StoredProperty,
+		const RuntimeObjectMap* RuntimeObjects, const FSpudClassMetadata& Meta, int Depth, FSpudMemoryReader& DataIn);
+
+	static bool StoredClassDefMatchesRuntime(const FSpudClassDef& ClassDef, const FSpudClassMetadata& Meta);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -182,8 +336,6 @@ namespace{
 
 
 #if 0
-class FSpudMemoryReader;
-class FSpudMemoryWriter;
 DECLARE_LOG_CATEGORY_EXTERN(LogSpudProps, Verbose, Verbose);
 namespace{
 /// Type info for persistence
@@ -353,6 +505,21 @@ public:
 	static bool IsSubclassOfProperty(const FProperty* Property);
 	static uint16 GetPropertyDataType(const FProperty* Prop);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	class StoredMatchesRuntimePropertyVisitor : public SpudPropertyUtil::PropertyVisitor
 	{
 	protected:
@@ -452,6 +619,13 @@ public:
 	/// If so, we can restore data much more efficiently because we don't have to look anything up on instances, just
 	/// iterate through both sides.
 	static bool StoredClassDefMatchesRuntime(const FSpudClassDef& ClassDef, const FSpudClassMetadata& Meta);
+
+
+
+
+
+
+
 
 protected:
 	static bool IsNativelySupportedArrayType(const FArrayProperty* AProp);
