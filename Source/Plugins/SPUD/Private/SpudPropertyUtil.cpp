@@ -162,27 +162,148 @@ uint16 SpudPropertyUtil::GetPropertyDataType(const FProperty* Prop)
 	const FProperty* ActualProp = Prop;
 	uint16 Ret = ESST_OpaqueRecord;
 	
+	if (const FArrayProperty* AProp = CastField<FArrayProperty>(Prop))
+	{
+		if (IsNativelySupportedArrayType(AProp))
+		{
+			bIsArray = true;
+			ActualProp = AProp->Inner;
+		}
+	}
+
+	if (const FStructProperty* SProp = CastField<FStructProperty>(ActualProp))
+	{
+		if (SProp->Struct == TBaseStructure<FVector>::Get())
+		{
+			Ret = SpudTypeInfo<FVector>::EnumType;
+		}
+		else if (SProp->Struct == TBaseStructure<FRotator>::Get())
+		{
+			Ret = SpudTypeInfo<FRotator>::EnumType;
+		}
+		else if (SProp->Struct == TBaseStructure<FTransform>::Get())
+		{
+			Ret = SpudTypeInfo<FTransform>::EnumType;
+		}
+		else if (SProp->Struct == TBaseStructure<FGuid>::Get())
+		{
+			Ret = SpudTypeInfo<FGuid>::EnumType;
+		}
+		else
+		{
+			Ret = ESST_CustomStruct; // Anything else is a custom struct
+		}
+	}
+	else if (CastField<FObjectProperty>(ActualProp))
+	{
+		if (IsActorObjectProperty(ActualProp))
+		{
+			Ret = SpudTypeInfo<AActor*>::EnumType;
+		}
+		else if (IsSubclassOfProperty(ActualProp))
+		{
+			Ret = SpudTypeInfo<UClass*>::EnumType;
+		}
+		else
+		{
+			Ret = SpudTypeInfo<UObject*>::EnumType; // Anything else is UObject
+		}
+	}
+	else
+	{
+		if (CastField<FBoolProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<bool>::EnumType;
+		}
+		else if (CastField<FByteProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<uint8>::EnumType;
+		}
+		else if (CastField<FUInt16Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<uint16>::EnumType;
+		}
+		else if (CastField<FUInt32Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<uint32>::EnumType;
+		}
+		else if (CastField<FUInt64Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<uint64>::EnumType;
+		}
+		else if (CastField<FInt8Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<int8>::EnumType;
+		}
+		else if (CastField<FInt16Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<int16>::EnumType;
+		}
+		else if (CastField<FIntProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<int>::EnumType;
+		}
+		else if (CastField<FInt64Property>(ActualProp))
+		{
+			Ret = SpudTypeInfo<int64>::EnumType;
+		}
+		else if (CastField<FFloatProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<float>::EnumType;
+		}
+		else if (CastField<FDoubleProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<double>::EnumType;
+		}
+		else if (CastField<FStrProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<FString>::EnumType;
+		}
+		else if (CastField<FNameProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<FName>::EnumType;
+		}
+		else if (CastField<FTextProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<FTextProperty>::EnumType;
+		}
+		else if (CastField<FEnumProperty>(ActualProp))
+		{
+			Ret = SpudTypeInfo<SpudAnyEnum>::EnumType;
+		}
+	}
+
+	
+	if (bIsArray)
+	{
+		Ret |= ESST_ArrayOf;
+	}
+
+	return Ret;
 }
 
 FString SpudPropertyUtil::GetNestedPrefix(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta)
 {
-
+	return PrefixIDSoFar == SPUDDATA_PREFIXID_NONE ?
+		Prop->GetNameCPP() : Meta.GetPropertyNameFromID(PrefixIDSoFar) + "/" + Prop->GetNameCPP();
 }
 
 uint32 SpudPropertyUtil::FindOrAddNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, FSpudClassMetadata& Meta)
 {
-
+	const FString NewPrefixString = GetNestedPrefix(PrefixIDSoFar, Prop, Meta);
+	return Meta.FindOrAddPropertyIDFromName(NewPrefixString);
 	
 }
 uint32 SpudPropertyUtil::GetNestedPrefixID(uint32 PrefixIDSoFar, FProperty* Prop, const FSpudClassMetadata& Meta)
 {
-
-	
+	const FString NewPrefixString = GetNestedPrefix(PrefixIDSoFar, Prop, Meta);
+	return Meta.GetPropertyIDFromName(NewPrefixString);
 }
 
 void SpudPropertyUtil::RegisterProperty(uint32 PropNameID, uint32 PrefixID, uint16 DataType, TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets,
 	FArchive& Out)
 {
+	
 
 }
 
