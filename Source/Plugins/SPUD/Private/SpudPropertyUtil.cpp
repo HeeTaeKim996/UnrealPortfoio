@@ -471,6 +471,52 @@ bool SpudPropertyUtil::VisitPersistentProperties(UObject* RootObject, const UStr
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 uint16 SpudPropertyUtil::WriteEnumPropertyData(FEnumProperty* EProp, uint32 PrefixID, const void* Data, bool bIsArrayElement, TSharedPtr<FSpudClassDef> ClassDef,
 	TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
@@ -493,78 +539,491 @@ uint16 SpudPropertyUtil::WriteEnumPropertyData(FEnumProperty* EProp, uint32 Pref
 bool SpudPropertyUtil::TryWriteEnumPropertyData(FProperty* Property, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth, 
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
-
+	if (FEnumProperty* const EProp = CastField<FEnumProperty>(Property))
+	{
+		const uint16 Val = WriteEnumPropertyData(EProp, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+		UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Property, Depth), *ToString(Val));
+		return true;
+	}
+	return false;
 }
 
 uint16 SpudPropertyUtil::ReadEnumPropertyData(FEnumProperty* EProp, void* Data, FArchive& In)
 {
+	uint16 Val;
+	In << Val;
+
+	EProp->GetUnderlyingProperty()->SetIntPropertyValue(Data, static_cast<uint64>(Val));
+
+	return Val;
 
 }
 
 bool SpudPropertyUtil::TryReadEnumPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, int Depth, FArchive& In)
 {
-
+	FEnumProperty* EPRop = CastField<FEnumProperty>(Prop);
+	if (EPRop && StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true))
+	{
+		const uint16 Val = ReadEnumPropertyData(EPRop, Data, In);
+		UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *ToString(Val));
+		return true;
+	}
+	return false;
 }
 
 FString SpudPropertyUtil::WriteActorRefPropertyData(FProperty* OProp, AActor* Actor, uint32 PrefixID, const void* Data, bool bIsArrayElement,
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
+	if (bIsArrayElement == false)
+	{
+		RegisterProperty(OProp, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+	}
 
+	FString RefString;
+	if (Actor)
+	{
+		if (IsRuntimeActor(Actor))
+		{
+			FStructProperty* GuidProperty = FindGuidProperty(Actor);
+			if (GuidProperty == nullptr)
+			{
+				if (Actor->Implements<USpudObject>())
+				{
+					RefString = ISpudObject::Execute_OverrideName(Actor);
+					if (RefString.IsEmpty())
+					{
+						UE_LOG(LogSpudProps, Error, TEXT("Object reference %s/%s points to runtime Actor %s but that actor has neither SpudGuid property nor overriden name,"
+							"and will not be saved."), *ClassDef->ClassName, *OProp->GetName(), *Actor->GetName());
+					}
+				}
+				else
+				{
+					UE_LOG(LogSpudProps, Error, TEXT("Object reference %s/%s points to runtime Actor %s but that actor has no SpudGuid property, will not be saved."),
+						*ClassDef->ClassName, *OProp->GetName(), *Actor->GetName());
+					RefString = FString();
+				}
+			}
+			else
+			{
+				FGuid Guid = GetGuidProperty(Actor, GuidProperty);
+				if (Guid.IsValid() == false)
+				{
+					Guid = FGuid::NewGuid();
+					SetGuidProperty(Actor, GuidProperty, Guid);
+				}
+
+				RefString = Guid.ToString(EGuidFormats::DigitsWithHyphensInBraces);
+			}
+		}
+		else
+		{
+			RefString = GetLevelActorName(Actor);
+		}
+	}
+	else
+	{
+		RefString = FString();
+	}
+
+
+	Out << RefString;
+	return RefString;
 }
 
 FString SpudPropertyUtil::WriteNestedUObjectPropertyData(FObjectProperty* OProp, UObject* UObj, uint32 PrefixID, const void* Data, bool bIsArrayElement,
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
+	if (bIsArrayElement == false)
+	{
+		RegisterProperty(OProp, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+	}
 
+	uint32 ClassID;
+	FString Ret = "NULL";
+	if (UObj)
+	{
+		Ret = GetClassName(UObj);
+		ClassID = Meta.FindOrAddClassIDFromName(Ret);
+	}
+	else
+	{
+		ClassID = SPUDDATA_CLASSID_NONE;
+	}
+
+	Out << ClassID;
+
+	return Ret;
 }
 
 FString SpudPropertyUtil::WriteSoftObjectPropertyData(FSoftObjectProperty* SProp, uint32 PrefixID, const void* Data, bool bIsArrayElement,
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
+	if (bIsArrayElement == false)
+	{
+		RegisterProperty(SProp, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+	}
 
+
+	const FSoftObjectPtr SoftPtr = SProp->GetPropertyValue(Data);
+	FSoftObjectPath Path = SoftPtr.ToSoftObjectPath();
+	Out << Path;
+
+	return Path.GetAssetPathString();
 }
 
 FString SpudPropertyUtil::WriteSubclassOfPropertyData(FClassProperty* CProp, UClass* Class, uint32 PrefixID, const void* Data, bool bIsArrayElement,
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
+	if (bIsArrayElement == false)
+	{
+		RegisterProperty(CProp, PrefixID, ClassDef, PropertyOffsets, Meta, Out);
+	}
+
+	uint32 ClassID;
+	FString Ret = "NULL";
+	if (Class)
+	{
+		Ret = Class->GetPathName(); // ¡Ø GetPathName : return address of class or bp in editor
+		ClassID = Meta.FindOrAddClassIDFromName(Ret);
+	}
+	else
+	{
+		ClassID = SPUDDATA_CLASSID_NONE;
+	}
+
+	Out << ClassID;
+
+	return Ret;
 
 }
 
 bool SpudPropertyUtil::TryWriteUObjectPropertyData(FProperty* Property, uint32 PrefixID, const void* Data, bool bIsArrayElement, int Depth,
 	TSharedPtr<FSpudClassDef> ClassDef, TArray<uint32>& PropertyOffsets, FSpudClassMetadata& Meta, FArchive& Out)
 {
+	UObject* Obj = nullptr;
+	FObjectProperty* StrongProp = CastField<FObjectProperty>(Property);
+	FWeakObjectProperty* WeakProp = CastField<FWeakObjectProperty>(Property);
+	FSoftObjectProperty* SoftProp = CastField<FSoftObjectProperty>(Property);
 
+	if (StrongProp)
+	{
+		Obj = StrongProp->GetObjectPropertyValue(Data);
+	}
+	else if (WeakProp)
+	{
+		Obj = WeakProp->GetObjectPropertyValue(Data);
+	}
+
+	if (StrongProp || WeakProp || SoftProp)
+	{
+		if (IsActorObjectProperty(Property))
+		{
+			AActor* const Actor = Cast<AActor>(Obj);
+			const FString Val = WriteActorRefPropertyData(Property, Actor, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Property, Depth), *ToString(Val));
+		}
+		else if (FClassProperty* CProp = CastField<FClassProperty>(Property))
+		{
+			UClass* const RuntimeClass = Cast<UClass>(Obj);
+			const FString Val = WriteSubclassOfPropertyData(CProp, RuntimeClass, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Property, Depth), *Val);
+		}
+		else if (StrongProp) // Only strong properties on nested (should be owned )
+		{
+			const FString Val = WriteNestedUObjectPropertyData(StrongProp, Obj, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Property, Depth), *Val);
+		}
+		else if (SoftProp)
+		{
+			const FString Val = WriteSoftObjectPropertyData(SoftProp, PrefixID, Data, bIsArrayElement, ClassDef, PropertyOffsets, Meta, Out);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Property, Depth), *Val);
+		}
+
+		return true;
+	}
+
+	return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 FString SpudPropertyUtil::ReadActorRefPropertyData(FProperty* OProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level, FArchive& In)
 {
+	FString RefString;
+	In << RefString;
 
+
+	// Now we need to find the actual object
+	if (RefString.IsEmpty())
+	{
+		SetObjectPropertyValue(OProp, Data, nullptr);
+	}
+	else if (RefString.StartsWith("{")) // ¡Ø RefString = Guid.ToString(EGuidFormats::DigitsWithHyphensInBraces); ==> Ex) {01234567-89AB-CDEF-0123-456789ABCDEF}
+	{
+		// Runtime object, identified by GUID
+		// We used the braces-format GUID for runtime objects so that it's easy to identify
+		if (RuntimeObjects)
+		{
+			FGuid Guid;
+			if (FGuid::ParseExact(RefString, EGuidFormats::DigitsWithHyphensInBraces, Guid))
+			{
+				UObject* const* ObjPtr = RuntimeObjects->Find(Guid);
+				if (ObjPtr)
+				{
+					SetObjectPropertyValue(OProp, Data, *ObjPtr);
+				}
+				else
+				{
+					UE_LOG(LogSpudProps, Error, TEXT("Could not locate runtime object for property %s, GUID was %s"), *OProp->GetName(), *RefString);
+				}
+			}
+			else
+			{
+				UE_LOG(LogSpudProps, Error, TEXT("Error parsing GUID %s for property %s"), *RefString, *OProp->GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogSpudProps, Error, TEXT("Found property reference to runtime object %s->%s but no RuntimeObjects passed(global object?)"), *OProp->GetName(), *RefString);
+		}
+	}
+	else
+	{
+		// case Level's Actor ( Not runtime spawned actor )
+
+		if (Level)
+		{
+			const UWorld* World = Level->GetWorld();
+
+			UObject* Obj = StaticFindObjectFast(AActor::StaticClass(), Level, *RefString);
+			if (Obj == nullptr)
+			{
+				for (const auto OtherLevel : World->GetLevels())
+				{
+					if (OtherLevel == Level)
+					{
+						continue;
+					}
+
+					Obj = StaticFindObjectFast(AActor::StaticClass(), OtherLevel, *RefString);
+					if (Obj)
+					{
+						break;
+					}
+				}
+			}
+
+			if (Obj == nullptr)
+			{
+				// some actors might override their name, which is not taken into account above
+				Obj = FindObjectWithOverridenName(World, RefString);
+			}
+
+			if (Obj)
+			{
+				SetObjectPropertyValue(OProp, Data, Obj);
+			}
+			else
+			{
+				UE_LOG(LogSpudProps, Error, TEXT("Could not locate level object for property %s, name was %s"), *OProp->GetName(), *RefString);
+			}
+		}
+		else
+		{
+			UE_LOG(LogSpudProps, Error, TEXT("Level object for property %s cannt be resolved, null parent Level"), *OProp->GetName());
+		}
+	}
+
+	return RefString;
 }
 
 FString SpudPropertyUtil::ReadNestedUObjectPropertyData(FObjectProperty* OProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level,
 	UObject* Outer, const FSpudClassMetadata& Meta, FArchive& In)
 {
+	uint32 ClassID;
+	In << ClassID;
 
+	UObject* Object = nullptr;
+	FString Ret = "NULL";
+
+	if (ClassID == SPUDDATA_CLASSID_NONE)
+	{
+		// If stored data said it should be null, set it
+		OProp->SetObjectPropertyValue(Data, nullptr);
+	}
+	else
+	{
+		if (IsValid(OProp->GetObjectPropertyValue(Data)) == false)
+		{
+			const FString ClassName = Meta.GetClassNameFromID(ClassID);
+
+			const FSoftClassPath CP(ClassName);
+			const UClass* Class = CP.TryLoadClass<UObject>();
+
+			if (Class == nullptr)
+			{
+				UE_LOG(LogSpudProps, Error, TEXT("Cannot respawn instance of %s, class not found"), *ClassName);
+				return Ret;
+			}
+
+			Object = NewObject<UObject>(Outer, Class);
+			OProp->SetObjectPropertyValue(Data, Object);
+			Ret = ClassName;
+		}
+	}
+
+	return Ret;
 }
 
 FString SpudPropertyUtil::ReadSoftObjectPropertyData(FSoftObjectProperty* SProp, void* Data, const FSpudClassMetadata& Meta, FArchive& In)
 {
+	FSoftObjectPath Path;
+	In << Path;
 
+	const FSoftObjectPtr SoftObjectPtr(Path);
+	SProp->SetPropertyValue(Data, SoftObjectPtr);
+
+	return SoftObjectPtr.ToString();
 }
 
 FString SpudPropertyUtil::ReadSubclassOfPropertyData(FClassProperty* CProp, void* Data, const RuntimeObjectMap* RuntimeObjects, ULevel* Level,
 	const FSpudClassMetadata& Meta, FArchive& In)
 {
-
+	uint32 ClassID;
+	In << ClassID;
 	
+	FString Ret = "NULL";
+	if (ClassID == SPUDDATA_CLASSID_NONE)
+	{
+		CProp->SetObjectPropertyValue(Data, nullptr);
+	}
+	else
+	{
+		const FString ClassName = Meta.GetClassNameFromID(ClassID);
+
+		const FSoftClassPath CP(ClassName);
+		UObject* const Class = CP.TryLoadClass<UObject>();
+
+		if (Class == nullptr)
+		{
+			UE_LOG(LogSpudProps, Error, TEXT("Cannot find class %s"), *ClassName);
+			return Ret;
+		}
+
+		CProp->SetObjectPropertyValue(Data, Class);
+		Ret = ClassName;
+	}
+
+	return Ret;
 }
 
 
 bool SpudPropertyUtil::TryReadUObjectPropertyData(FProperty* Prop, void* Data, const FSpudPropertyDef& StoredProperty, const RuntimeObjectMap* RuntimeObjects, 
 	ULevel* Level, UObject* Outer, const FSpudClassMetadata& Meta, int Depth, FArchive& In)
 {
+	FObjectProperty* StrongProp = CastField<FObjectProperty>(Prop);
+	FWeakObjectProperty* WeakProp = CastField<FWeakObjectProperty>(Prop);
+	FSoftObjectProperty* SoftProp = CastField<FSoftObjectProperty>(Prop);
 
+	if ((StrongProp || WeakProp || SoftProp) &&
+		StoredPropertyTypeMatchesRuntime(Prop, StoredProperty, true)
+		)
+	{
+		if (IsActorObjectProperty(Prop))
+		{
+			const FString Val = ReadActorRefPropertyData(Prop, Data, RuntimeObjects, Level, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *Val);
+		}
+		else if (FClassProperty* CProp = CastField<FClassProperty>(Prop))
+		{
+			const FString Val = ReadSubclassOfPropertyData(CProp, Data, RuntimeObjects, Level, Meta, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *Val);
+		}
+		else if (StrongProp) // Only strong refs for nested (owned)
+		{
+			const FString Val = ReadNestedUObjectPropertyData(StrongProp, Data, RuntimeObjects, Level, Outer, Meta, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *Val);
+		}
+		else if (SoftProp)
+		{
+			const FString Val = ReadSoftObjectPropertyData(SoftProp, Data, Meta, In);
+			UE_LOG(LogSpudProps, Verbose, TEXT("%s = %s"), *GetLogPrefix(Prop, Depth), *Val);
+		}
+		return true;
+	}
+
+	return false;
 }
 
 void SpudPropertyUtil::SetObjectPropertyValue(FProperty* Property, void* Data, UObject* Obj)
